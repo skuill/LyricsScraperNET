@@ -1,12 +1,12 @@
-﻿using LyricsScraper.Abstract;
-using LyricsScraper.Network.Abstract;
-using LyricsScraper.Network.Html;
-using LyricsScraper.Utils;
+﻿using LyricsScraperNET.Abstract;
+using LyricsScraperNET.Extensions;
+using LyricsScraperNET.Network.Abstract;
+using LyricsScraperNET.Network.Html;
 using Microsoft.Extensions.Logging;
 
-namespace LyricsScraper.AZLyrics
+namespace LyricsScraperNET.AZLyrics
 {
-    public class AZLyricsClient : LyricClientBase
+    public sealed class AZLyricsClient : ExternalServiceClientBase
     {
         private readonly ILogger<AZLyricsClient> _logger;
         private readonly string _baseUri = "http://www.azlyrics.com/lyrics/";
@@ -16,7 +16,7 @@ namespace LyricsScraper.AZLyrics
 
         public Uri BaseUri => new Uri(_baseUri);
 
-        public AZLyricsClient(ILogger<AZLyricsClient> logger, ILyricParser<string> parser, ILyricWebClient webClient)
+        public AZLyricsClient(ILogger<AZLyricsClient> logger)
         {
             _logger = logger;
             Parser = new AZLyricsParser();
@@ -32,7 +32,7 @@ namespace LyricsScraper.AZLyrics
         {
             if (WebClient == null || Parser == null)
             {
-                _logger?.LogError($"Please set up WebClient and Parser at first");
+                _logger?.LogError($"Please set up WebClient and Parser first");
                 return null;
             }
             var text = WebClient.Load(uri);
@@ -47,7 +47,7 @@ namespace LyricsScraper.AZLyrics
         {
             if (WebClient == null || Parser == null)
             {
-                _logger?.LogError($"Please set up WebClient and Parser at first");
+                _logger?.LogError($"Please set up WebClient and Parser first");
                 return null;
             }
             var text = await WebClient.LoadAsync(uri);
@@ -58,8 +58,8 @@ namespace LyricsScraper.AZLyrics
         {
             // http://www.azlyrics.com/lyrics/youngthug/richniggashit.htm
             // remove articles from artist on start. For example for band [The Devil Wears Prada]: https://www.azlyrics.com/d/devilwearsprada.html
-            var artistStripped = StringUtils.StripRedundantChars(artist.ToLowerInvariant(), true);
-            var titleStripped = StringUtils.StripRedundantChars(song.ToLowerInvariant());
+            var artistStripped = artist.ToLowerInvariant().StripRedundantChars(true);
+            var titleStripped = song.ToLowerInvariant().StripRedundantChars();
             return new Uri(BaseUri, $"{artistStripped}/{titleStripped}.html");
         }
 

@@ -1,4 +1,4 @@
-﻿namespace LyricsScraper.Test.AZLyrics
+﻿namespace LyricsScraperNET.Test.AZLyrics
 {
     internal class AZLyricsParserTest
     {

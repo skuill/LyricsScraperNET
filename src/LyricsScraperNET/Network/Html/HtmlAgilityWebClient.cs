@@ -1,9 +1,9 @@
 ﻿using HtmlAgilityPack;
-using LyricsScraper.Network.Abstract;
+using LyricsScraperNET.Network.Abstract;
 
-namespace LyricsScraper.Network.Html
+namespace LyricsScraperNET.Network.Html
 {
-    public class HtmlAgilityWebClient : ILyricWebClient
+    public sealed class HtmlAgilityWebClient : IWebClient
     {
         public string Load(Uri uri)
         {

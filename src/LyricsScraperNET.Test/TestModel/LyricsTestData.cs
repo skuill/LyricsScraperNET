@@ -1,6 +1,6 @@
 ﻿using System.IO;
 
-namespace LyricsScraper.Test.TestModel
+namespace LyricsScraperNET.Test.TestModel
 {
     public class LyricsTestData
     {

@@ -1,49 +1,39 @@
-﻿using LyricsScraper.Abstract;
+﻿using LyricsScraperNET.Abstract;
 using LyricsScraper;
-using LyricsScraper.AZLyrics;
-using LyricsScraper.Genius;
-using LyricsScraper.Network.Abstract;
-using LyricsScraper.Network.Html;
+using LyricsScraperNET.AZLyrics;
+using LyricsScraperNET.Genius;
+using LyricsScraperNET.Network.Abstract;
+using LyricsScraperNET.Network.Html;
 
+internal class Program
+{
+    private static async Task Main(string[] args)
+    {
+        //// AZLyrics
+        //IExternalServiceClient<string> lyricClient = new AZLyricsClient(null);
 
-//// AZLyrics
-//ILyricWebClient lyricWebClient = new HtmlAgilityWebClient();
-//ILyricParser lyricParser = new AZLyricsParser();
-//ILyricClient lyricClient = new AZLyricsClient(null, lyricParser, lyricWebClient);
+        //// Genius
+        IExternalServiceClient<string> lyricClient = new GeniusClient(null, "mz9Cdxgu_wGqeiRGPH_FbO3b2g60EaBath_yO4jD2NC_SG4uDB8_gxyF9faILc6A");
 
-//ILyricsScraperUtil lyricsScraperUtil = new LyricsScraperUtil(null);
-//lyricsScraperUtil.AddClient(lyricClient);
+        SearchLyricDemo(lyricClient);
 
-//string artistToSearch = "Parkway Drive";
-//string songToSearch = "Idols And Anchors";
+        Console.ReadLine();
+    }
 
-//var result = lyricsScraperUtil.SearchLyric(artistToSearch, songToSearch);
+    public static void SearchLyricDemo(IExternalServiceClient<string> lyricClient)
+    {
+        ILyricsScraperClient<string> lyricsScraperClient = new LyricsScraperClient(null);
+        lyricsScraperClient.AddClient(lyricClient);
 
-//Console.ForegroundColor = ConsoleColor.Yellow;
-//Console.WriteLine($"{artistToSearch} - {songToSearch}");
-//Console.WriteLine();
-//Console.ResetColor();
-//Console.WriteLine(result);
+        string artistToSearch = "Parkway Drive";
+        string songToSearch = "Idols And Anchors";
 
-//Console.ReadLine();
+        var result = lyricsScraperClient.SearchLyric(artistToSearch, songToSearch);
 
-// Genius
-ILyricWebClient lyricWebClient = new HtmlAgilityWebClient();
-ILyricParser<string> lyricParser = new GeniusParser();
-ILyricClient<string> lyricClient = new GeniusClient(null, lyricParser, lyricWebClient, "mz9Cdxgu_wGqeiRGPH_FbO3b2g60EaBath_yO4jD2NC_SG4uDB8_gxyF9faILc6A");
-
-ILyricsScraperClient<string> lyricsScraperUtil = new LyricsScraperClient(null);
-lyricsScraperUtil.AddClient(lyricClient);
-
-string artistToSearch = "Parkway Drive";
-string songToSearch = "Idols And Anchors";
-
-var result = lyricsScraperUtil.SearchLyric(artistToSearch, songToSearch);
-
-Console.ForegroundColor = ConsoleColor.Yellow;
-Console.WriteLine($"{artistToSearch} - {songToSearch}");
-Console.WriteLine();
-Console.ResetColor();
-Console.WriteLine(result);
-
-Console.ReadLine();
+        Console.ForegroundColor = ConsoleColor.Yellow;
+        Console.WriteLine($"{artistToSearch} - {songToSearch}");
+        Console.WriteLine();
+        Console.ResetColor();
+        Console.WriteLine(result);
+    }
+}

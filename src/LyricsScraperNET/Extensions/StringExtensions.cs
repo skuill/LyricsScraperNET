@@ -1,10 +1,10 @@
-﻿namespace LyricsScraper.Utils
+﻿namespace LyricsScraperNET.Extensions
 {
-    public static class StringUtils
+    public static class StringExtensions
     {
         private static readonly string[] ARTICLES = { "a", "on", "the" };
 
-        public static string RemoveHtmlTags(string text)
+        public static string RemoveHtmlTags(this string text)
         {
             int idx = text.IndexOf('<');
             while (idx >= 0)
@@ -20,7 +20,7 @@
             return text;
         }
 
-        public static string StripRedundantChars(string input, bool removeArticle = false)
+        public static string StripRedundantChars(this string input, bool removeArticle = false)
         {
             var result = input.ToLowerInvariant().Trim();
             if (removeArticle)

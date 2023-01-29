@@ -1,11 +1,11 @@
-﻿using LyricsScraper.Abstract;
+﻿using LyricsScraperNET.Abstract;
 using Microsoft.Extensions.Logging;
 
 namespace LyricsScraper
 {
-    public class LyricsScraperClient: ILyricsScraperClient<string>
+    public sealed class LyricsScraperClient: ILyricsScraperClient<string>
     {
-        private List<ILyricClient<string>> _lyricClients;
+        private List<IExternalServiceClient<string>> _lyricClients;
         private readonly ILogger<LyricsScraperClient> _logger;
 
         public LyricsScraperClient(ILogger<LyricsScraperClient> logger)
@@ -89,10 +89,10 @@ namespace LyricsScraper
             return null;
         }
 
-        public void AddClient(ILyricClient<string> client)
+        public void AddClient(IExternalServiceClient<string> client)
         {
             if (IsEmptyClients())
-                _lyricClients = new List<ILyricClient<string>>();
+                _lyricClients = new List<IExternalServiceClient<string>>();
             _lyricClients.Add(client);
         }
 

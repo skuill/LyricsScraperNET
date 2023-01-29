@@ -1,13 +1,13 @@
-﻿using LyricsScraper.Network.Abstract;
+﻿using LyricsScraperNET.Network.Abstract;
 
-namespace LyricsScraper.Abstract
+namespace LyricsScraperNET.Abstract
 {
-    public abstract class LyricClientBase: ILyricClient<string>
+    public abstract class ExternalServiceClientBase: IExternalServiceClient<string>
     {
-        protected ILyricParser<string> Parser { get; set; }
-        protected ILyricWebClient WebClient { get; set; }
+        protected IExternalServiceLyricParser<string> Parser { get; set; }
+        protected IWebClient WebClient { get; set; }
 
-        public LyricClientBase()
+        public ExternalServiceClientBase()
         {
         }
 
@@ -19,13 +19,13 @@ namespace LyricsScraper.Abstract
 
         public abstract Task<string> SearchLyricAsync(string artist, string song);
 
-        public void WithParser(ILyricParser<string> parser)
+        public void WithParser(IExternalServiceLyricParser<string> parser)
         {
             if (parser != null)
                 Parser = parser;
         }
 
-        public void WithWebClient(ILyricWebClient webClient)
+        public void WithWebClient(IWebClient webClient)
         {
             if (webClient != null)
                 WebClient = webClient;

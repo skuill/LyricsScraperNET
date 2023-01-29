@@ -1,6 +1,6 @@
-﻿namespace LyricsScraper.Network.Abstract
+﻿namespace LyricsScraperNET.Network.Abstract
 {
-    public interface ILyricWebClient
+    public interface IWebClient
     {
         string Load(Uri uri);
 

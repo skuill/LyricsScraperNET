@@ -1,4 +1,4 @@
-﻿using LyricsScraper.Abstract;
+﻿using LyricsScraperNET.Abstract;
 
 namespace LyricsScraper
 {
@@ -12,6 +12,6 @@ namespace LyricsScraper
 
         Task<T> SearchLyricAsync(string artist, string song);
 
-        void AddClient(ILyricClient<T> client);
+        void AddClient(IExternalServiceClient<T> client);
     }
 }

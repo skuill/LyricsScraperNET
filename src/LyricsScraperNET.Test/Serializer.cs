@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using System.Text.Json;
 
-namespace LyricsScraper.Test
+namespace LyricsScraperNET.Test
 {
     public static class Serializer
     {

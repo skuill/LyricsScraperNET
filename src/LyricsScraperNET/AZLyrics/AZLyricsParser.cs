@@ -1,9 +1,9 @@
-﻿using LyricsScraper.Abstract;
-using LyricsScraper.Utils;
+﻿using LyricsScraperNET.Abstract;
+using LyricsScraperNET.Extensions;
 
-namespace LyricsScraper.AZLyrics
+namespace LyricsScraperNET.AZLyrics
 {
-    public class AZLyricsParser : ILyricParser<string>
+    public sealed class AZLyricsParser : IExternalServiceLyricParser<string>
     {
         public string Parse(string lyric)
         {
@@ -12,7 +12,7 @@ namespace LyricsScraper.AZLyrics
 
         private string RemoveAllHtmlTags(string html)
         {
-            html = StringUtils.RemoveHtmlTags(html);
+            html = html.RemoveHtmlTags();
 
             // fix recursive white-spaces
             while (html.Contains("  "))

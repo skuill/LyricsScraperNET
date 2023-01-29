@@ -1,10 +1,10 @@
-﻿using LyricsScraper.Abstract;
+﻿using LyricsScraperNET.Abstract;
 using System.Net;
 using System.Text.RegularExpressions;
 
-namespace LyricsScraper.Genius
+namespace LyricsScraperNET.Genius
 {
-    public class GeniusParser: ILyricParser<string>
+    public sealed class GeniusParser: IExternalServiceLyricParser<string>
     {
         public string Parse(string lyric)
         {
