@@ -1,23 +1,69 @@
-﻿using LyricsScraperNET.Network.Abstract;
+﻿using LyricsScraperNET.Models;
+using LyricsScraperNET.Network.Abstract;
 
 namespace LyricsScraperNET.Abstract
 {
-    public abstract class ExternalServiceClientBase: IExternalServiceClient<string>
+    public class ExternalServiceClientBase: IExternalServiceClient<string>
     {
         protected IExternalServiceLyricParser<string> Parser { get; set; }
         protected IWebClient WebClient { get; set; }
 
-        public ExternalServiceClientBase()
+
+        #region Sync
+
+        public virtual string SearchLyric(SearchRequest searchRequest)
         {
+            switch (searchRequest)
+            {
+                case ArtistAndSongSearchRequest artistAndSongSearchRequest:
+                    return SearchLyric(artistAndSongSearchRequest.Artist, artistAndSongSearchRequest.Song);
+                case UriSearchRequest uriSearchRequest:
+                    return SearchLyric(uriSearchRequest.Uri);
+                default:
+                    return string.Empty;
+            }
         }
 
-        public abstract string SearchLyric(Uri uri);
+        protected virtual string SearchLyric(Uri uri)
+        {
+            throw new NotImplementedException();
+        }
 
-        public abstract string SearchLyric(string artist, string song);
+        protected virtual string SearchLyric(string artist, string song)
+        {
+            throw new NotImplementedException();
+        }
 
-        public abstract Task<string> SearchLyricAsync(Uri uri);
+        #endregion
 
-        public abstract Task<string> SearchLyricAsync(string artist, string song);
+
+        #region Async
+
+        public virtual async Task<string> SearchLyricAsync(SearchRequest searchRequest)
+        {
+            switch (searchRequest)
+            {
+                case ArtistAndSongSearchRequest artistAndSongSearchRequest:
+                    return await SearchLyricAsync(artistAndSongSearchRequest.Artist, artistAndSongSearchRequest.Song);
+                case UriSearchRequest uriSearchRequest:
+                    return await SearchLyricAsync(uriSearchRequest.Uri);
+                default:
+                    return string.Empty;
+            }
+        }
+
+        protected virtual Task<string> SearchLyricAsync(Uri uri)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected virtual Task<string> SearchLyricAsync(string artist, string song)
+        {
+            throw new NotImplementedException();
+        }
+
+        #endregion
+
 
         public void WithParser(IExternalServiceLyricParser<string> parser)
         {

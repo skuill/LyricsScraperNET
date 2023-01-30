@@ -4,16 +4,17 @@ using LyricsScraperNET.AZLyrics;
 using LyricsScraperNET.Genius;
 using LyricsScraperNET.Network.Abstract;
 using LyricsScraperNET.Network.Html;
+using LyricsScraperNET.Models;
 
 internal class Program
 {
     private static async Task Main(string[] args)
     {
         //// AZLyrics
-        //IExternalServiceClient<string> lyricClient = new AZLyricsClient(null);
+        IExternalServiceClient<string> lyricClient = new AZLyricsClient(null);
 
         //// Genius
-        IExternalServiceClient<string> lyricClient = new GeniusClient(null, "mz9Cdxgu_wGqeiRGPH_FbO3b2g60EaBath_yO4jD2NC_SG4uDB8_gxyF9faILc6A");
+        //IExternalServiceClient<string> lyricClient = new GeniusClient(null, "mz9Cdxgu_wGqeiRGPH_FbO3b2g60EaBath_yO4jD2NC_SG4uDB8_gxyF9faILc6A");
 
         SearchLyricDemo(lyricClient);
 
@@ -28,7 +29,8 @@ internal class Program
         string artistToSearch = "Parkway Drive";
         string songToSearch = "Idols And Anchors";
 
-        var result = lyricsScraperClient.SearchLyric(artistToSearch, songToSearch);
+        var searchRequest = new ArtistAndSongSearchRequest(artistToSearch, songToSearch);
+        var result = lyricsScraperClient.SearchLyric(searchRequest);
 
         Console.ForegroundColor = ConsoleColor.Yellow;
         Console.WriteLine($"{artistToSearch} - {songToSearch}");

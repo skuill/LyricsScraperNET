@@ -1,16 +1,13 @@
 ﻿using LyricsScraperNET.Abstract;
+using LyricsScraperNET.Models;
 
 namespace LyricsScraper
 {
     public interface ILyricsScraperClient<T>
     {
-        T SearchLyric(Uri uri);
+        T SearchLyric(SearchRequest searchRequest);
 
-        T SearchLyric(string artist, string song);
-
-        Task<T> SearchLyricAsync(Uri uri);
-
-        Task<T> SearchLyricAsync(string artist, string song);
+        Task<T> SearchLyricAsync(SearchRequest searchRequest);
 
         void AddClient(IExternalServiceClient<T> client);
     }

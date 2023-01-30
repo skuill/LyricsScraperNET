@@ -1,16 +1,13 @@
-﻿using LyricsScraperNET.Network.Abstract;
+﻿using LyricsScraperNET.Models;
+using LyricsScraperNET.Network.Abstract;
 
 namespace LyricsScraperNET.Abstract
 {
     public interface IExternalServiceClient<T>
     {
-        T SearchLyric(Uri uri);
+        T SearchLyric(SearchRequest searchRequest);
 
-        T SearchLyric(string artist, string song);
-
-        Task<T> SearchLyricAsync(Uri uri);
-
-        Task<T> SearchLyricAsync(string artist, string song);
+        Task<T> SearchLyricAsync(SearchRequest searchRequest);
 
         void WithParser(IExternalServiceLyricParser<T> parser);
 

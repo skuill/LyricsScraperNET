@@ -11,6 +11,7 @@ namespace LyricsScraperNET.Genius
         private readonly ILogger<GeniusClient> _logger;
         private readonly string _apiKey;
 
+        // Format: "artist song". Example: "Parkway Drive Carrion".
         private const string GeniusSearchQueryFormat = "{0} {1}";
 
         public GeniusClient(ILogger<GeniusClient> logger, string apiKey)
@@ -20,6 +21,61 @@ namespace LyricsScraperNET.Genius
             Parser = new GeniusParser();
             WebClient = new HtmlAgilityWebClient();
         }
+
+
+        #region Sync
+
+        protected override string SearchLyric(Uri uri)
+        {
+            HttpClient httpClient = new();
+            var htmlPageBody = httpClient.GetStringAsync(uri).GetAwaiter().GetResult();
+
+            return GetParsedLyricFromHtmlPageBody(htmlPageBody);
+        }
+
+        protected override string SearchLyric(string artist, string song)
+        {
+            var geniusClient = new global::Genius.GeniusClient(_apiKey);
+
+            var searchQuery = GetSearchQuery(artist, song);
+            var searchGeniusResponse = geniusClient.SearchClient.Search(searchQuery).GetAwaiter().GetResult();
+
+            var lyricUrl = GetLyricUrlFromSearchResponse(searchGeniusResponse, artist, song);
+
+            return !string.IsNullOrWhiteSpace(lyricUrl)
+                ? SearchLyric(new Uri(lyricUrl))
+                : string.Empty;
+        }
+
+        #endregion
+
+
+        #region Async
+
+        protected override async Task<string> SearchLyricAsync(Uri uri)
+        {
+            HttpClient httpClient = new();
+            var htmlPageBody = await httpClient.GetStringAsync(uri);
+
+            return GetParsedLyricFromHtmlPageBody(htmlPageBody);
+        }
+
+        protected override async Task<string> SearchLyricAsync(string artist, string song)
+        {
+            var geniusClient = new global::Genius.GeniusClient(_apiKey);
+
+            var searchQuery = GetSearchQuery(artist, song);
+            var searchGeniusResponse = await geniusClient.SearchClient.Search(searchQuery);
+
+            var lyricUrl = GetLyricUrlFromSearchResponse(searchGeniusResponse, artist, song);
+
+            return !string.IsNullOrWhiteSpace(lyricUrl)
+                ? await SearchLyricAsync(new Uri(lyricUrl))
+                : string.Empty;
+        }
+
+        #endregion
+
 
         private string GetParsedLyricFromHtmlPageBody(string htmlPageBody)
         {
@@ -38,14 +94,6 @@ namespace LyricsScraperNET.Genius
             var lyricNodes = htmlDocument.DocumentNode.SelectNodes("//div[@data-lyrics-container]");
 
             return Parser.Parse(string.Join("", lyricNodes.Select(Node => Node.InnerHtml)));
-        }
-
-        public override string SearchLyric(Uri uri)
-        {
-            HttpClient httpClient = new();
-            var htmlPageBody = httpClient.GetStringAsync(uri).GetAwaiter().GetResult();
-
-            return GetParsedLyricFromHtmlPageBody(htmlPageBody);
         }
 
         private string GetLyricUrlFromSearchResponse(SearchResponse searchResponse, string artist, string song)
@@ -69,43 +117,7 @@ namespace LyricsScraperNET.Genius
             return artistAndSongHit.Result.Url;
         }
 
-        private string GetSearchQuery(string artist, string song) 
+        private string GetSearchQuery(string artist, string song)
             => string.Format(GeniusSearchQueryFormat, artist, song);
-
-        public override string SearchLyric(string artist, string song)
-        {
-            var geniusClient = new global::Genius.GeniusClient(_apiKey);
-
-            var searchQuery = GetSearchQuery(artist, song);
-            var searchGeniusResponse = geniusClient.SearchClient.Search(searchQuery).GetAwaiter().GetResult();
-
-            var lyricUrl = GetLyricUrlFromSearchResponse(searchGeniusResponse, artist, song);
-            
-            return !string.IsNullOrWhiteSpace(lyricUrl) 
-                ? SearchLyric(new Uri(lyricUrl)) 
-                : string.Empty;
-        }
-
-        public override async Task<string> SearchLyricAsync(Uri uri)
-        {
-            HttpClient httpClient = new();
-            var htmlPageBody = await httpClient.GetStringAsync(uri);
-
-            return GetParsedLyricFromHtmlPageBody(htmlPageBody);
-        }
-
-        public override async Task<string> SearchLyricAsync(string artist, string song)
-        {
-            var geniusClient = new global::Genius.GeniusClient(_apiKey);
-
-            var searchQuery = GetSearchQuery(artist, song);
-            var searchGeniusResponse = await geniusClient.SearchClient.Search(searchQuery);
-
-            var lyricUrl = GetLyricUrlFromSearchResponse(searchGeniusResponse, artist, song);
-
-            return !string.IsNullOrWhiteSpace(lyricUrl)
-                ? await SearchLyricAsync(new Uri(lyricUrl))
-                : string.Empty;
-        }
     }
 }

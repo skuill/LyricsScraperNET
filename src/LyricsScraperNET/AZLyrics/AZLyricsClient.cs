@@ -1,6 +1,5 @@
 ﻿using LyricsScraperNET.Abstract;
 using LyricsScraperNET.Extensions;
-using LyricsScraperNET.Network.Abstract;
 using LyricsScraperNET.Network.Html;
 using Microsoft.Extensions.Logging;
 
@@ -23,12 +22,15 @@ namespace LyricsScraperNET.AZLyrics
             WebClient = new HtmlAgilityWebClient();
         }
 
-        public override string SearchLyric(string artist, string song)
+
+        #region Sync
+
+        protected override string SearchLyric(string artist, string song)
         {
             return SearchLyric(GetLyricUri(artist, song));
         }
 
-        public override string SearchLyric(Uri uri)
+        protected override string SearchLyric(Uri uri)
         {
             if (WebClient == null || Parser == null)
             {
@@ -38,12 +40,18 @@ namespace LyricsScraperNET.AZLyrics
             var text = WebClient.Load(uri);
             return PostProcessLyric(uri, text);
         }
-        public override async Task<string> SearchLyricAsync(string artist, string song)
+
+        #endregion
+
+
+        #region Async
+
+        protected override async Task<string> SearchLyricAsync(string artist, string song)
         {
             return await SearchLyricAsync(GetLyricUri(artist, song));
         }
 
-        public override async Task<string> SearchLyricAsync(Uri uri)
+        protected override async Task<string> SearchLyricAsync(Uri uri)
         {
             if (WebClient == null || Parser == null)
             {
@@ -53,6 +61,9 @@ namespace LyricsScraperNET.AZLyrics
             var text = await WebClient.LoadAsync(uri);
             return PostProcessLyric(uri, text);
         }
+
+        #endregion
+
 
         private Uri GetLyricUri(string artist, string song)
         {

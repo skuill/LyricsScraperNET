@@ -1,4 +1,5 @@
 ﻿using LyricsScraperNET.AZLyrics;
+using LyricsScraperNET.Models;
 using LyricsScraperNET.Network.Abstract;
 using LyricsScraperNET.Network.Html;
 using LyricsScraperNET.Test.TestModel;
@@ -34,10 +35,12 @@ namespace LyricsScraperNET.Test.AZLyrics
                 var lyricsClient = new AZLyricsClient(null);
                 lyricsClient.WithWebClient(mockWebClient.Object);
 
+                SearchRequest searchRequest = !string.IsNullOrEmpty(testData.SongUri)
+                    ? new UriSearchRequest(testData.SongUri)
+                    : new ArtistAndSongSearchRequest(testData.ArtistName, testData.SongName);
+
                 // Act
-                var lyric = !string.IsNullOrEmpty(testData.SongUri) 
-                    ? lyricsClient.SearchLyric(new Uri(testData.SongUri)) 
-                    : lyricsClient.SearchLyric(testData.ArtistName, testData.SongName);
+                var lyric = lyricsClient.SearchLyric(searchRequest);
 
                 // Assert
                 Assert.AreEqual(testData.LyricResultData, lyric);
