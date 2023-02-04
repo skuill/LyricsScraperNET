@@ -1,18 +1,25 @@
 ﻿using LyricsScraperNET.Models;
 using LyricsScraperNET.Network.Abstract;
 
-namespace LyricsScraperNET.Abstract
+namespace LyricsScraperNET.External.Abstract
 {
     public class ExternalServiceClientBase: IExternalServiceClient<string>
     {
         protected IExternalServiceLyricParser<string> Parser { get; set; }
         protected IWebClient WebClient { get; set; }
 
+        public virtual IExternalServiceClientOptions Options => throw new NotImplementedException();
+
+        public virtual bool IsEnabled => Options.Enabled;
+
 
         #region Sync
 
         public virtual string SearchLyric(SearchRequest searchRequest)
         {
+            if (!IsEnabled)
+                return string.Empty;
+
             switch (searchRequest)
             {
                 case ArtistAndSongSearchRequest artistAndSongSearchRequest:
@@ -41,6 +48,9 @@ namespace LyricsScraperNET.Abstract
 
         public virtual async Task<string> SearchLyricAsync(SearchRequest searchRequest)
         {
+            if (!IsEnabled)
+                return string.Empty;
+
             switch (searchRequest)
             {
                 case ArtistAndSongSearchRequest artistAndSongSearchRequest:

@@ -1,27 +1,35 @@
-﻿using LyricsScraperNET.Abstract;
-using LyricsScraperNET.Extensions;
+﻿using LyricsScraperNET.Extensions;
+using LyricsScraperNET.External.Abstract;
+using LyricsScraperNET.External.Genius;
+using LyricsScraperNET.Helpers;
 using LyricsScraperNET.Network.Html;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
-namespace LyricsScraperNET.AZLyrics
+namespace LyricsScraperNET.External.AZLyrics
 {
     public sealed class AZLyricsClient : ExternalServiceClientBase
     {
         private readonly ILogger<AZLyricsClient> _logger;
-        private readonly string _baseUri = "http://www.azlyrics.com/lyrics/";
 
-        private readonly string _lyricStart = "<!-- Usage of azlyrics.com content by any third-party lyrics provider is prohibited by our licensing agreement. Sorry about that. -->";
-        private readonly string _lyricEnd = "<!-- MxM banner -->";
+        private const string _baseUri = "http://www.azlyrics.com/lyrics/";
+
+        private const string _lyricStart = "<!-- Usage of azlyrics.com content by any third-party lyrics provider is prohibited by our licensing agreement. Sorry about that. -->";
+        private const string _lyricEnd = "<!-- MxM banner -->";
 
         public Uri BaseUri => new Uri(_baseUri);
 
-        public AZLyricsClient(ILogger<AZLyricsClient> logger)
+        public AZLyricsClient(ILogger<AZLyricsClient> logger, IOptions<AZLyricsOptions> aZLyricsOptions)
         {
             _logger = logger;
+            Ensure.ArgumentNotNull(aZLyricsOptions, "aZLyricsOptions");
+            Options = aZLyricsOptions.Value;
+
             Parser = new AZLyricsParser();
             WebClient = new HtmlAgilityWebClient();
         }
 
+        public override AZLyricsOptions Options { get; }
 
         #region Sync
 

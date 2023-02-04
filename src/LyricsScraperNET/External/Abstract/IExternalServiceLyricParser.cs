@@ -1,4 +1,4 @@
-﻿namespace LyricsScraperNET.Abstract
+﻿namespace LyricsScraperNET.External.Abstract
 {
     public interface IExternalServiceLyricParser<T>
     {

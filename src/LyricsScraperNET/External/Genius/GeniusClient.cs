@@ -1,27 +1,32 @@
 ﻿using Genius.Models.Response;
 using HtmlAgilityPack;
-using LyricsScraperNET.Abstract;
+using LyricsScraperNET.External.Abstract;
+using LyricsScraperNET.External.AZLyrics;
+using LyricsScraperNET.Helpers;
 using LyricsScraperNET.Network.Html;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
-namespace LyricsScraperNET.Genius
+namespace LyricsScraperNET.External.Genius
 {
     public sealed class GeniusClient : ExternalServiceClientBase
     {
         private readonly ILogger<GeniusClient> _logger;
-        private readonly string _apiKey;
 
         // Format: "artist song". Example: "Parkway Drive Carrion".
         private const string GeniusSearchQueryFormat = "{0} {1}";
 
-        public GeniusClient(ILogger<GeniusClient> logger, string apiKey)
+        public GeniusClient(ILogger<GeniusClient> logger, IOptions<GeniusOptions> geniusOptions)
         {
             _logger = logger;
-            _apiKey = apiKey;
+            Ensure.ArgumentNotNull(geniusOptions, "geniusOptions");
+            Options = geniusOptions.Value;
+
             Parser = new GeniusParser();
             WebClient = new HtmlAgilityWebClient();
         }
 
+        public override GeniusOptions Options { get; }
 
         #region Sync
 
@@ -35,7 +40,7 @@ namespace LyricsScraperNET.Genius
 
         protected override string SearchLyric(string artist, string song)
         {
-            var geniusClient = new global::Genius.GeniusClient(_apiKey);
+            var geniusClient = new global::Genius.GeniusClient(Options.ApiKey);
 
             var searchQuery = GetSearchQuery(artist, song);
             var searchGeniusResponse = geniusClient.SearchClient.Search(searchQuery).GetAwaiter().GetResult();
@@ -62,7 +67,7 @@ namespace LyricsScraperNET.Genius
 
         protected override async Task<string> SearchLyricAsync(string artist, string song)
         {
-            var geniusClient = new global::Genius.GeniusClient(_apiKey);
+            var geniusClient = new global::Genius.GeniusClient(Options.ApiKey);
 
             var searchQuery = GetSearchQuery(artist, song);
             var searchGeniusResponse = await geniusClient.SearchClient.Search(searchQuery);

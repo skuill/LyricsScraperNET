@@ -1,7 +1,7 @@
-﻿using LyricsScraperNET.Abstract;
-using LyricsScraperNET.Extensions;
+﻿using LyricsScraperNET.Extensions;
+using LyricsScraperNET.External.Abstract;
 
-namespace LyricsScraperNET.AZLyrics
+namespace LyricsScraperNET.External.AZLyrics
 {
     public sealed class AZLyricsParser : IExternalServiceLyricParser<string>
     {

@@ -1,20 +1,34 @@
-﻿using LyricsScraperNET.Abstract;
-using LyricsScraper;
-using LyricsScraperNET.AZLyrics;
-using LyricsScraperNET.Genius;
+﻿using LyricsScraper;
 using LyricsScraperNET.Network.Abstract;
 using LyricsScraperNET.Network.Html;
 using LyricsScraperNET.Models;
+using LyricsScraperNET.External.Abstract;
+using LyricsScraperNET.External.AZLyrics;
+using LyricsScraperNET.External.Genius;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
+using Microsoft.Extensions.DependencyInjection;
 
 internal class Program
 {
     private static async Task Main(string[] args)
     {
+        IConfiguration Configuration = new ConfigurationBuilder()
+            .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+            .AddEnvironmentVariables()
+            .AddCommandLine(args)
+            .Build();
+
+
         //// AZLyrics
-        IExternalServiceClient<string> lyricClient = new AZLyricsClient(null);
+        //var options = Options.Create(Configuration.GetRequiredSection("LyricScraperClientConfig:AZLyricsOptions")
+        //    .Get<AZLyricsOptions>());
+        //IExternalServiceClient<string> lyricClient = new AZLyricsClient(null, options);
 
         //// Genius
-        //IExternalServiceClient<string> lyricClient = new GeniusClient(null, "mz9Cdxgu_wGqeiRGPH_FbO3b2g60EaBath_yO4jD2NC_SG4uDB8_gxyF9faILc6A");
+        var options = Options.Create(Configuration.GetRequiredSection("LyricScraperClientConfig:GeniusOptions")
+            .Get<GeniusOptions>());
+        IExternalServiceClient<string> lyricClient = new GeniusClient(null, options);
 
         SearchLyricDemo(lyricClient);
 
