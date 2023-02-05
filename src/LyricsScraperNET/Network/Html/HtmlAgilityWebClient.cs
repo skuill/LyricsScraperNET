@@ -1,14 +1,28 @@
 ﻿using HtmlAgilityPack;
 using LyricsScraperNET.Network.Abstract;
+using Microsoft.Extensions.Logging;
 
 namespace LyricsScraperNET.Network.Html
 {
     public sealed class HtmlAgilityWebClient : IWebClient
     {
+        private ILogger<HtmlAgilityWebClient> _logger;
+
+        public HtmlAgilityWebClient()
+        {
+        }
+
+        public HtmlAgilityWebClient(ILogger<HtmlAgilityWebClient> logger)
+        {
+            _logger = logger;
+        }
+
         public string Load(Uri uri)
         {
             var htmlPage = new HtmlWeb();
             var document = htmlPage.Load(uri, "GET");
+
+            CheckDocument(document, uri);
 
             return document?.ParsedText;
         }
@@ -18,7 +32,17 @@ namespace LyricsScraperNET.Network.Html
             var htmlPage = new HtmlWeb();
             var document = await htmlPage.LoadFromWebAsync(uri.ToString());
 
+            CheckDocument(document, uri);
+
             return document?.ParsedText;
+        }
+
+        private void CheckDocument(HtmlDocument document, Uri uri)
+        {
+            if (document == null)
+            {
+                _logger?.LogDebug($"HtmlPage Load return null for uri: {uri}");
+            }
         }
     }
 }

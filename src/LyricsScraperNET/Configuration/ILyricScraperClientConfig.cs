@@ -1,14 +1,21 @@
 ﻿using LyricsScraperNET.External.Abstract;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace LyricsScraperNET.Configuration
 {
     public interface ILyricScraperClientConfig
     {
-        IEnumerable<IExternalServiceClientOptions> ClientOptions { get; set; }
+        /// <summary>
+        /// Check if any external client options is enabled
+        /// </summary>
+        bool IsEnabled { get; }
+
+        /// <summary>
+        /// Check if any external client options is exist
+        /// </summary>
+        bool IsExternalClientOptionsExists { get; }
+
+        IList<IExternalServiceClientOptions> ExternalServiceClientOptions { get; set; }
+
+        void AddClientOptions(IExternalServiceClientOptions externalServiceClientOption);
     }
 }

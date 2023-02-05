@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using LyricsScraperNET.External.Models;
 
 namespace LyricsScraperNET.External.Abstract
 {
     public interface IExternalServiceClientOptions
     {
-        bool Enabled { get; set; }
+        ExternalServiceType ExternalServiceType { get; }
 
-        string ConfigurationSectionName { get; }
+        bool Enabled { get; set; }
     }
 }

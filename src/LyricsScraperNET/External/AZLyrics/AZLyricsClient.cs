@@ -1,6 +1,5 @@
 ﻿using LyricsScraperNET.Extensions;
 using LyricsScraperNET.External.Abstract;
-using LyricsScraperNET.External.Genius;
 using LyricsScraperNET.Helpers;
 using LyricsScraperNET.Network.Html;
 using Microsoft.Extensions.Logging;
@@ -19,14 +18,20 @@ namespace LyricsScraperNET.External.AZLyrics
 
         public Uri BaseUri => new Uri(_baseUri);
 
-        public AZLyricsClient(ILogger<AZLyricsClient> logger, IOptions<AZLyricsOptions> aZLyricsOptions)
+        public AZLyricsClient(ILogger<AZLyricsClient> logger, AZLyricsOptions aZLyricsOptions)
         {
             _logger = logger;
-            Ensure.ArgumentNotNull(aZLyricsOptions, "aZLyricsOptions");
-            Options = aZLyricsOptions.Value;
+            Ensure.ArgumentNotNull(aZLyricsOptions, nameof(aZLyricsOptions));
+            Options = aZLyricsOptions;
 
             Parser = new AZLyricsParser();
             WebClient = new HtmlAgilityWebClient();
+        }
+
+        public AZLyricsClient(ILogger<AZLyricsClient> logger, IOptionsSnapshot<AZLyricsOptions> aZLyricsOptions) 
+            : this(logger, aZLyricsOptions.Value)
+        {
+            Ensure.ArgumentNotNull(aZLyricsOptions, nameof(aZLyricsOptions));
         }
 
         public override AZLyricsOptions Options { get; }

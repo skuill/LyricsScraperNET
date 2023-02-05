@@ -5,6 +5,8 @@ namespace LyricsScraper
 {
     public interface ILyricsScraperClient<OutputType>
     {
+        bool IsEnabled { get; }
+
         OutputType SearchLyric(SearchRequest searchRequest);
 
         Task<OutputType> SearchLyricAsync(SearchRequest searchRequest);

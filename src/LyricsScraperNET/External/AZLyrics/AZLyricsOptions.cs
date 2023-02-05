@@ -1,9 +1,5 @@
 ﻿using LyricsScraperNET.External.Abstract;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using LyricsScraperNET.External.Models;
 
 namespace LyricsScraperNET.External.AZLyrics
 {
@@ -11,6 +7,19 @@ namespace LyricsScraperNET.External.AZLyrics
     {
         public bool Enabled { get; set; }
 
-        public string ConfigurationSectionName => "AZLyricsOptions";
+        public ExternalServiceType ExternalServiceType => ExternalServiceType.AZLyrics;
+
+        public const string ConfigurationSectionName = "AZLyricsOptions";
+
+        public override bool Equals(object? obj)
+        {
+            return obj is AZLyricsOptions options &&
+                   ExternalServiceType == options.ExternalServiceType;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(ExternalServiceType);
+        }
     }
 }

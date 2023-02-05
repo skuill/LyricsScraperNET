@@ -1,9 +1,5 @@
 ﻿using LyricsScraperNET.External.Abstract;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using LyricsScraperNET.External.Models;
 
 namespace LyricsScraperNET.External.Genius
 {
@@ -11,8 +7,22 @@ namespace LyricsScraperNET.External.Genius
     {
         public bool Enabled { get; set; }
 
-        public string ConfigurationSectionName => "GeniusOptions";
-
         public string ApiKey { get; set; }
+
+        public const string ConfigurationSectionName = "GeniusOptions";
+
+        public ExternalServiceType ExternalServiceType => ExternalServiceType.Genius;
+
+        public override bool Equals(object? obj)
+        {
+            return obj is GeniusOptions options &&
+                   ApiKey == options.ApiKey &&
+                   ExternalServiceType == options.ExternalServiceType;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(ApiKey, ExternalServiceType);
+        }
     }
 }

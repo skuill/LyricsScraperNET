@@ -1,39 +1,61 @@
 ﻿using LyricsScraper;
+using LyricsScraperNET.External.Abstract;
 using LyricsScraperNET.External.AZLyrics;
 using LyricsScraperNET.External.Genius;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace LyricsScraperNET.Configuration
 {
     public static class ServiceCollectionExtensions
     {
-        public static IServiceCollection AddLyricScraperClientService(
+        public static IServiceCollection AddLyricScraperClientService<T>(
             this IServiceCollection services,
-            IConfiguration namedConfigurationSection)
+            IConfiguration configuration)
         {
-            // Default library options are overridden
-            // by bound configuration values.
-            services.Configure<LyricScraperClientConfig>(namedConfigurationSection);
-
-            var AZLyricsConfigurationSection = namedConfigurationSection.GetRequiredSection("AZLyricsOptions");
-            if (AZLyricsConfigurationSection != null) {
-                services.Configure<AZLyricsOptions>(AZLyricsConfigurationSection);
-            }
-
-            var GeniusConfigurationSection = namedConfigurationSection.GetRequiredSection("GeniusOptions");
-            if (GeniusConfigurationSection != null)
+            var lyricScraperClientConfig = configuration.GetSection(LyricScraperClientConfig.ConfigurationSectionName);
+            if (lyricScraperClientConfig != null)
             {
-                services.Configure<GeniusOptions>(GeniusConfigurationSection);
+                services.AddAZLyricsClientService<T>(lyricScraperClientConfig);
+                services.AddGeniusClientService<T>(lyricScraperClientConfig);
+
+                services.Configure<LyricScraperClientConfig>(lyricScraperClientConfig);
+                services.AddScoped<ILyricScraperClientConfig, LyricScraperClientConfig>();
             }
 
-            // Register lib services here...
-            services.AddScoped<ILyricsScraperClient<string>, LyricsScraperClient>();
+            services.AddScoped(typeof(ILyricsScraperClient<T>), typeof(LyricsScraperClient));
+
+            return services;
+        }
+
+        public static IServiceCollection AddAZLyricsClientService<T>(
+            this IServiceCollection services,
+            IConfiguration configuration)
+        {
+            var configurationSection = configuration.GetSection(AZLyricsOptions.ConfigurationSectionName);
+            if (configurationSection != null)
+            {
+                services.Configure<AZLyricsOptions>(configurationSection);
+                services.AddScoped<IExternalServiceClientOptions, AZLyricsOptions>();
+
+                services.AddScoped(typeof(IExternalServiceClient<T>), typeof(AZLyricsClient));
+            }
+
+            return services;
+        }
+
+        public static IServiceCollection AddGeniusClientService<T>(
+           this IServiceCollection services,
+           IConfiguration configuration)
+        {
+            var configurationSection = configuration.GetSection(GeniusOptions.ConfigurationSectionName);
+            if (configurationSection != null)
+            {
+                services.Configure<GeniusOptions>(configurationSection);
+                services.AddScoped<IExternalServiceClientOptions, GeniusOptions>();
+
+                services.AddScoped(typeof(IExternalServiceClient<T>), typeof(GeniusClient));
+            }
 
             return services;
         }

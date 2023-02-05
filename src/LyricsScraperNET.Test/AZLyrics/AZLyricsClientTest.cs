@@ -2,7 +2,6 @@
 using LyricsScraperNET.Models;
 using LyricsScraperNET.Network.Abstract;
 using LyricsScraperNET.Test.TestModel;
-using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using System;
@@ -32,9 +31,7 @@ namespace LyricsScraperNET.Test.AZLyrics
                 var mockWebClient = new Mock<IWebClient>();
                 mockWebClient.Setup(x => x.Load(It.IsAny<Uri>())).Returns(testData.LyricPageData);
 
-                var options = Options.Create(new AZLyricsOptions() { Enabled = true });
-
-                var lyricsClient = new AZLyricsClient(null, options);
+                var lyricsClient = new AZLyricsClient(null, new AZLyricsOptions() { Enabled = true });
                 lyricsClient.WithWebClient(mockWebClient.Object);
 
                 SearchRequest searchRequest = !string.IsNullOrEmpty(testData.SongUri)

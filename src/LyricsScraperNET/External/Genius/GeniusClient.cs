@@ -1,7 +1,6 @@
 ﻿using Genius.Models.Response;
 using HtmlAgilityPack;
 using LyricsScraperNET.External.Abstract;
-using LyricsScraperNET.External.AZLyrics;
 using LyricsScraperNET.Helpers;
 using LyricsScraperNET.Network.Html;
 using Microsoft.Extensions.Logging;
@@ -16,14 +15,20 @@ namespace LyricsScraperNET.External.Genius
         // Format: "artist song". Example: "Parkway Drive Carrion".
         private const string GeniusSearchQueryFormat = "{0} {1}";
 
-        public GeniusClient(ILogger<GeniusClient> logger, IOptions<GeniusOptions> geniusOptions)
+        public GeniusClient(ILogger<GeniusClient> logger, GeniusOptions geniusOptions)
         {
             _logger = logger;
-            Ensure.ArgumentNotNull(geniusOptions, "geniusOptions");
-            Options = geniusOptions.Value;
+            Ensure.ArgumentNotNull(geniusOptions, nameof(geniusOptions));
+            Options = geniusOptions;
 
             Parser = new GeniusParser();
             WebClient = new HtmlAgilityWebClient();
+        }
+
+        public GeniusClient(ILogger<GeniusClient> logger, IOptionsSnapshot<GeniusOptions> geniusOptions)
+            : this (logger, geniusOptions.Value)
+        {
+            Ensure.ArgumentNotNull(geniusOptions, nameof(geniusOptions));
         }
 
         public override GeniusOptions Options { get; }
