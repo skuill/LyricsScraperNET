@@ -9,13 +9,8 @@ namespace LyricsScraperNET.Configuration
         /// </summary>
         bool IsEnabled { get; }
 
-        /// <summary>
-        /// Check if any external client options is exist
-        /// </summary>
-        bool IsExternalClientOptionsExists { get; }
+        IExternalServiceClientOptions AZLyricsOptions { get; }
 
-        IList<IExternalServiceClientOptions> ExternalServiceClientOptions { get; set; }
-
-        void AddClientOptions(IExternalServiceClientOptions externalServiceClientOption);
+        IExternalServiceClientOptions GeniusOptions { get; }
     }
 }

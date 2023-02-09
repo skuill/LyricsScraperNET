@@ -29,9 +29,6 @@ internal class Program
         string artistToSearch = "Parkway Drive";
         string songToSearch = "Idols And Anchors";
 
-        // TODO: need to figure out why options configured with default properties.. 
-        // var lyricsScraperConfigs = host.Services.GetRequiredService<ILyricScraperClientConfig>();
-
         var lyricsScraperClient = host.Services.GetRequiredService<ILyricsScraperClient<string>>();
         
         var searchRequest = new ArtistAndSongSearchRequest(artistToSearch, songToSearch);

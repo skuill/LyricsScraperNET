@@ -4,6 +4,7 @@ using LyricsScraperNET.External.AZLyrics;
 using LyricsScraperNET.External.Genius;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace LyricsScraperNET.Configuration
 {
@@ -20,7 +21,7 @@ namespace LyricsScraperNET.Configuration
                 services.AddGeniusClientService<T>(lyricScraperClientConfig);
 
                 services.Configure<LyricScraperClientConfig>(lyricScraperClientConfig);
-                services.AddScoped<ILyricScraperClientConfig, LyricScraperClientConfig>();
+                services.AddScoped<ILyricScraperClientConfig>(x => x.GetRequiredService<IOptionsSnapshot<LyricScraperClientConfig>>().Value);
             }
 
             services.AddScoped(typeof(ILyricsScraperClient<T>), typeof(LyricsScraperClient));
@@ -36,8 +37,7 @@ namespace LyricsScraperNET.Configuration
             if (configurationSection != null)
             {
                 services.Configure<AZLyricsOptions>(configurationSection);
-                services.AddScoped<IExternalServiceClientOptions, AZLyricsOptions>();
-
+                
                 services.AddScoped(typeof(IExternalServiceClient<T>), typeof(AZLyricsClient));
             }
 
@@ -52,9 +52,8 @@ namespace LyricsScraperNET.Configuration
             if (configurationSection != null)
             {
                 services.Configure<GeniusOptions>(configurationSection);
-                services.AddScoped<IExternalServiceClientOptions, GeniusOptions>();
 
-                services.AddScoped(typeof(IExternalServiceClient<T>), typeof(GeniusClient));
+                services.AddScoped(typeof(IExternalServiceClient<T>), typeof(GeniusClient));                
             }
 
             return services;

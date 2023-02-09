@@ -1,4 +1,5 @@
-﻿using LyricsScraperNET.External.Abstract;
+﻿using LyricsScraperNET.Configuration;
+using LyricsScraperNET.External.Abstract;
 using LyricsScraperNET.Helpers;
 using LyricsScraperNET.Models;
 using Microsoft.Extensions.Logging;
@@ -7,23 +8,26 @@ namespace LyricsScraper
 {
     public sealed class LyricsScraperClient: ILyricsScraperClient<string>
     {
-        private IList<IExternalServiceClient<string>> _externalServiceClients;
+
         private readonly ILogger<LyricsScraperClient> _logger;
+
+        private IList<IExternalServiceClient<string>> _externalServiceClients;
+        private ILyricScraperClientConfig _lyricScraperClientConfig;
 
         public bool IsEnabled => _externalServiceClients != null && _externalServiceClients.Any(x => x.IsEnabled);
 
-        public LyricsScraperClient(ILogger<LyricsScraperClient> logger)
-        {
-            _logger = logger;
-        }
-
         public LyricsScraperClient(ILogger<LyricsScraperClient> logger,
+            ILyricScraperClientConfig lyricScraperClientConfig,
             IEnumerable<IExternalServiceClient<string>> externalServiceClients)
         {
-            _logger = logger;
+            Ensure.ArgumentNotNull(lyricScraperClientConfig, nameof(lyricScraperClientConfig));
+            _lyricScraperClientConfig = lyricScraperClientConfig;
 
             Ensure.ArgumentNotNullOrEmptyList(externalServiceClients, nameof(externalServiceClients));
             _externalServiceClients = externalServiceClients.ToList();
+
+            _logger = logger;
+
         }
 
         public string SearchLyric(SearchRequest searchRequest)
