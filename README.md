@@ -43,7 +43,7 @@ class Program
     }
 }
 ```
-More examples can be found in example project: [LyricsScraperNET.Client](src/LyricsScraperNET.Client/Program.cs)
+More examples can be found in example project: [LyricsScraperNET.Client](LyricsScraperNET.Client/Program.cs)
 
 ## Contributing and Feedback
 
