@@ -7,7 +7,7 @@ namespace LyricsScraperNET.Test
     {
         public static T Deseialize<T>(string[] paths)
         {
-            var jsonString = File.ReadAllText(Path.Combine(paths));
+            var jsonString = File.ReadAllText(Path.GetFullPath(Path.Combine(paths)));
             return JsonSerializer.Deserialize<T>(jsonString);
         }
     }
