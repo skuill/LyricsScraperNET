@@ -4,8 +4,8 @@
     <TargetFrameworks>net7.0;net6.0;net5.0;netstandard2.1</TargetFrameworks>
 	<LangVersion>9.0</LangVersion>
     <Nullable>enable</Nullable>
-    <PackageId>LyricScraperNET</PackageId>
-    <Title>LyricScraperNET</Title>
+    <PackageId>LyricsScraperNET</PackageId>
+    <Title>LyricsScraperNET</Title>
     <Authors>Vitaly Kvashin</Authors>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/skuill/LyricsScraperNET/</PackageProjectUrl>
