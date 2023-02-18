@@ -4,7 +4,7 @@ LyricsScraperNET is a library written in C# for .NET that provides an API for se
 
 ## Features
 
-* ✅ Supports `NET 6`.
+* ✅ Supports multiple frameworks `.NET Standard 2.X`, `.NET 5`, `.NET 6`, `.NET 7`
 * ✅ Logging supported.
 * ✅ Modular structure, for easy unit testing.
 * ✅ Multiple ways how to configure.
