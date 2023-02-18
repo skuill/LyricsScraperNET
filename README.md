@@ -16,9 +16,9 @@ LyricsScraperNET is a library written in C# for .NET that provides an API for se
 
 - AZLyrics
 - Genius
-- MusixMatch (TODO)
-- LyricsWikia (TODO)
-- SongLyrics (TODO)
+- MusixMatch (**TODO**)
+- LyricsWikia (**TODO**)
+- SongLyrics (**TODO**)
 
 ## Example
 
