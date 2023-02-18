@@ -36,7 +36,7 @@ class Program
                 .WithAZLyrics()
                 .WithGenius();
 
-        var searchRequest = new ArtistAndSongSearchRequest(Artist: "Metallica", Song: "Nothing Else Matters");
+        var searchRequest = new ArtistAndSongSearchRequest(artist: "Metallica", song: "Nothing Else Matters");
 
         var searchResult = lyricsScraperClient.SearchLyric(searchRequest);
 
