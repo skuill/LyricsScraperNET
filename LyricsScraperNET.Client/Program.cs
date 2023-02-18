@@ -95,7 +95,7 @@ class Program
     private static SearchResult ExampleWithCertainProvider(string artistToSearch, string songToSearch)
     {
         //// Create instance of LyricScraperClient with Genius and AZLyrics providers
-        ILyricsScraperClient lyricsScraperClient 
+        ILyricsScraperClient lyricsScraperClient
             = new LyricsScraperClient()
                 .WithGenius()
                 .WithAZLyrics();

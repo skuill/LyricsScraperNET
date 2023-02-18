@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace LyricsScraperNET.Providers.Abstract
 {
-    public class ExternalProviderBase: IExternalProvider
+    public class ExternalProviderBase : IExternalProvider
     {
         internal IExternalProviderLyricParser Parser { get; set; }
         internal IWebClient WebClient { get; set; }

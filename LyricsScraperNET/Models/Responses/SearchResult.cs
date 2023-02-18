@@ -4,13 +4,13 @@ namespace LyricsScraperNET.Models.Responses
 {
     public class SearchResult
     {
-        public SearchResult() 
+        public SearchResult()
         {
             LyricText = string.Empty;
             ExternalProviderType = ExternalProviderType.None;
         }
 
-        public SearchResult(string lyricText, ExternalProviderType externalProviderType) 
+        public SearchResult(string lyricText, ExternalProviderType externalProviderType)
         {
             LyricText = lyricText;
             ExternalProviderType = externalProviderType;

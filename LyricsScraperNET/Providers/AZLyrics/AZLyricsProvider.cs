@@ -21,7 +21,7 @@ namespace LyricsScraperNET.Providers.AZLyrics
 
         public Uri BaseUri => new Uri(_baseUri);
 
-        public AZLyricsProvider() 
+        public AZLyricsProvider()
         {
             Parser = new AZLyricsParser();
             WebClient = new HtmlAgilityWebClient();
@@ -35,7 +35,7 @@ namespace LyricsScraperNET.Providers.AZLyrics
             Options = aZLyricsOptions;
         }
 
-        public AZLyricsProvider(ILogger<AZLyricsProvider> logger, IOptionsSnapshot<AZLyricsOptions> aZLyricsOptions) 
+        public AZLyricsProvider(ILogger<AZLyricsProvider> logger, IOptionsSnapshot<AZLyricsOptions> aZLyricsOptions)
             : this(logger, aZLyricsOptions.Value)
         {
             Ensure.ArgumentNotNull(aZLyricsOptions, nameof(aZLyricsOptions));

@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace LyricsScraperNET
 {
-    public sealed class LyricsScraperClient: ILyricsScraperClient
+    public sealed class LyricsScraperClient : ILyricsScraperClient
     {
 
         private readonly ILogger<LyricsScraperClient> _logger;
@@ -90,7 +90,7 @@ namespace LyricsScraperNET
             {
                 _logger?.Log(logLevel, error);
                 return false;
-            }    
+            }
             return true;
         }
 

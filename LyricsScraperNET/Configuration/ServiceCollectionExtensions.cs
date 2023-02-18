@@ -36,7 +36,7 @@ namespace LyricsScraperNET.Configuration
             if (configurationSection.Exists())
             {
                 services.Configure<AZLyricsOptions>(configurationSection);
-                
+
                 services.AddScoped(typeof(IExternalProvider), typeof(AZLyricsProvider));
             }
 
@@ -52,7 +52,7 @@ namespace LyricsScraperNET.Configuration
             {
                 services.Configure<GeniusOptions>(configurationSection);
 
-                services.AddScoped(typeof(IExternalProvider), typeof(GeniusProvider));                
+                services.AddScoped(typeof(IExternalProvider), typeof(GeniusProvider));
             }
 
             return services;

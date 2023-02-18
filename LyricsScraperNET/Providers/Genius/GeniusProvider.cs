@@ -38,7 +38,7 @@ namespace LyricsScraperNET.Providers.Genius
         }
 
         public GeniusProvider(ILogger<GeniusProvider> logger, IOptionsSnapshot<GeniusOptions> geniusOptions)
-            : this (logger, geniusOptions.Value)
+            : this(logger, geniusOptions.Value)
         {
             Ensure.ArgumentNotNull(geniusOptions, nameof(geniusOptions));
         }
@@ -97,7 +97,8 @@ namespace LyricsScraperNET.Providers.Genius
         {
             string lyricUrl = string.Empty;
 
-            if (TryGetApiKeyFromOptions(out string apiKey)) { 
+            if (TryGetApiKeyFromOptions(out string apiKey))
+            {
                 var geniusClient = new GeniusClient(apiKey);
 
                 var searchQuery = GetApiSearchQuery(artist, song);
