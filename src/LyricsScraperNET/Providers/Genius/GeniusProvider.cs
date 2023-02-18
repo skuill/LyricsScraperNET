@@ -2,6 +2,7 @@
 using Genius.Models.Response;
 using HtmlAgilityPack;
 using LyricsScraperNET.Helpers;
+using LyricsScraperNET.Models.Responses;
 using LyricsScraperNET.Network.Html;
 using LyricsScraperNET.Providers.Abstract;
 using Microsoft.Extensions.Logging;
@@ -44,12 +45,12 @@ namespace LyricsScraperNET.Providers.Genius
 
         #region Sync
 
-        protected override string SearchLyric(Uri uri)
+        protected override SearchResult SearchLyric(Uri uri)
         {
             HttpClient httpClient = new();
             var htmlPageBody = httpClient.GetStringAsync(uri).GetAwaiter().GetResult();
 
-            return GetParsedLyricFromHtmlPageBody(htmlPageBody);
+            return new SearchResult(GetParsedLyricFromHtmlPageBody(htmlPageBody), Models.ExternalProviderType.Genius);
         }
 
         private string GetLyricUrlWithoutApiKey(string artist, string song)
@@ -77,7 +78,7 @@ namespace LyricsScraperNET.Providers.Genius
             return string.Empty;
         }
 
-        protected override string SearchLyric(string artist, string song)
+        protected override SearchResult SearchLyric(string artist, string song)
         {
             string lyricUrl = string.Empty;
 
@@ -96,7 +97,7 @@ namespace LyricsScraperNET.Providers.Genius
 
             return !string.IsNullOrWhiteSpace(lyricUrl)
                 ? SearchLyric(new Uri(lyricUrl))
-                : string.Empty;
+                : new SearchResult();
         }
 
         #endregion
@@ -104,15 +105,15 @@ namespace LyricsScraperNET.Providers.Genius
 
         #region Async
 
-        protected override async Task<string> SearchLyricAsync(Uri uri)
+        protected override async Task<SearchResult> SearchLyricAsync(Uri uri)
         {
             HttpClient httpClient = new();
             var htmlPageBody = await httpClient.GetStringAsync(uri);
 
-            return GetParsedLyricFromHtmlPageBody(htmlPageBody);
+            return new SearchResult(GetParsedLyricFromHtmlPageBody(htmlPageBody), Models.ExternalProviderType.Genius);
         }
 
-        protected override async Task<string> SearchLyricAsync(string artist, string song)
+        protected override async Task<SearchResult> SearchLyricAsync(string artist, string song)
         {
             string lyricUrl = string.Empty;
 
@@ -132,7 +133,7 @@ namespace LyricsScraperNET.Providers.Genius
 
             return !string.IsNullOrWhiteSpace(lyricUrl)
                 ? await SearchLyricAsync(new Uri(lyricUrl))
-                : string.Empty;
+                : new SearchResult();
         }
 
         #endregion

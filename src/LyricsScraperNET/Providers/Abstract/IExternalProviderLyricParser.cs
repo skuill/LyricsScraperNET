@@ -1,7 +1,7 @@
 ﻿namespace LyricsScraperNET.Providers.Abstract
 {
-    public interface IExternalProviderLyricParser<T>
+    public interface IExternalProviderLyricParser
     {
-        T Parse(string lyric);
+        string Parse(string lyric);
     }
 }

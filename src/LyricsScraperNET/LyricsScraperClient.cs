@@ -1,17 +1,18 @@
 ﻿using LyricsScraperNET.Configuration;
 using LyricsScraperNET.Helpers;
 using LyricsScraperNET.Models.Requests;
+using LyricsScraperNET.Models.Responses;
 using LyricsScraperNET.Providers.Abstract;
 using Microsoft.Extensions.Logging;
 
 namespace LyricsScraperNET
 {
-    public sealed class LyricsScraperClient: ILyricsScraperClient<string>
+    public sealed class LyricsScraperClient: ILyricsScraperClient
     {
 
         private readonly ILogger<LyricsScraperClient> _logger;
 
-        private IList<IExternalProvider<string>> _externalProviders;
+        private IList<IExternalProvider> _externalProviders;
         private ILyricScraperClientConfig _lyricScraperClientConfig;
 
         public bool IsEnabled => _externalProviders != null && _externalProviders.Any(x => x.IsEnabled);
@@ -20,7 +21,7 @@ namespace LyricsScraperNET
 
         public LyricsScraperClient(ILogger<LyricsScraperClient> logger,
             ILyricScraperClientConfig lyricScraperClientConfig,
-            IEnumerable<IExternalProvider<string>> externalProviders)
+            IEnumerable<IExternalProvider> externalProviders)
         {
             Ensure.ArgumentNotNull(lyricScraperClientConfig, nameof(lyricScraperClientConfig));
             _lyricScraperClientConfig = lyricScraperClientConfig;
@@ -31,40 +32,40 @@ namespace LyricsScraperNET
             _logger = logger;
         }
 
-        public string SearchLyric(SearchRequest searchRequest)
+        public SearchResult SearchLyric(SearchRequest searchRequest)
         {
             if (!ValidateRequest())
-                return null;
+                return new SearchResult();
 
-            foreach (var externalProvider in _externalProviders)
+            foreach (var externalProvider in _externalProviders.OrderByDescending(x => x.SearchPriority))
             {
-                var lyric = externalProvider.SearchLyric(searchRequest);
-                if (!string.IsNullOrEmpty(lyric))
+                var searchResult = externalProvider.SearchLyric(searchRequest);
+                if (!searchResult.IsEmpty())
                 {
-                    return lyric;
+                    return searchResult;
                 }
                 _logger?.LogWarning($"Can't find lyric by provider: {externalProvider}.");
             }
             _logger?.LogError($"Can't find lyrics for searchRequest: {searchRequest}.");
-            return null;
+            return new SearchResult();
         }
 
-        public async Task<string> SearchLyricAsync(SearchRequest searchRequest)
+        public async Task<SearchResult> SearchLyricAsync(SearchRequest searchRequest)
         {
             if (!ValidateRequest())
-                return null;
+                return new SearchResult();
 
-            foreach (var externalProvider in _externalProviders)
+            foreach (var externalProvider in _externalProviders.OrderByDescending(x => x.SearchPriority))
             {
-                var lyric = await externalProvider.SearchLyricAsync(searchRequest);
-                if (!string.IsNullOrEmpty(lyric))
+                var searchResult = await externalProvider.SearchLyricAsync(searchRequest);
+                if (!searchResult.IsEmpty())
                 {
-                    return lyric;
+                    return searchResult;
                 }
                 _logger?.LogWarning($"Can't find lyric by provider: {externalProvider}.");
             }
             _logger?.LogError($"Can't find lyrics for searchRequest: {searchRequest}.");
-            return null;
+            return new SearchResult();
         }
 
         private bool ValidateRequest()
@@ -90,10 +91,10 @@ namespace LyricsScraperNET
             return true;
         }
 
-        public void AddProvider(IExternalProvider<string> provider)
+        public void AddProvider(IExternalProvider provider)
         {
             if (IsEmptyProviders())
-                _externalProviders = new List<IExternalProvider<string>>();
+                _externalProviders = new List<IExternalProvider>();
             if (!_externalProviders.Contains(provider))
                 _externalProviders.Add(provider);
             else

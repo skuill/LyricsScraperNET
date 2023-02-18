@@ -4,7 +4,7 @@ using System.Text.RegularExpressions;
 
 namespace LyricsScraperNET.Providers.Genius
 {
-    internal sealed class GeniusParser : IExternalProviderLyricParser<string>
+    internal sealed class GeniusParser : IExternalProviderLyricParser
     {
         public string Parse(string lyric)
         {
@@ -13,7 +13,7 @@ namespace LyricsScraperNET.Providers.Genius
             lyric = CleanEnding(lyric);
             lyric = WebUtility.HtmlDecode(lyric);
 
-            return lyric;
+            return lyric?.Trim();
         }
 
         public static string StripTagsRegex(string source)

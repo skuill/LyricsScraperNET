@@ -3,11 +3,11 @@ using LyricsScraperNET.Providers.Abstract;
 
 namespace LyricsScraperNET.Providers.AZLyrics
 {
-    internal sealed class AZLyricsParser : IExternalProviderLyricParser<string>
+    internal sealed class AZLyricsParser : IExternalProviderLyricParser
     {
         public string Parse(string lyric)
         {
-            return UnescapeString(RemoveAllHtmlTags(lyric));
+            return UnescapeString(RemoveAllHtmlTags(lyric))?.Trim();
         }
 
         private string RemoveAllHtmlTags(string html)

@@ -13,6 +13,8 @@ namespace LyricsScraperNET.Providers.Genius
 
         public ExternalProviderType ExternalProviderType => ExternalProviderType.Genius;
 
+        public int SearchPriority { get; set; } = 0;
+
         public override bool Equals(object? obj)
         {
             return obj is GeniusOptions options &&

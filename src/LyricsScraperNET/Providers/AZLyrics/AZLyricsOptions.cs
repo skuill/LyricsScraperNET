@@ -9,6 +9,8 @@ namespace LyricsScraperNET.Providers.AZLyrics
 
         public ExternalProviderType ExternalProviderType => ExternalProviderType.AZLyrics;
 
+        public int SearchPriority { get; set; } = 1;
+
         public const string ConfigurationSectionName = "AZLyricsOptions";
 
         public override bool Equals(object? obj)

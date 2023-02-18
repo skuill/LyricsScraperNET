@@ -1,16 +1,17 @@
 ﻿using LyricsScraperNET.Models.Requests;
+using LyricsScraperNET.Models.Responses;
 using LyricsScraperNET.Providers.Abstract;
 
 namespace LyricsScraperNET
 {
-    public interface ILyricsScraperClient<OutputType>
+    public interface ILyricsScraperClient
     {
         bool IsEnabled { get; }
 
-        OutputType SearchLyric(SearchRequest searchRequest);
+        SearchResult SearchLyric(SearchRequest searchRequest);
 
-        Task<OutputType> SearchLyricAsync(SearchRequest searchRequest);
+        Task<SearchResult> SearchLyricAsync(SearchRequest searchRequest);
 
-        void AddProvider(IExternalProvider<OutputType> provider);
+        void AddProvider(IExternalProvider provider);
     }
 }

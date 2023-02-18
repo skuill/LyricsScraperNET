@@ -1,24 +1,27 @@
 ﻿using LyricsScraperNET.Models.Requests;
+using LyricsScraperNET.Models.Responses;
 using LyricsScraperNET.Network.Abstract;
 
 namespace LyricsScraperNET.Providers.Abstract
 {
-    public class ExternalProviderBase: IExternalProvider<string>
+    public class ExternalProviderBase: IExternalProvider
     {
-        internal IExternalProviderLyricParser<string> Parser { get; set; }
+        internal IExternalProviderLyricParser Parser { get; set; }
         internal IWebClient WebClient { get; set; }
 
         public virtual IExternalProviderOptions Options => throw new NotImplementedException();
 
         public virtual bool IsEnabled => Options != null && Options.Enabled;
 
+        public int SearchPriority => Options != null ? Options.SearchPriority : 0;
+
 
         #region Sync
 
-        public virtual string SearchLyric(SearchRequest searchRequest)
+        public virtual SearchResult SearchLyric(SearchRequest searchRequest)
         {
             if (!IsEnabled)
-                return string.Empty;
+                return new SearchResult();
 
             switch (searchRequest)
             {
@@ -27,16 +30,16 @@ namespace LyricsScraperNET.Providers.Abstract
                 case UriSearchRequest uriSearchRequest:
                     return SearchLyric(uriSearchRequest.Uri);
                 default:
-                    return string.Empty;
+                    return new SearchResult();
             }
         }
 
-        protected virtual string SearchLyric(Uri uri)
+        protected virtual SearchResult SearchLyric(Uri uri)
         {
             throw new NotImplementedException();
         }
 
-        protected virtual string SearchLyric(string artist, string song)
+        protected virtual SearchResult SearchLyric(string artist, string song)
         {
             throw new NotImplementedException();
         }
@@ -46,10 +49,10 @@ namespace LyricsScraperNET.Providers.Abstract
 
         #region Async
 
-        public virtual async Task<string> SearchLyricAsync(SearchRequest searchRequest)
+        public virtual async Task<SearchResult> SearchLyricAsync(SearchRequest searchRequest)
         {
             if (!IsEnabled)
-                return string.Empty;
+                return new SearchResult();
 
             switch (searchRequest)
             {
@@ -58,16 +61,16 @@ namespace LyricsScraperNET.Providers.Abstract
                 case UriSearchRequest uriSearchRequest:
                     return await SearchLyricAsync(uriSearchRequest.Uri);
                 default:
-                    return string.Empty;
+                    return new SearchResult();
             }
         }
 
-        protected virtual Task<string> SearchLyricAsync(Uri uri)
+        protected virtual Task<SearchResult> SearchLyricAsync(Uri uri)
         {
             throw new NotImplementedException();
         }
 
-        protected virtual Task<string> SearchLyricAsync(string artist, string song)
+        protected virtual Task<SearchResult> SearchLyricAsync(string artist, string song)
         {
             throw new NotImplementedException();
         }
@@ -75,7 +78,7 @@ namespace LyricsScraperNET.Providers.Abstract
         #endregion
 
 
-        public void WithParser(IExternalProviderLyricParser<string> parser)
+        public void WithParser(IExternalProviderLyricParser parser)
         {
             if (parser != null)
                 Parser = parser;

@@ -9,26 +9,26 @@ namespace LyricsScraperNET.Configuration
 {
     public static class ServiceCollectionExtensions
     {
-        public static IServiceCollection AddLyricScraperClientService<T>(
+        public static IServiceCollection AddLyricScraperClientService(
             this IServiceCollection services,
             IConfiguration configuration)
         {
             var lyricScraperClientConfig = configuration.GetSection(LyricScraperClientConfig.ConfigurationSectionName);
             if (lyricScraperClientConfig.Exists())
             {
-                services.AddAZLyricsClientService<T>(lyricScraperClientConfig);
-                services.AddGeniusClientService<T>(lyricScraperClientConfig);
+                services.AddAZLyricsClientService(lyricScraperClientConfig);
+                services.AddGeniusClientService(lyricScraperClientConfig);
 
                 services.Configure<LyricScraperClientConfig>(lyricScraperClientConfig);
                 services.AddScoped<ILyricScraperClientConfig>(x => x.GetRequiredService<IOptionsSnapshot<LyricScraperClientConfig>>().Value);
             }
 
-            services.AddScoped(typeof(ILyricsScraperClient<T>), typeof(LyricsScraperClient));
+            services.AddScoped(typeof(ILyricsScraperClient), typeof(LyricsScraperClient));
 
             return services;
         }
 
-        public static IServiceCollection AddAZLyricsClientService<T>(
+        public static IServiceCollection AddAZLyricsClientService(
             this IServiceCollection services,
             IConfiguration configuration)
         {
@@ -37,13 +37,13 @@ namespace LyricsScraperNET.Configuration
             {
                 services.Configure<AZLyricsOptions>(configurationSection);
                 
-                services.AddScoped(typeof(IExternalProvider<T>), typeof(AZLyricsProvider));
+                services.AddScoped(typeof(IExternalProvider), typeof(AZLyricsProvider));
             }
 
             return services;
         }
 
-        public static IServiceCollection AddGeniusClientService<T>(
+        public static IServiceCollection AddGeniusClientService(
            this IServiceCollection services,
            IConfiguration configuration)
         {
@@ -52,7 +52,7 @@ namespace LyricsScraperNET.Configuration
             {
                 services.Configure<GeniusOptions>(configurationSection);
 
-                services.AddScoped(typeof(IExternalProvider<T>), typeof(GeniusProvider));                
+                services.AddScoped(typeof(IExternalProvider), typeof(GeniusProvider));                
             }
 
             return services;

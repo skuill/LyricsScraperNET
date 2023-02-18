@@ -1,6 +1,7 @@
-﻿using LyricsScraperNET.Providers.AZLyrics;
-using LyricsScraperNET.Models.Requests;
+﻿using LyricsScraperNET.Models.Requests;
 using LyricsScraperNET.Network.Abstract;
+using LyricsScraperNET.Providers.AZLyrics;
+using LyricsScraperNET.Providers.Models;
 using LyricsScraperNET.Test.TestModel;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -31,7 +32,7 @@ namespace LyricsScraperNET.Test.AZLyrics
                 var mockWebClient = new Mock<IWebClient>();
                 mockWebClient.Setup(x => x.Load(It.IsAny<Uri>())).Returns(testData.LyricPageData);
 
-                var lyricsClient = new AZLyricsProvider(null, new AZLyricsOptions() { Enabled = true });
+                var lyricsClient = new AZLyricsProvider();
                 lyricsClient.WithWebClient(mockWebClient.Object);
 
                 SearchRequest searchRequest = !string.IsNullOrEmpty(testData.SongUri)
@@ -39,10 +40,12 @@ namespace LyricsScraperNET.Test.AZLyrics
                     : new ArtistAndSongSearchRequest(testData.ArtistName, testData.SongName);
 
                 // Act
-                var lyric = lyricsClient.SearchLyric(searchRequest);
+                var searchResult = lyricsClient.SearchLyric(searchRequest);
 
                 // Assert
-                Assert.AreEqual(testData.LyricResultData, lyric);
+                Assert.IsNotNull(searchResult);
+                Assert.AreEqual(ExternalProviderType.AZLyrics, searchResult.ExternalProviderType);
+                Assert.AreEqual(testData.LyricResultData, searchResult.LyricText);
             }
         }
     }

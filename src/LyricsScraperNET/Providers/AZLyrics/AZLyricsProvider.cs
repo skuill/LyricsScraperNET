@@ -1,5 +1,6 @@
 ﻿using LyricsScraperNET.Extensions;
 using LyricsScraperNET.Helpers;
+using LyricsScraperNET.Models.Responses;
 using LyricsScraperNET.Network.Html;
 using LyricsScraperNET.Providers.Abstract;
 using Microsoft.Extensions.Logging;
@@ -42,17 +43,17 @@ namespace LyricsScraperNET.Providers.AZLyrics
 
         #region Sync
 
-        protected override string SearchLyric(string artist, string song)
+        protected override SearchResult SearchLyric(string artist, string song)
         {
             return SearchLyric(GetLyricUri(artist, song));
         }
 
-        protected override string SearchLyric(Uri uri)
+        protected override SearchResult SearchLyric(Uri uri)
         {
             if (WebClient == null || Parser == null)
             {
                 _logger?.LogError($"Please set up WebClient and Parser first");
-                return null;
+                return new SearchResult();
             }
             var text = WebClient.Load(uri);
             return PostProcessLyric(uri, text);
@@ -63,17 +64,17 @@ namespace LyricsScraperNET.Providers.AZLyrics
 
         #region Async
 
-        protected override async Task<string> SearchLyricAsync(string artist, string song)
+        protected override async Task<SearchResult> SearchLyricAsync(string artist, string song)
         {
             return await SearchLyricAsync(GetLyricUri(artist, song));
         }
 
-        protected override async Task<string> SearchLyricAsync(Uri uri)
+        protected override async Task<SearchResult> SearchLyricAsync(Uri uri)
         {
             if (WebClient == null || Parser == null)
             {
                 _logger?.LogError($"Please set up WebClient and Parser first");
-                return null;
+                return new SearchResult();
             }
             var text = await WebClient.LoadAsync(uri);
             return PostProcessLyric(uri, text);
@@ -91,12 +92,12 @@ namespace LyricsScraperNET.Providers.AZLyrics
             return new Uri(BaseUri, $"{artistStripped}/{titleStripped}.html");
         }
 
-        private string PostProcessLyric(Uri uri, string text)
+        private SearchResult PostProcessLyric(Uri uri, string text)
         {
             if (string.IsNullOrEmpty(text))
             {
                 _logger?.LogError($"Text is empty for {uri}");
-                return null;
+                return new SearchResult();
             }
 
             var startIndex = text.IndexOf(_lyricStart);
@@ -104,9 +105,12 @@ namespace LyricsScraperNET.Providers.AZLyrics
             if (startIndex <= 0 || endIndex <= 0)
             {
                 _logger?.LogError($"Can't find lyrics for {uri}");
-                return null;
+                return new SearchResult();
             }
-            return Parser.Parse(text.Substring(startIndex, endIndex - startIndex));
+
+            string result = Parser.Parse(text.Substring(startIndex, endIndex - startIndex));
+
+            return new SearchResult(result, Models.ExternalProviderType.AZLyrics);
         }
     }
 }
