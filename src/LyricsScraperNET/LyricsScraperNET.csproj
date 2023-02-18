@@ -7,12 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Musixmatch\**" />
-    <EmbeddedResource Remove="Musixmatch\**" />
-    <None Remove="Musixmatch\**" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Genius.NET" Version="4.0.1" />
     <PackageReference Include="HtmlAgilityPack" Version="1.11.46" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="6.0.0" />

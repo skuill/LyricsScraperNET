@@ -1,33 +1,38 @@
-﻿using Genius.Models.Response;
+﻿using Genius;
+using Genius.Models.Response;
 using HtmlAgilityPack;
-using LyricsScraperNET.External.Abstract;
 using LyricsScraperNET.Helpers;
 using LyricsScraperNET.Network.Html;
+using LyricsScraperNET.Providers.Abstract;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Text.Json;
 
-namespace LyricsScraperNET.External.Genius
+namespace LyricsScraperNET.Providers.Genius
 {
-    public sealed class GeniusClient : ExternalServiceClientBase
+    public sealed class GeniusProvider : ExternalProviderBase
     {
-        private readonly ILogger<GeniusClient> _logger;
+        private readonly ILogger<GeniusProvider> _logger;
 
         // Format: "artist song". Example: "Parkway Drive Carrion".
         private const string GeniusSearchQueryFormat = "{0} {1}";
         private const string GeniusApiSearchFormat = "https://genius.com/api/search?q={0}";
 
-        public GeniusClient(ILogger<GeniusClient> logger, GeniusOptions geniusOptions)
+        public GeniusProvider()
+        {
+            Parser = new GeniusParser();
+            WebClient = new HtmlAgilityWebClient();
+            Options = new GeniusOptions() { Enabled = true };
+        }
+
+        public GeniusProvider(ILogger<GeniusProvider> logger, GeniusOptions geniusOptions) : this()
         {
             _logger = logger;
             Ensure.ArgumentNotNull(geniusOptions, nameof(geniusOptions));
             Options = geniusOptions;
-
-            Parser = new GeniusParser();
-            WebClient = new HtmlAgilityWebClient();
         }
 
-        public GeniusClient(ILogger<GeniusClient> logger, IOptionsSnapshot<GeniusOptions> geniusOptions)
+        public GeniusProvider(ILogger<GeniusProvider> logger, IOptionsSnapshot<GeniusOptions> geniusOptions)
             : this (logger, geniusOptions.Value)
         {
             Ensure.ArgumentNotNull(geniusOptions, nameof(geniusOptions));
@@ -77,7 +82,7 @@ namespace LyricsScraperNET.External.Genius
             string lyricUrl = string.Empty;
 
             if (IsApiKeyProvided()) { 
-                var geniusClient = new global::Genius.GeniusClient(Options.ApiKey);
+                var geniusClient = new GeniusClient(Options.ApiKey);
 
                 var searchQuery = GetApiSearchQuery(artist, song);
                 var searchGeniusResponse = geniusClient.SearchClient.Search(searchQuery).GetAwaiter().GetResult();
@@ -113,7 +118,7 @@ namespace LyricsScraperNET.External.Genius
 
             if (IsApiKeyProvided())
             {
-                var geniusClient = new global::Genius.GeniusClient(Options.ApiKey);
+                var geniusClient = new GeniusClient(Options.ApiKey);
 
                 var searchQuery = GetApiSearchQuery(artist, song);
                 var searchGeniusResponse = await geniusClient.SearchClient.Search(searchQuery);

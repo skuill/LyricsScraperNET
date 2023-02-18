@@ -1,33 +1,34 @@
 ﻿using LyricsScraperNET.Configuration;
-using LyricsScraperNET.External.Abstract;
 using LyricsScraperNET.Helpers;
-using LyricsScraperNET.Models;
+using LyricsScraperNET.Models.Requests;
+using LyricsScraperNET.Providers.Abstract;
 using Microsoft.Extensions.Logging;
 
-namespace LyricsScraper
+namespace LyricsScraperNET
 {
     public sealed class LyricsScraperClient: ILyricsScraperClient<string>
     {
 
         private readonly ILogger<LyricsScraperClient> _logger;
 
-        private IList<IExternalServiceClient<string>> _externalServiceClients;
+        private IList<IExternalProvider<string>> _externalProviders;
         private ILyricScraperClientConfig _lyricScraperClientConfig;
 
-        public bool IsEnabled => _externalServiceClients != null && _externalServiceClients.Any(x => x.IsEnabled);
+        public bool IsEnabled => _externalProviders != null && _externalProviders.Any(x => x.IsEnabled);
+
+        public LyricsScraperClient() { }
 
         public LyricsScraperClient(ILogger<LyricsScraperClient> logger,
             ILyricScraperClientConfig lyricScraperClientConfig,
-            IEnumerable<IExternalServiceClient<string>> externalServiceClients)
+            IEnumerable<IExternalProvider<string>> externalProviders)
         {
             Ensure.ArgumentNotNull(lyricScraperClientConfig, nameof(lyricScraperClientConfig));
             _lyricScraperClientConfig = lyricScraperClientConfig;
 
-            Ensure.ArgumentNotNullOrEmptyList(externalServiceClients, nameof(externalServiceClients));
-            _externalServiceClients = externalServiceClients.ToList();
+            Ensure.ArgumentNotNullOrEmptyList(externalProviders, nameof(externalProviders));
+            _externalProviders = externalProviders.ToList();
 
             _logger = logger;
-
         }
 
         public string SearchLyric(SearchRequest searchRequest)
@@ -35,14 +36,14 @@ namespace LyricsScraper
             if (!ValidateRequest())
                 return null;
 
-            foreach (var lyricClient in _externalServiceClients)
+            foreach (var externalProvider in _externalProviders)
             {
-                var lyric = lyricClient.SearchLyric(searchRequest);
+                var lyric = externalProvider.SearchLyric(searchRequest);
                 if (!string.IsNullOrEmpty(lyric))
                 {
                     return lyric;
                 }
-                _logger?.LogWarning($"Can't find lyric by client: {lyricClient}.");
+                _logger?.LogWarning($"Can't find lyric by provider: {externalProvider}.");
             }
             _logger?.LogError($"Can't find lyrics for searchRequest: {searchRequest}.");
             return null;
@@ -53,14 +54,14 @@ namespace LyricsScraper
             if (!ValidateRequest())
                 return null;
 
-            foreach (var lyricClient in _externalServiceClients)
+            foreach (var externalProvider in _externalProviders)
             {
-                var lyric = await lyricClient.SearchLyricAsync(searchRequest);
+                var lyric = await externalProvider.SearchLyricAsync(searchRequest);
                 if (!string.IsNullOrEmpty(lyric))
                 {
                     return lyric;
                 }
-                _logger?.LogWarning($"Can't find lyric by client: {lyricClient}.");
+                _logger?.LogWarning($"Can't find lyric by provider: {externalProvider}.");
             }
             _logger?.LogError($"Can't find lyrics for searchRequest: {searchRequest}.");
             return null;
@@ -71,13 +72,13 @@ namespace LyricsScraper
             string error = string.Empty;
             LogLevel logLevel = LogLevel.Error;
 
-            if (IsEmptyClients())
+            if (IsEmptyProviders())
             {
-                error = "Empty client list! Please set any external client first.";
+                error = "Empty providers list! Please set any external provider first.";
             }
             else if (!IsEnabled)
             {
-                error = "All external clients is disabled. Searching lyrics is disabled.";
+                error = "All external providers is disabled. Searching lyrics is disabled.";
                 logLevel = LogLevel.Warning;
             }
 
@@ -89,14 +90,16 @@ namespace LyricsScraper
             return true;
         }
 
-        public void AddClient(IExternalServiceClient<string> client)
+        public void AddProvider(IExternalProvider<string> provider)
         {
-            if (IsEmptyClients())
-                _externalServiceClients = new List<IExternalServiceClient<string>>();
-            _externalServiceClients.Add(client);
+            if (IsEmptyProviders())
+                _externalProviders = new List<IExternalProvider<string>>();
+            if (!_externalProviders.Contains(provider))
+                _externalProviders.Add(provider);
+            else
+                _logger?.LogWarning($"External provider {provider} already added");
         }
 
-        private bool IsEmptyClients() => _externalServiceClients == null || !_externalServiceClients.Any();
-
+        private bool IsEmptyProviders() => _externalProviders == null || !_externalProviders.Any();
     }
 }

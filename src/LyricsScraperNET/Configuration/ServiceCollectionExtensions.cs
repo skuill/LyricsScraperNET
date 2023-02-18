@@ -1,7 +1,6 @@
-﻿using LyricsScraper;
-using LyricsScraperNET.External.Abstract;
-using LyricsScraperNET.External.AZLyrics;
-using LyricsScraperNET.External.Genius;
+﻿using LyricsScraperNET.Providers.Abstract;
+using LyricsScraperNET.Providers.AZLyrics;
+using LyricsScraperNET.Providers.Genius;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -38,7 +37,7 @@ namespace LyricsScraperNET.Configuration
             {
                 services.Configure<AZLyricsOptions>(configurationSection);
                 
-                services.AddScoped(typeof(IExternalServiceClient<T>), typeof(AZLyricsClient));
+                services.AddScoped(typeof(IExternalProvider<T>), typeof(AZLyricsProvider));
             }
 
             return services;
@@ -53,7 +52,7 @@ namespace LyricsScraperNET.Configuration
             {
                 services.Configure<GeniusOptions>(configurationSection);
 
-                services.AddScoped(typeof(IExternalServiceClient<T>), typeof(GeniusClient));                
+                services.AddScoped(typeof(IExternalProvider<T>), typeof(GeniusProvider));                
             }
 
             return services;

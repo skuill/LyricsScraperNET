@@ -1,16 +1,16 @@
-﻿using LyricsScraperNET.External.Abstract;
+﻿using LyricsScraperNET.Providers.Abstract;
 
 namespace LyricsScraperNET.Configuration
 {
     public interface ILyricScraperClientConfig
     {
         /// <summary>
-        /// Check if any external client options is enabled
+        /// Check if any external provider options is enabled
         /// </summary>
         bool IsEnabled { get; }
 
-        IExternalServiceClientOptions AZLyricsOptions { get; }
+        IExternalProviderOptions AZLyricsOptions { get; }
 
-        IExternalServiceClientOptions GeniusOptions { get; }
+        IExternalProviderOptions GeniusOptions { get; }
     }
 }

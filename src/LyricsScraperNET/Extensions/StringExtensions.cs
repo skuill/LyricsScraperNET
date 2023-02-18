@@ -1,6 +1,6 @@
 ﻿namespace LyricsScraperNET.Extensions
 {
-    public static class StringExtensions
+    internal static class StringExtensions
     {
         private static readonly string[] ARTICLES = { "a", "on", "the" };
 

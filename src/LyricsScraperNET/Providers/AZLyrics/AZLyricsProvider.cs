@@ -1,15 +1,15 @@
 ﻿using LyricsScraperNET.Extensions;
-using LyricsScraperNET.External.Abstract;
 using LyricsScraperNET.Helpers;
 using LyricsScraperNET.Network.Html;
+using LyricsScraperNET.Providers.Abstract;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace LyricsScraperNET.External.AZLyrics
+namespace LyricsScraperNET.Providers.AZLyrics
 {
-    public sealed class AZLyricsClient : ExternalServiceClientBase
+    public sealed class AZLyricsProvider : ExternalProviderBase
     {
-        private readonly ILogger<AZLyricsClient> _logger;
+        private readonly ILogger<AZLyricsProvider> _logger;
 
         private const string _baseUri = "http://www.azlyrics.com/lyrics/";
 
@@ -18,17 +18,21 @@ namespace LyricsScraperNET.External.AZLyrics
 
         public Uri BaseUri => new Uri(_baseUri);
 
-        public AZLyricsClient(ILogger<AZLyricsClient> logger, AZLyricsOptions aZLyricsOptions)
+        public AZLyricsProvider() 
+        {
+            Parser = new AZLyricsParser();
+            WebClient = new HtmlAgilityWebClient();
+            Options = new AZLyricsOptions() { Enabled = true };
+        }
+
+        public AZLyricsProvider(ILogger<AZLyricsProvider> logger, AZLyricsOptions aZLyricsOptions) : this()
         {
             _logger = logger;
             Ensure.ArgumentNotNull(aZLyricsOptions, nameof(aZLyricsOptions));
             Options = aZLyricsOptions;
-
-            Parser = new AZLyricsParser();
-            WebClient = new HtmlAgilityWebClient();
         }
 
-        public AZLyricsClient(ILogger<AZLyricsClient> logger, IOptionsSnapshot<AZLyricsOptions> aZLyricsOptions) 
+        public AZLyricsProvider(ILogger<AZLyricsProvider> logger, IOptionsSnapshot<AZLyricsOptions> aZLyricsOptions) 
             : this(logger, aZLyricsOptions.Value)
         {
             Ensure.ArgumentNotNull(aZLyricsOptions, nameof(aZLyricsOptions));

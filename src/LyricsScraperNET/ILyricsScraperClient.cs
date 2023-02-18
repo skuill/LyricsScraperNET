@@ -1,7 +1,7 @@
-﻿using LyricsScraperNET.External.Abstract;
-using LyricsScraperNET.Models;
+﻿using LyricsScraperNET.Models.Requests;
+using LyricsScraperNET.Providers.Abstract;
 
-namespace LyricsScraper
+namespace LyricsScraperNET
 {
     public interface ILyricsScraperClient<OutputType>
     {
@@ -11,6 +11,6 @@ namespace LyricsScraper
 
         Task<OutputType> SearchLyricAsync(SearchRequest searchRequest);
 
-        void AddClient(IExternalServiceClient<OutputType> client);
+        void AddProvider(IExternalProvider<OutputType> provider);
     }
 }

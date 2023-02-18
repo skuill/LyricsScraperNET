@@ -1,11 +1,11 @@
-﻿using LyricsScraperNET.Models;
+﻿using LyricsScraperNET.Models.Requests;
 using LyricsScraperNET.Network.Abstract;
 
-namespace LyricsScraperNET.External.Abstract
+namespace LyricsScraperNET.Providers.Abstract
 {
-    public interface IExternalServiceClient<OutputType>
+    public interface IExternalProvider<OutputType>
     {
-        IExternalServiceClientOptions Options { get; }
+        IExternalProviderOptions Options { get; }
 
         bool IsEnabled { get; }
 
@@ -13,7 +13,7 @@ namespace LyricsScraperNET.External.Abstract
 
         Task<OutputType> SearchLyricAsync(SearchRequest searchRequest);
 
-        void WithParser(IExternalServiceLyricParser<OutputType> parser);
+        void WithParser(IExternalProviderLyricParser<OutputType> parser);
 
         void WithWebClient(IWebClient webClient);
     }

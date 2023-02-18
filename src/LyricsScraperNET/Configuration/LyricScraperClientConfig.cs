@@ -1,6 +1,6 @@
-﻿using LyricsScraperNET.External.Abstract;
-using LyricsScraperNET.External.AZLyrics;
-using LyricsScraperNET.External.Genius;
+﻿using LyricsScraperNET.Providers.Abstract;
+using LyricsScraperNET.Providers.AZLyrics;
+using LyricsScraperNET.Providers.Genius;
 
 namespace LyricsScraperNET.Configuration
 {
@@ -8,9 +8,9 @@ namespace LyricsScraperNET.Configuration
     {
         public const string ConfigurationSectionName = "LyricScraperClient";
 
-        public IExternalServiceClientOptions AZLyricsOptions { get; set; } = new AZLyricsOptions();
+        public IExternalProviderOptions AZLyricsOptions { get; set; } = new AZLyricsOptions();
 
-        public IExternalServiceClientOptions GeniusOptions { get; set; } = new GeniusOptions();
+        public IExternalProviderOptions GeniusOptions { get; set; } = new GeniusOptions();
 
         public bool IsEnabled => AZLyricsOptions.Enabled || GeniusOptions.Enabled;
     }

@@ -1,16 +1,16 @@
-﻿using LyricsScraperNET.Models;
+﻿using LyricsScraperNET.Models.Requests;
 using LyricsScraperNET.Network.Abstract;
 
-namespace LyricsScraperNET.External.Abstract
+namespace LyricsScraperNET.Providers.Abstract
 {
-    public class ExternalServiceClientBase: IExternalServiceClient<string>
+    public class ExternalProviderBase: IExternalProvider<string>
     {
-        protected IExternalServiceLyricParser<string> Parser { get; set; }
-        protected IWebClient WebClient { get; set; }
+        internal IExternalProviderLyricParser<string> Parser { get; set; }
+        internal IWebClient WebClient { get; set; }
 
-        public virtual IExternalServiceClientOptions Options => throw new NotImplementedException();
+        public virtual IExternalProviderOptions Options => throw new NotImplementedException();
 
-        public virtual bool IsEnabled => Options.Enabled;
+        public virtual bool IsEnabled => Options != null && Options.Enabled;
 
 
         #region Sync
@@ -75,7 +75,7 @@ namespace LyricsScraperNET.External.Abstract
         #endregion
 
 
-        public void WithParser(IExternalServiceLyricParser<string> parser)
+        public void WithParser(IExternalProviderLyricParser<string> parser)
         {
             if (parser != null)
                 Parser = parser;
