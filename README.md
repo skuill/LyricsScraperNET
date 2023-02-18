@@ -1,5 +1,14 @@
 # LyricsScraperNET
-LyricsScraperNET is a library that provides an API for searching song lyrics from the web.
+
+LyricsScraperNET is a library written in C# for .NET that provides an API for searching song lyrics from the web. 
+
+## Features
+
+* ✅ Supports `NET 6`.
+* ✅ Logging supported.
+* ✅ Modular structure, for easy unit testing.
+* ✅ Multiple ways how to configure.
+* ✅ Easily installed and used from the nuget repository.
 
 ## Supported external lyrics providers
 
@@ -9,10 +18,32 @@ LyricsScraperNET is a library that provides an API for searching song lyrics fro
 - LyricsWikia (TODO)
 - SongLyrics (TODO)
 
-## Usage Example
+## Example
 
+```csharp
+using LyricsScraperNET;
+using LyricsScraperNET.Models.Requests;
 
-You can find how to configure service in example project: [LyricsScraperNET.Client](src/LyricsScraperNET.Client/Program.cs)
+class Program
+{
+    static async Task Main()
+    {
+        // Create instance of LyricScraperClient with Genius and AZLyrics providers
+        ILyricsScraperClient lyricsScraperClient 
+            = new LyricsScraperClient()
+                .WithAZLyrics()
+                .WithGenius();
+
+        var searchRequest = new ArtistAndSongSearchRequest(Artist: "Metallica", Song: "Nothing Else Matters");
+
+        var searchResult = lyricsScraperClient.SearchLyric(searchRequest);
+
+        if (!searchResult.IsEmpty())
+            Console.WriteLine(searchResult.LyricText);
+    }
+}
+```
+More examples can be found in example project: [LyricsScraperNET.Client](src/LyricsScraperNET.Client/Program.cs)
 
 ## Contributing and Feedback
 
