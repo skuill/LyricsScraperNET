@@ -5,7 +5,10 @@ namespace LyricsScraperNET.Models.Responses
     public class SearchResult
     {
         public SearchResult() 
-        { }
+        {
+            LyricText = string.Empty;
+            ExternalProviderType = ExternalProviderType.None;
+        }
 
         public SearchResult(string lyricText, ExternalProviderType externalProviderType) 
         {
@@ -13,9 +16,9 @@ namespace LyricsScraperNET.Models.Responses
             ExternalProviderType = externalProviderType;
         }
 
-        public string LyricText { get; init; } = string.Empty;
+        public string LyricText { get; }
 
-        public ExternalProviderType ExternalProviderType { get; init; } = ExternalProviderType.None;
+        public ExternalProviderType ExternalProviderType { get; }
 
         public bool IsEmpty() => string.IsNullOrWhiteSpace(LyricText);
     }

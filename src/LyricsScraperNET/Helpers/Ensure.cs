@@ -1,4 +1,8 @@
-﻿namespace LyricsScraperNET.Helpers
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace LyricsScraperNET.Helpers
 {
     /// <summary>
     ///   Check input parameters

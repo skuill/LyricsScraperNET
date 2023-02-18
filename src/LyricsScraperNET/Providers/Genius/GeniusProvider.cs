@@ -7,7 +7,11 @@ using LyricsScraperNET.Network.Html;
 using LyricsScraperNET.Providers.Abstract;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System;
+using System.Linq;
+using System.Net.Http;
 using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace LyricsScraperNET.Providers.Genius
 {
@@ -39,9 +43,20 @@ namespace LyricsScraperNET.Providers.Genius
             Ensure.ArgumentNotNull(geniusOptions, nameof(geniusOptions));
         }
 
-        public override GeniusOptions Options { get; }
+        public override IExternalProviderOptions Options { get; }
 
-        private bool IsApiKeyProvided() => Options != null && !string.IsNullOrWhiteSpace(Options.ApiKey);
+        private bool TryGetApiKeyFromOptions(out string apiKey)
+        {
+            apiKey = string.Empty;
+            var geniusOptions = Options as GeniusOptions;
+
+            if (geniusOptions == null || string.IsNullOrWhiteSpace(geniusOptions.ApiKey))
+            {
+                return false;
+            }
+            apiKey = geniusOptions.ApiKey;
+            return true;
+        }
 
         #region Sync
 
@@ -82,8 +97,8 @@ namespace LyricsScraperNET.Providers.Genius
         {
             string lyricUrl = string.Empty;
 
-            if (IsApiKeyProvided()) { 
-                var geniusClient = new GeniusClient(Options.ApiKey);
+            if (TryGetApiKeyFromOptions(out string apiKey)) { 
+                var geniusClient = new GeniusClient(apiKey);
 
                 var searchQuery = GetApiSearchQuery(artist, song);
                 var searchGeniusResponse = geniusClient.SearchClient.Search(searchQuery).GetAwaiter().GetResult();
@@ -117,9 +132,9 @@ namespace LyricsScraperNET.Providers.Genius
         {
             string lyricUrl = string.Empty;
 
-            if (IsApiKeyProvided())
+            if (TryGetApiKeyFromOptions(out string apiKey))
             {
-                var geniusClient = new GeniusClient(Options.ApiKey);
+                var geniusClient = new GeniusClient(apiKey);
 
                 var searchQuery = GetApiSearchQuery(artist, song);
                 var searchGeniusResponse = await geniusClient.SearchClient.Search(searchQuery);

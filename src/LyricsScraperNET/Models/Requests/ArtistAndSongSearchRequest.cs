@@ -1,4 +1,15 @@
 ﻿namespace LyricsScraperNET.Models.Requests
 {
-    public record ArtistAndSongSearchRequest(string Artist, string Song) : SearchRequest;
+    public class ArtistAndSongSearchRequest: SearchRequest
+    {
+        public string Artist { get; }
+
+        public string Song { get; }
+
+        public ArtistAndSongSearchRequest(string artist, string song)
+        {
+            Artist = artist;
+            Song = song;
+        }
+    }
 }

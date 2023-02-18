@@ -1,6 +1,7 @@
 ﻿using LyricsScraperNET.Models.Requests;
 using LyricsScraperNET.Models.Responses;
 using LyricsScraperNET.Network.Abstract;
+using System.Threading.Tasks;
 
 namespace LyricsScraperNET.Providers.Abstract
 {

@@ -1,4 +1,7 @@
-﻿namespace LyricsScraperNET.Extensions
+﻿using System;
+using System.Linq;
+
+namespace LyricsScraperNET.Extensions
 {
     internal static class StringExtensions
     {

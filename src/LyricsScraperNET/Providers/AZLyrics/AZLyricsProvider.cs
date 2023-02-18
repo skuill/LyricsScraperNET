@@ -5,6 +5,8 @@ using LyricsScraperNET.Network.Html;
 using LyricsScraperNET.Providers.Abstract;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System;
+using System.Threading.Tasks;
 
 namespace LyricsScraperNET.Providers.AZLyrics
 {
@@ -39,7 +41,7 @@ namespace LyricsScraperNET.Providers.AZLyrics
             Ensure.ArgumentNotNull(aZLyricsOptions, nameof(aZLyricsOptions));
         }
 
-        public override AZLyricsOptions Options { get; }
+        public override IExternalProviderOptions Options { get; }
 
         #region Sync
 

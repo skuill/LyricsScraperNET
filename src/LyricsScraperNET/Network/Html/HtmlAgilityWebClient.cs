@@ -1,6 +1,8 @@
 ﻿using HtmlAgilityPack;
 using LyricsScraperNET.Network.Abstract;
 using Microsoft.Extensions.Logging;
+using System;
+using System.Threading.Tasks;
 
 namespace LyricsScraperNET.Network.Html
 {

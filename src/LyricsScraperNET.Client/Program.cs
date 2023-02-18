@@ -8,6 +8,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using LyricsScraperNET.Models.Responses;
+using System.Threading.Tasks;
+using System;
 
 class Program
 {

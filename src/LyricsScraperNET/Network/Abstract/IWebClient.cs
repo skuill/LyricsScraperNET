@@ -1,4 +1,7 @@
-﻿namespace LyricsScraperNET.Network.Abstract
+﻿using System;
+using System.Threading.Tasks;
+
+namespace LyricsScraperNET.Network.Abstract
 {
     public interface IWebClient
     {
