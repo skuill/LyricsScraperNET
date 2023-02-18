@@ -5,9 +5,9 @@ namespace LyricsScraperNET.Test
 {
     public static class Serializer
     {
-        public static T Deseialize<T>(string fileName)
+        public static T Deseialize<T>(string[] paths)
         {
-            var jsonString = File.ReadAllText(Path.Combine(fileName));
+            var jsonString = File.ReadAllText(Path.Combine(paths));
             return JsonSerializer.Deserialize<T>(jsonString);
         }
     }

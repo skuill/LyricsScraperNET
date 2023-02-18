@@ -13,7 +13,7 @@ namespace LyricsScraperNET.Test.AZLyrics
     [TestClass]
     public class AZLyricsClientTest
     {
-        private const string TEST_DATA_PATH = "AZLyrics\\test_data.json";
+        private readonly string[] TEST_DATA_PATH = { "AZLyrics", "test_data.json" };
         private List<LyricsTestData> _testDataCollection;
 
         [TestInitialize]
