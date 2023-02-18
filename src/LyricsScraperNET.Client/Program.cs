@@ -9,9 +9,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using LyricsScraperNET.Models.Responses;
 
-internal class Program
+class Program
 {
-    private static async Task Main(string[] args)
+    static async Task Main()
     {
         //// Input parameters to search:
         string artistToSearch = "Parkway Drive";
@@ -35,7 +35,7 @@ internal class Program
             return;
         }
 
-        //// Output to console
+        //// Output result to console
         Console.ForegroundColor = ConsoleColor.Yellow;
         Console.WriteLine($"{artistToSearch} - {songToSearch}\r\n");
         Console.ResetColor();
