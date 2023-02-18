@@ -4,7 +4,7 @@ set -e
 
 echo "Publishing..."
 
-cd ./src/LyricsScraperNET
+cd ./LyricsScraperNET
 dotnet pack -c Release LyricsScraperNET.csproj -p:PackageVersion="$RELEASE_VERSION"
 nuget push "./bin/Release/LyricsScraperNET.$RELEASE_VERSION.nupkg"\
   -ApiKey "$NUGET_TOKEN"\

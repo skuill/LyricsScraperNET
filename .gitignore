@@ -362,15 +362,6 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 
-# Credentials
-app*.config
-appsettings*.json
-!appsettings.template.json
-
-# Hosting settings and credentials
-doc/hosting/
-doc/external_sites_credentials/
-
 # Logs
 logs/
 log*.txt
