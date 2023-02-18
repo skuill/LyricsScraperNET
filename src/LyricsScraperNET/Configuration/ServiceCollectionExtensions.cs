@@ -15,7 +15,7 @@ namespace LyricsScraperNET.Configuration
             IConfiguration configuration)
         {
             var lyricScraperClientConfig = configuration.GetSection(LyricScraperClientConfig.ConfigurationSectionName);
-            if (lyricScraperClientConfig != null)
+            if (lyricScraperClientConfig.Exists())
             {
                 services.AddAZLyricsClientService<T>(lyricScraperClientConfig);
                 services.AddGeniusClientService<T>(lyricScraperClientConfig);
@@ -34,7 +34,7 @@ namespace LyricsScraperNET.Configuration
             IConfiguration configuration)
         {
             var configurationSection = configuration.GetSection(AZLyricsOptions.ConfigurationSectionName);
-            if (configurationSection != null)
+            if (configurationSection.Exists())
             {
                 services.Configure<AZLyricsOptions>(configurationSection);
                 
@@ -49,7 +49,7 @@ namespace LyricsScraperNET.Configuration
            IConfiguration configuration)
         {
             var configurationSection = configuration.GetSection(GeniusOptions.ConfigurationSectionName);
-            if (configurationSection != null)
+            if (configurationSection.Exists())
             {
                 services.Configure<GeniusOptions>(configurationSection);
 
