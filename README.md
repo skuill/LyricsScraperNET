@@ -1,5 +1,7 @@
 # LyricsScraperNET
 
+[![CI/CD LyricsScraperNET](https://github.com/skuill/LyricsScraperNET/actions/workflows/cicd.yaml/badge.svg)](https://github.com/skuill/LyricsScraperNET/actions/workflows/cicd.yaml)
+
 LyricsScraperNET is a library written in C# for .NET that provides an API for searching song lyrics from the web. 
 
 ## Features
