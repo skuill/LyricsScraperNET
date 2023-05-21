@@ -4,6 +4,7 @@
     {
         None,
         AZLyrics,
-        Genius
+        Genius,
+        Musixmatch
     }
 }

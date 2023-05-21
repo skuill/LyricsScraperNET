@@ -1,6 +1,7 @@
 ﻿using LyricsScraperNET.Providers.Abstract;
 using LyricsScraperNET.Providers.AZLyrics;
 using LyricsScraperNET.Providers.Genius;
+using LyricsScraperNET.Providers.Musixmatch;
 
 namespace LyricsScraperNET.Configuration
 {
@@ -12,6 +13,8 @@ namespace LyricsScraperNET.Configuration
 
         public IExternalProviderOptions GeniusOptions { get; set; } = new GeniusOptions();
 
-        public bool IsEnabled => AZLyricsOptions.Enabled || GeniusOptions.Enabled;
+        public IExternalProviderOptions MusixmatchOptions { get; set; } = new MusixmatchOptions();
+
+        public bool IsEnabled => AZLyricsOptions.Enabled || GeniusOptions.Enabled || MusixmatchOptions.Enabled;
     }
 }

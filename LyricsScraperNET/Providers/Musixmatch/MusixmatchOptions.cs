@@ -2,24 +2,24 @@
 using LyricsScraperNET.Providers.Models;
 using System;
 
-namespace LyricsScraperNET.Providers.Genius
+namespace LyricsScraperNET.Providers.Musixmatch
 {
-    public sealed class GeniusOptions : IExternalProviderOptionsWithApiKey
+    public sealed class MusixmatchOptions : IExternalProviderOptionsWithApiKey
     {
         public bool Enabled { get; set; }
 
-        // Optional. Use to retrieve lyric url for provided artist and song.
+        // Optional. Without using the API, a token with restrictions on the search for lyrics will be generated.
         public string ApiKey { get; set; }
 
-        public const string ConfigurationSectionName = "GeniusOptions";
+        public const string ConfigurationSectionName = "MusixmatchOptions";
 
-        public ExternalProviderType ExternalProviderType => ExternalProviderType.Genius;
+        public ExternalProviderType ExternalProviderType => ExternalProviderType.Musixmatch;
 
-        public int SearchPriority { get; set; } = 0;
+        public int SearchPriority { get; set; } = 1;
 
         public override bool Equals(object? obj)
         {
-            return obj is GeniusOptions options &&
+            return obj is MusixmatchOptions options &&
                    ApiKey == options.ApiKey &&
                    ExternalProviderType == options.ExternalProviderType;
         }

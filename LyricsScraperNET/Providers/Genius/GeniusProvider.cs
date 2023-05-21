@@ -1,6 +1,7 @@
 ﻿using Genius;
 using Genius.Models.Response;
 using HtmlAgilityPack;
+using LyricsScraperNET.Extensions;
 using LyricsScraperNET.Helpers;
 using LyricsScraperNET.Models.Responses;
 using LyricsScraperNET.Network.Html;
@@ -45,19 +46,6 @@ namespace LyricsScraperNET.Providers.Genius
 
         public override IExternalProviderOptions Options { get; }
 
-        private bool TryGetApiKeyFromOptions(out string apiKey)
-        {
-            apiKey = string.Empty;
-            var geniusOptions = Options as GeniusOptions;
-
-            if (geniusOptions == null || string.IsNullOrWhiteSpace(geniusOptions.ApiKey))
-            {
-                return false;
-            }
-            apiKey = geniusOptions.ApiKey;
-            return true;
-        }
-
         #region Sync
 
         protected override SearchResult SearchLyric(Uri uri)
@@ -68,36 +56,11 @@ namespace LyricsScraperNET.Providers.Genius
             return new SearchResult(GetParsedLyricFromHtmlPageBody(htmlPageBody), Models.ExternalProviderType.Genius);
         }
 
-        private string GetLyricUrlWithoutApiKey(string artist, string song)
-        {
-            HttpClient httpClient = new();
-            var htmlPageBody = httpClient.GetStringAsync(GetApiSearchUrl(artist, song)).GetAwaiter().GetResult();
-
-            var parsedJsonResponse = JsonDocument.Parse(htmlPageBody);
-
-            if (parsedJsonResponse.RootElement.TryGetProperty("response", out var responseJsonElement))
-            {
-                if (responseJsonElement.TryGetProperty("hits", out var hitsJsonElement))
-                {
-                    foreach (var hitJsonProperty in hitsJsonElement.EnumerateArray())
-                    {
-                        if (hitJsonProperty.TryGetProperty("result", out var resultJsonElement))
-                        {
-                            if (resultJsonElement.TryGetProperty("url", out var lyricUrl))
-                                return lyricUrl.GetString();
-                        }
-                    }
-                }
-            }
-
-            return string.Empty;
-        }
-
         protected override SearchResult SearchLyric(string artist, string song)
         {
             string lyricUrl = string.Empty;
 
-            if (TryGetApiKeyFromOptions(out string apiKey))
+            if (Options.TryGetApiKeyFromOptions(out var apiKey))
             {
                 var geniusClient = new GeniusClient(apiKey);
 
@@ -133,7 +96,7 @@ namespace LyricsScraperNET.Providers.Genius
         {
             string lyricUrl = string.Empty;
 
-            if (TryGetApiKeyFromOptions(out string apiKey))
+            if (Options.TryGetApiKeyFromOptions(out var apiKey))
             {
                 var geniusClient = new GeniusClient(apiKey);
 
@@ -154,6 +117,30 @@ namespace LyricsScraperNET.Providers.Genius
 
         #endregion
 
+        private string GetLyricUrlWithoutApiKey(string artist, string song)
+        {
+            HttpClient httpClient = new();
+            var htmlPageBody = httpClient.GetStringAsync(GetApiSearchUrl(artist, song)).GetAwaiter().GetResult();
+
+            var parsedJsonResponse = JsonDocument.Parse(htmlPageBody);
+
+            if (parsedJsonResponse.RootElement.TryGetProperty("response", out var responseJsonElement))
+            {
+                if (responseJsonElement.TryGetProperty("hits", out var hitsJsonElement))
+                {
+                    foreach (var hitJsonProperty in hitsJsonElement.EnumerateArray())
+                    {
+                        if (hitJsonProperty.TryGetProperty("result", out var resultJsonElement))
+                        {
+                            if (resultJsonElement.TryGetProperty("url", out var lyricUrl))
+                                return lyricUrl.GetString();
+                        }
+                    }
+                }
+            }
+
+            return string.Empty;
+        }
 
         private string GetParsedLyricFromHtmlPageBody(string htmlPageBody)
         {

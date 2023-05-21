@@ -13,4 +13,9 @@ namespace LyricsScraperNET.Providers.Abstract
         /// </summary>
         int SearchPriority { get; set; }
     }
+
+    public interface IExternalProviderOptionsWithApiKey : IExternalProviderOptions
+    {
+        public string ApiKey { get; set; }
+    }
 }

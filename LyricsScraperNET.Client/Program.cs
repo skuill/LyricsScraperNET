@@ -98,7 +98,8 @@ class Program
         ILyricsScraperClient lyricsScraperClient
             = new LyricsScraperClient()
                 .WithGenius()
-                .WithAZLyrics();
+                .WithAZLyrics()
+                .WithMusixmatch();
 
         //// Another way to configure:
         //// 1. First create instance of LyricScraperClient.
