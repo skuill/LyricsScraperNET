@@ -1,5 +1,4 @@
-﻿using LyricsScraperNET.Extensions;
-using LyricsScraperNET.Helpers;
+﻿using LyricsScraperNET.Helpers;
 using LyricsScraperNET.Models.Responses;
 using LyricsScraperNET.Providers.Abstract;
 using Microsoft.Extensions.Logging;
@@ -48,10 +47,10 @@ namespace LyricsScraperNET.Providers.Musixmatch
             //}
             //else
             //{
-                _logger.LogInformation("Use default MusixmatchToken.");
-                var musixmatchToken = new MusixmatchToken();
-                (Options as IExternalProviderOptionsWithApiKey).ApiKey = musixmatchToken.Token;
-                return new MusixmatchClient(musixmatchToken);
+            _logger.LogInformation("Use default MusixmatchToken.");
+            var musixmatchToken = new MusixmatchToken();
+            (Options as IExternalProviderOptionsWithApiKey).ApiKey = musixmatchToken.Token;
+            return new MusixmatchClient(musixmatchToken);
             //}
         }
 
@@ -86,8 +85,8 @@ namespace LyricsScraperNET.Providers.Musixmatch
             if (trackId != null)
             {
                 Lyrics lyrics = client.GetTrackLyrics(trackId.Value);
-                return lyrics.Instrumental != 1 
-                    ? new SearchResult(lyrics.LyricsBody, Models.ExternalProviderType.Musixmatch) 
+                return lyrics.Instrumental != 1
+                    ? new SearchResult(lyrics.LyricsBody, Models.ExternalProviderType.Musixmatch)
                     : new SearchResult(); // lyrics.LyricsBody is null when the track is instrumental
             }
             else
@@ -114,7 +113,7 @@ namespace LyricsScraperNET.Providers.Musixmatch
             var trackSearchParameters = GetTrackSearchParameters(artist, song);
 
             var songSearchTask = await client.SongSearchAsync(trackSearchParameters);
-            
+
             var trackId = songSearchTask?.FirstOrDefault()?.TrackId;
             if (trackId != null)
             {
