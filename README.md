@@ -18,7 +18,7 @@ LyricsScraperNET is a library for .NET that provides an API to search for lyrics
 
 - AZLyrics
 - Genius
-- MusixMatch (**IN PROGRESS. [Issue #2](/../../issues/2)**)
+- MusixMatch
 - LyricsWikia (**TODO**)
 - SongLyrics (**TODO**)
 
