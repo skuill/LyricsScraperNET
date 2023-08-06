@@ -14,7 +14,7 @@ namespace LyricsScraperNET.UnitTest.Providers.AZLyrics
     [TestClass]
     public class AZLyricsProviderTest
     {
-        private static readonly string[] TEST_DATA_PATH = { "AZLyrics", "test_data.json" };
+        private static readonly string[] TEST_DATA_PATH = { "Providers", "AZLyrics", "test_data.json" };
 
         [TestMethod]
         [DynamicData(nameof(GetTestData), DynamicDataSourceType.Method)]
