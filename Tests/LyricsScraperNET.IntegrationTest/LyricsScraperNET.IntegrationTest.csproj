@@ -29,6 +29,12 @@
     <None Update="Providers\AZLyrics\Resources\Lyrics_Result_01.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="Providers\Musixmatch\Resources\Lyrics_Result_01.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Providers\Musixmatch\test_data.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Providers\Genius\Resources\Lyrics_Result_01.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

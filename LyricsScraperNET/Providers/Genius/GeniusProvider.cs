@@ -165,14 +165,14 @@ namespace LyricsScraperNET.Providers.Genius
         {
             if (searchResponse.Meta.Status != 200)
             {
-                _logger.LogError($"Can't find any information about artist {artist} and song {song}. Code: {searchResponse.Meta.Status}. Message: {searchResponse.Meta.Message}");
+                _logger?.LogError($"Can't find any information about artist {artist} and song {song}. Code: {searchResponse.Meta.Status}. Message: {searchResponse.Meta.Message}");
                 return string.Empty;
             }
             var artistAndSongHit = searchResponse.Response.Hits.FirstOrDefault(x => string.Equals(x.Result.PrimaryArtist.Name, artist, StringComparison.OrdinalIgnoreCase));
 
             if (artistAndSongHit == null || artistAndSongHit.Result == null)
             {
-                _logger.LogError($"Can't find artist {artist} and song {song} hit.");
+                _logger?.LogError($"Can't find artist {artist} and song {song} hit.");
                 return string.Empty;
             }
 
