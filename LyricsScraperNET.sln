@@ -7,7 +7,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LyricsScraperNET.Client", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LyricsScraperNET", "LyricsScraperNET\LyricsScraperNET.csproj", "{240061BD-CA01-4B97-B60D-0CEEAC49125F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LyricsScraperNET.Test", "LyricsScraperNET.Test\LyricsScraperNET.Test.csproj", "{86A62F99-FABB-42E0-A641-3725DE40A6D8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LyricsScraperNET.UnitTest", "Tests\LyricsScraperNET.UnitTest\LyricsScraperNET.UnitTest.csproj", "{5D5B7D35-44A1-439C-B005-D3644DCD4E54}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{A5F953E9-5C82-4C0E-899C-36BE4F7EB342}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LyricsScraperNET.IntegrationTest", "Tests\LyricsScraperNET.IntegrationTest\LyricsScraperNET.IntegrationTest.csproj", "{962D6B6F-F397-4B26-90F0-7B6D9CD0E4F9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -23,13 +27,21 @@ Global
 		{240061BD-CA01-4B97-B60D-0CEEAC49125F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{240061BD-CA01-4B97-B60D-0CEEAC49125F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{240061BD-CA01-4B97-B60D-0CEEAC49125F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{86A62F99-FABB-42E0-A641-3725DE40A6D8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{86A62F99-FABB-42E0-A641-3725DE40A6D8}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{86A62F99-FABB-42E0-A641-3725DE40A6D8}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{86A62F99-FABB-42E0-A641-3725DE40A6D8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5D5B7D35-44A1-439C-B005-D3644DCD4E54}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5D5B7D35-44A1-439C-B005-D3644DCD4E54}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5D5B7D35-44A1-439C-B005-D3644DCD4E54}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5D5B7D35-44A1-439C-B005-D3644DCD4E54}.Release|Any CPU.Build.0 = Release|Any CPU
+		{962D6B6F-F397-4B26-90F0-7B6D9CD0E4F9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{962D6B6F-F397-4B26-90F0-7B6D9CD0E4F9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{962D6B6F-F397-4B26-90F0-7B6D9CD0E4F9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{962D6B6F-F397-4B26-90F0-7B6D9CD0E4F9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{5D5B7D35-44A1-439C-B005-D3644DCD4E54} = {A5F953E9-5C82-4C0E-899C-36BE4F7EB342}
+		{962D6B6F-F397-4B26-90F0-7B6D9CD0E4F9} = {A5F953E9-5C82-4C0E-899C-36BE4F7EB342}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {234E67FA-12AF-4388-89B9-199F8EAFA2CD}
