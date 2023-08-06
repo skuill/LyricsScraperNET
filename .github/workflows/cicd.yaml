@@ -30,8 +30,10 @@ jobs:
         run: dotnet format --verify-no-changes
       - name: Build
         run: dotnet build --configuration Release --verbosity minimal
-      - name: Test
-        run: dotnet test LyricsScraperNET.Test
+      - name: Test (Unit)
+        run: dotnet test Tests/LyricsScraperNET.UnitTest
+      - name: Test (Integration)
+        run: dotnet test Tests/LyricsScraperNET.IntegrationTest
       - name: Publish to NuGET
         run: ./publish.sh
         if: startsWith( github.ref, 'refs/tags/')
