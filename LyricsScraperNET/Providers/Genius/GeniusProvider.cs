@@ -4,13 +4,12 @@ using HtmlAgilityPack;
 using LyricsScraperNET.Extensions;
 using LyricsScraperNET.Helpers;
 using LyricsScraperNET.Models.Responses;
-using LyricsScraperNET.Network.Html;
+using LyricsScraperNET.Network;
 using LyricsScraperNET.Providers.Abstract;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
 using System.Linq;
-using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -24,10 +23,13 @@ namespace LyricsScraperNET.Providers.Genius
         private const string GeniusSearchQueryFormat = "{0} {1}";
         private const string GeniusApiSearchFormat = "https://genius.com/api/search?q={0}";
 
+        private const string _referentFragmentNodesXPath = "//a[contains(@class, 'ReferentFragmentVariantdesktop') or contains(@class, 'ReferentFragmentdesktop')]";
+        private const string _lyricsContainerNodesXPath = "//div[@data-lyrics-container]";
+
         public GeniusProvider()
         {
             Parser = new GeniusParser();
-            WebClient = new HtmlAgilityWebClient();
+            WebClient = new NetHttpClient();
             Options = new GeniusOptions() { Enabled = true };
         }
 
@@ -50,8 +52,7 @@ namespace LyricsScraperNET.Providers.Genius
 
         protected override SearchResult SearchLyric(Uri uri)
         {
-            HttpClient httpClient = new();
-            var htmlPageBody = httpClient.GetStringAsync(uri).GetAwaiter().GetResult();
+            var htmlPageBody = WebClient.Load(uri);
 
             return new SearchResult(GetParsedLyricFromHtmlPageBody(htmlPageBody), Models.ExternalProviderType.Genius);
         }
@@ -86,8 +87,7 @@ namespace LyricsScraperNET.Providers.Genius
 
         protected override async Task<SearchResult> SearchLyricAsync(Uri uri)
         {
-            HttpClient httpClient = new();
-            var htmlPageBody = await httpClient.GetStringAsync(uri);
+            var htmlPageBody = await WebClient.LoadAsync(uri);
 
             return new SearchResult(GetParsedLyricFromHtmlPageBody(htmlPageBody), Models.ExternalProviderType.Genius);
         }
@@ -119,23 +119,25 @@ namespace LyricsScraperNET.Providers.Genius
 
         private string GetLyricUrlWithoutApiKey(string artist, string song)
         {
-            HttpClient httpClient = new();
-            var htmlPageBody = httpClient.GetStringAsync(GetApiSearchUrl(artist, song)).GetAwaiter().GetResult();
+            var htmlPageBody = WebClient.Load(new Uri(GetApiSearchUrl(artist, song)));
+
+            if (string.IsNullOrWhiteSpace(htmlPageBody))
+                return string.Empty;
 
             var parsedJsonResponse = JsonDocument.Parse(htmlPageBody);
 
-            if (parsedJsonResponse.RootElement.TryGetProperty("response", out var responseJsonElement))
+            if (!parsedJsonResponse.RootElement.TryGetProperty("response", out var responseJsonElement))
+                return string.Empty;
+
+            if (!responseJsonElement.TryGetProperty("hits", out var hitsJsonElement))
+                return string.Empty;
+
+            foreach (var hitJsonProperty in hitsJsonElement.EnumerateArray())
             {
-                if (responseJsonElement.TryGetProperty("hits", out var hitsJsonElement))
+                if (hitJsonProperty.TryGetProperty("result", out var resultJsonElement))
                 {
-                    foreach (var hitJsonProperty in hitsJsonElement.EnumerateArray())
-                    {
-                        if (hitJsonProperty.TryGetProperty("result", out var resultJsonElement))
-                        {
-                            if (resultJsonElement.TryGetProperty("url", out var lyricUrl))
-                                return lyricUrl.GetString();
-                        }
-                    }
+                    if (resultJsonElement.TryGetProperty("url", out var lyricUrl))
+                        return lyricUrl.GetString();
                 }
             }
 
@@ -144,19 +146,20 @@ namespace LyricsScraperNET.Providers.Genius
 
         private string GetParsedLyricFromHtmlPageBody(string htmlPageBody)
         {
+            System.IO.File.WriteAllText("C:\\Projects\\Lyrics_HtmlPage_01.txt", htmlPageBody);
             var htmlDocument = new HtmlDocument();
             htmlDocument.LoadHtml(htmlPageBody.Replace("https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js", ""));
 
-            var fragmentNodes = htmlDocument.DocumentNode.SelectNodes("//a[contains(@class, 'ReferentFragmentVariantdesktop')]");
-            if (fragmentNodes != null)
-                foreach (HtmlNode node in fragmentNodes)
-                    node.ParentNode.ReplaceChild(htmlDocument.CreateTextNode(node.ChildNodes[0].InnerHtml), node);
+            var referentFragmentNodes = htmlDocument.DocumentNode.SelectNodes(_referentFragmentNodesXPath);
+            if (referentFragmentNodes != null)
+                foreach (HtmlNode fragmentNode in referentFragmentNodes)
+                    fragmentNode.ParentNode.ReplaceChild(htmlDocument.CreateTextNode(fragmentNode.ChildNodes[0].InnerHtml), fragmentNode);
             var spanNodes = htmlDocument.DocumentNode.SelectNodes("//span");
             if (spanNodes != null)
-                foreach (HtmlNode node in spanNodes)
-                    node.Remove();
+                foreach (HtmlNode spanNode in spanNodes)
+                    spanNode.Remove();
 
-            var lyricNodes = htmlDocument.DocumentNode.SelectNodes("//div[@data-lyrics-container]");
+            var lyricNodes = htmlDocument.DocumentNode.SelectNodes(_lyricsContainerNodesXPath);
 
             return Parser.Parse(string.Join("", lyricNodes.Select(Node => Node.InnerHtml)));
         }
@@ -168,7 +171,8 @@ namespace LyricsScraperNET.Providers.Genius
                 _logger?.LogError($"Can't find any information about artist {artist} and song {song}. Code: {searchResponse.Meta.Status}. Message: {searchResponse.Meta.Message}");
                 return string.Empty;
             }
-            var artistAndSongHit = searchResponse.Response.Hits.FirstOrDefault(x => string.Equals(x.Result.PrimaryArtist.Name, artist, StringComparison.OrdinalIgnoreCase));
+            var artistAndSongHit = searchResponse.Response.Hits.FirstOrDefault(
+                x => string.Equals(x.Result.PrimaryArtist.Name, artist, StringComparison.OrdinalIgnoreCase));
 
             if (artistAndSongHit == null || artistAndSongHit.Result == null)
             {
@@ -178,7 +182,7 @@ namespace LyricsScraperNET.Providers.Genius
 
             _logger?.LogDebug($"Genius artist and song url: {artistAndSongHit.Result.Url}");
 
-            // https://genius.com/Parkway-drive-wishing-wells-lyrics
+            // Example: https://genius.com/Parkway-drive-wishing-wells-lyrics
             return artistAndSongHit.Result.Url;
         }
 

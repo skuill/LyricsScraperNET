@@ -1,7 +1,7 @@
 ﻿using LyricsScraperNET.Extensions;
 using LyricsScraperNET.Helpers;
 using LyricsScraperNET.Models.Responses;
-using LyricsScraperNET.Network.Html;
+using LyricsScraperNET.Network;
 using LyricsScraperNET.Providers.Abstract;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;

@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
 
-namespace LyricsScraperNET.Network.Html
+namespace LyricsScraperNET.Network
 {
     internal sealed class HtmlAgilityWebClient : IWebClient
     {
