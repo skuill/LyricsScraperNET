@@ -16,11 +16,12 @@ LyricsScraperNET is a library for .NET that provides an API to search for lyrics
 
 ## Supported external lyrics providers
 
-- AZLyrics
-- Genius
-- MusixMatch
-- LyricsWikia (**TODO**)
-- SongLyrics (**TODO**)
+- [AZLyrics](https://www.azlyrics.com/)
+- [Genius](https://genius.com/)
+- [MusixMatch](https://www.musixmatch.com/)
+- [SongLyrics](https://www.songlyrics.com/) (**TODO**)
+- [LyricFind](https://www.lyricfind.com/) (**TODO**)
+- [Lyrics](https://www.lyrics.com/) (**TODO**)
 
 ## Example
 
