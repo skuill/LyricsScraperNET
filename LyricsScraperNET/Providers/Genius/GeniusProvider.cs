@@ -146,7 +146,6 @@ namespace LyricsScraperNET.Providers.Genius
 
         private string GetParsedLyricFromHtmlPageBody(string htmlPageBody)
         {
-            System.IO.File.WriteAllText("C:\\Projects\\Lyrics_HtmlPage_01.txt", htmlPageBody);
             var htmlDocument = new HtmlDocument();
             htmlDocument.LoadHtml(htmlPageBody.Replace("https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js", ""));
 
