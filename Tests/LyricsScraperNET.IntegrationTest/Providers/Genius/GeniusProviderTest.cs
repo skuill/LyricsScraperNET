@@ -31,7 +31,7 @@ namespace LyricsScraperNET.IntegrationTest.Providers.Genius
             Assert.IsNotNull(searchResult);
             Assert.IsFalse(searchResult.IsEmpty());
             Assert.AreEqual(ExternalProviderType.Genius, searchResult.ExternalProviderType);
-            Assert.AreEqual(testData.LyricResultData, searchResult.LyricText);
+            Assert.AreEqual(testData.LyricResultData.Replace("\r\n", "\n"), searchResult.LyricText.Replace("\r\n", "\n"));
         }
 
         public static IEnumerable<object[]> GetTestData()
