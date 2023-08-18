@@ -2,21 +2,21 @@
 using LyricsScraperNET.Providers.Models;
 using System;
 
-namespace LyricsScraperNET.Providers.AZLyrics
+namespace LyricsScraperNET.Providers.SongLyrics
 {
-    public sealed class AZLyricsOptions : IExternalProviderOptions
+    public sealed class SongLyricsOptions : IExternalProviderOptions
     {
         public bool Enabled { get; set; }
 
-        public ExternalProviderType ExternalProviderType => ExternalProviderType.AZLyrics;
+        public ExternalProviderType ExternalProviderType => ExternalProviderType.SongLyrics;
 
-        public int SearchPriority { get; set; } = 3;
+        public int SearchPriority { get; set; } = 0;
 
-        public const string ConfigurationSectionName = "AZLyricsOptions";
+        public const string ConfigurationSectionName = "SongLyricsOptions";
 
         public override bool Equals(object? obj)
         {
-            return obj is AZLyricsOptions options &&
+            return obj is SongLyricsOptions options &&
                    ExternalProviderType == options.ExternalProviderType;
         }
 

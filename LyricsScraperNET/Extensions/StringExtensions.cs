@@ -6,6 +6,7 @@ namespace LyricsScraperNET.Extensions
     internal static class StringExtensions
     {
         private static readonly string[] ARTICLES = { "a", "on", "the" };
+        private static readonly char[] EXCEPTION_SYMBOLS = { '!' };
 
         public static string RemoveHtmlTags(this string text)
         {
@@ -39,5 +40,14 @@ namespace LyricsScraperNET.Extensions
             return result;
         }
 
+        public static string СonvertToDashedFormat(this string input, bool useExceptionSymbols = true)
+        {
+            var result = input.ToLowerInvariant().Trim();
+            result = new string(result.Select(x =>
+            {
+                return (char.IsLetterOrDigit(x) || (useExceptionSymbols && EXCEPTION_SYMBOLS.Contains(x))) ? x : '-';
+            }).ToArray()).Replace("--", "-").Trim('-');
+            return result;
+        }
     }
 }

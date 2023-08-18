@@ -1,6 +1,7 @@
 ﻿using LyricsScraperNET.Providers.AZLyrics;
 using LyricsScraperNET.Providers.Genius;
 using LyricsScraperNET.Providers.Musixmatch;
+using LyricsScraperNET.Providers.SongLyrics;
 
 namespace LyricsScraperNET
 {
@@ -21,6 +22,12 @@ namespace LyricsScraperNET
         public static ILyricsScraperClient WithMusixmatch(this ILyricsScraperClient lyricsScraperClient)
         {
             lyricsScraperClient.AddProvider(new MusixmatchProvider());
+            return lyricsScraperClient;
+        }
+
+        public static ILyricsScraperClient WithSongLyrics(this ILyricsScraperClient lyricsScraperClient)
+        {
+            lyricsScraperClient.AddProvider(new SongLyricsProvider());
             return lyricsScraperClient;
         }
     }

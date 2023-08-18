@@ -5,6 +5,7 @@
         None,
         AZLyrics,
         Genius,
-        Musixmatch
+        Musixmatch,
+        SongLyrics
     }
 }

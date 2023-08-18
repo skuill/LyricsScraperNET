@@ -2,6 +2,7 @@
 using LyricsScraperNET.Providers.AZLyrics;
 using LyricsScraperNET.Providers.Genius;
 using LyricsScraperNET.Providers.Musixmatch;
+using LyricsScraperNET.Providers.SongLyrics;
 
 namespace LyricsScraperNET.Configuration
 {
@@ -15,6 +16,11 @@ namespace LyricsScraperNET.Configuration
 
         public IExternalProviderOptions MusixmatchOptions { get; set; } = new MusixmatchOptions();
 
-        public bool IsEnabled => AZLyricsOptions.Enabled || GeniusOptions.Enabled || MusixmatchOptions.Enabled;
+        public IExternalProviderOptions SongLyricsOptions { get; set; } = new SongLyricsOptions();
+
+        public bool IsEnabled => AZLyricsOptions.Enabled 
+            || GeniusOptions.Enabled 
+            || MusixmatchOptions.Enabled
+            || SongLyricsOptions.Enabled;
     }
 }

@@ -15,7 +15,7 @@ namespace LyricsScraperNET.Providers.Genius
 
         public ExternalProviderType ExternalProviderType => ExternalProviderType.Genius;
 
-        public int SearchPriority { get; set; } = 0;
+        public int SearchPriority { get; set; } = 1;
 
         public override bool Equals(object? obj)
         {

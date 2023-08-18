@@ -3,6 +3,7 @@ using LyricsScraperNET.Configuration;
 using LyricsScraperNET.Providers.Abstract;
 using LyricsScraperNET.Providers.AZLyrics;
 using LyricsScraperNET.Providers.Genius;
+using LyricsScraperNET.Providers.SongLyrics;
 using LyricsScraperNET.Models.Requests;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -94,12 +95,13 @@ class Program
     /// <returns>lyrics text</returns>
     private static SearchResult ExampleWithCertainProvider(string artistToSearch, string songToSearch)
     {
-        //// Create instance of LyricScraperClient with Genius and AZLyrics providers
+        //// Create instance of LyricScraperClient with different lyrics providers
         ILyricsScraperClient lyricsScraperClient
             = new LyricsScraperClient()
                 .WithGenius()
                 .WithAZLyrics()
-                .WithMusixmatch();
+                .WithMusixmatch()
+                .WithSongLyrics();
 
         //// Another way to configure:
         //// 1. First create instance of LyricScraperClient.

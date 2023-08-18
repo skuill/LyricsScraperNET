@@ -14,5 +14,7 @@ namespace LyricsScraperNET.Configuration
         IExternalProviderOptions GeniusOptions { get; }
 
         IExternalProviderOptions MusixmatchOptions { get; }
+
+        IExternalProviderOptions SongLyricsOptions { get; }
     }
 }

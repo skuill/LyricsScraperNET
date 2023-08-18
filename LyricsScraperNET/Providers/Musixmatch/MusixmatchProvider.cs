@@ -47,7 +47,7 @@ namespace LyricsScraperNET.Providers.Musixmatch
             //}
             //else
             //{
-            _logger?.LogInformation("Use default MusixmatchToken.");
+            _logger?.LogInformation("Musixmatch. Use default MusixmatchToken.");
             var musixmatchToken = new MusixmatchToken();
             (Options as IExternalProviderOptionsWithApiKey).ApiKey = musixmatchToken.Token;
             return new MusixmatchClient(musixmatchToken);
@@ -91,7 +91,7 @@ namespace LyricsScraperNET.Providers.Musixmatch
             }
             else
             {
-                _logger?.LogError($"Can't find any information about artist {artist} and song {song}");
+                _logger?.LogError($"Musixmatch. Can't find any information about artist {artist} and song {song}");
                 return new SearchResult();
             }
         }
@@ -124,7 +124,7 @@ namespace LyricsScraperNET.Providers.Musixmatch
             }
             else
             {
-                _logger?.LogError($"Can't find any information about artist {artist} and song {song}");
+                _logger?.LogError($"Musixmatch. Can't find any information about artist {artist} and song {song}");
                 return new SearchResult();
             }
         }

@@ -2,6 +2,7 @@
 using LyricsScraperNET.Providers.AZLyrics;
 using LyricsScraperNET.Providers.Genius;
 using LyricsScraperNET.Providers.Musixmatch;
+using LyricsScraperNET.Providers.SongLyrics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -20,6 +21,7 @@ namespace LyricsScraperNET.Configuration
                 services.AddAZLyricsClientService(lyricScraperClientConfig);
                 services.AddGeniusClientService(lyricScraperClientConfig);
                 services.AddMusixmatchService(lyricScraperClientConfig);
+                services.AddSongLyricsService(lyricScraperClientConfig);
 
                 services.Configure<LyricScraperClientConfig>(lyricScraperClientConfig);
                 services.AddScoped<ILyricScraperClientConfig>(x => x.GetRequiredService<IOptionsSnapshot<LyricScraperClientConfig>>().Value);
@@ -70,6 +72,21 @@ namespace LyricsScraperNET.Configuration
                 services.Configure<MusixmatchOptions>(configurationSection);
 
                 services.AddScoped(typeof(IExternalProvider), typeof(MusixmatchProvider));
+            }
+
+            return services;
+        }
+
+        public static IServiceCollection AddSongLyricsService(
+           this IServiceCollection services,
+           IConfiguration configuration)
+        {
+            var configurationSection = configuration.GetSection(SongLyricsOptions.ConfigurationSectionName);
+            if (configurationSection.Exists())
+            {
+                services.Configure<SongLyricsOptions>(configurationSection);
+
+                services.AddScoped(typeof(IExternalProvider), typeof(SongLyricsProvider));
             }
 
             return services;

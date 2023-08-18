@@ -38,4 +38,13 @@
     <PackageReference Include="System.Text.Json" Version="7.0.2" />
   </ItemGroup>
 
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>LyricsScraperNET.UnitTest</_Parameter1>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>LyricsScraperNET.IntegrationTest</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
+
 </Project>

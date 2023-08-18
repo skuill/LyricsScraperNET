@@ -54,7 +54,7 @@ namespace LyricsScraperNET.Providers.AZLyrics
         {
             if (WebClient == null || Parser == null)
             {
-                _logger?.LogError($"Please set up WebClient and Parser first");
+                _logger?.LogError($"AZLyrics. Please set up WebClient and Parser first");
                 return new SearchResult();
             }
             var text = WebClient.Load(uri);
@@ -75,7 +75,7 @@ namespace LyricsScraperNET.Providers.AZLyrics
         {
             if (WebClient == null || Parser == null)
             {
-                _logger?.LogError($"Please set up WebClient and Parser first");
+                _logger?.LogError($"AZLyrics. Please set up WebClient and Parser first");
                 return new SearchResult();
             }
             var text = await WebClient.LoadAsync(uri);
@@ -98,7 +98,7 @@ namespace LyricsScraperNET.Providers.AZLyrics
         {
             if (string.IsNullOrEmpty(text))
             {
-                _logger?.LogError($"Text is empty for {uri}");
+                _logger?.LogError($"AZLyrics. Text is empty for {uri}");
                 return new SearchResult();
             }
 
@@ -106,7 +106,7 @@ namespace LyricsScraperNET.Providers.AZLyrics
             var endIndex = text.IndexOf(_lyricEnd);
             if (startIndex <= 0 || endIndex <= 0)
             {
-                _logger?.LogError($"Can't find lyrics for {uri}");
+                _logger?.LogError($"AZLyrics. Can't find lyrics for {uri}");
                 return new SearchResult();
             }
 
