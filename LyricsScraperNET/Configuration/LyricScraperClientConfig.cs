@@ -18,8 +18,8 @@ namespace LyricsScraperNET.Configuration
 
         public IExternalProviderOptions SongLyricsOptions { get; set; } = new SongLyricsOptions();
 
-        public bool IsEnabled => AZLyricsOptions.Enabled 
-            || GeniusOptions.Enabled 
+        public bool IsEnabled => AZLyricsOptions.Enabled
+            || GeniusOptions.Enabled
             || MusixmatchOptions.Enabled
             || SongLyricsOptions.Enabled;
     }
