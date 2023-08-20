@@ -26,10 +26,8 @@ jobs:
         run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
       - name: Restore Packages
         run: dotnet restore
-      - name: Check format style
-        run: dotnet format style --verify-no-changes
-      - name: Check format analyzers
-        run: dotnet format analyzers --verify-no-changes
+      - name: Lint
+        run: dotnet format --verify-no-changes
       - name: Build
         run: dotnet build --configuration Release --verbosity minimal
       - name: Test (Unit)
