@@ -31,7 +31,7 @@ namespace LyricsScraperNET.IntegrationTest.Providers.Musixmatch
             Assert.IsNotNull(searchResult);
             Assert.IsFalse(searchResult.IsEmpty());
             Assert.AreEqual(ExternalProviderType.Musixmatch, searchResult.ExternalProviderType);
-            Assert.AreEqual(testData.LyricResultData, searchResult.LyricText);
+            Assert.AreEqual(testData.LyricResultData.Replace("\r\n", "\n"), searchResult.LyricText);
         }
 
         public static IEnumerable<object[]> GetTestData()
