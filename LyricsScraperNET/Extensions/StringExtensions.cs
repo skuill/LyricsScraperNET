@@ -10,6 +10,8 @@ namespace LyricsScraperNET.Extensions
 
         public static string RemoveHtmlTags(this string text)
         {
+            if (string.IsNullOrWhiteSpace(text))
+                return text;
             int idx = text.IndexOf('<');
             while (idx >= 0)
             {
@@ -26,6 +28,8 @@ namespace LyricsScraperNET.Extensions
 
         public static string StripRedundantChars(this string input, bool removeArticle = false)
         {
+            if (string.IsNullOrWhiteSpace(input))
+                return input;
             var result = input.ToLowerInvariant().Trim();
             if (removeArticle)
                 foreach (var article in ARTICLES)
@@ -42,6 +46,8 @@ namespace LyricsScraperNET.Extensions
 
         public static string СonvertToDashedFormat(this string input, bool useExceptionSymbols = true)
         {
+            if (string.IsNullOrWhiteSpace(input))
+                return input;
             var result = input.ToLowerInvariant().Trim();
             result = new string(result.Select(x =>
             {

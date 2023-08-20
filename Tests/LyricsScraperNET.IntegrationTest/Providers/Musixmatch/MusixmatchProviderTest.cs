@@ -1,20 +1,16 @@
 ﻿using LyricsScraperNET.Models.Requests;
 using LyricsScraperNET.Providers.Models;
 using LyricsScraperNET.Providers.Musixmatch;
+using LyricsScraperNET.TestShared.Providers;
 using LyricsScraperNET.UnitTest.TestModel;
-using LyricsScraperNET.UnitTest.Utils;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Collections.Generic;
+using Xunit;
 
 namespace LyricsScraperNET.IntegrationTest.Providers.Musixmatch
 {
-    [TestClass]
-    public class MusixmatchProviderTest
+    public class MusixmatchProviderTest: ProviderTestBase
     {
-        private static readonly string[] TEST_DATA_PATH = { "Providers", "Musixmatch", "test_data.json" };
-
-        [TestMethod]
-        [DynamicData(nameof(GetTestData), DynamicDataSourceType.Method)]
+        [Theory]
+        [MemberData(nameof(GetTestData), parameters: "Providers\\Musixmatch\\test_data.json")]
         public void SearchLyric_IntegrationDynamicData_AreEqual(LyricsTestData testData)
         {
             // Arrange
@@ -28,18 +24,10 @@ namespace LyricsScraperNET.IntegrationTest.Providers.Musixmatch
             var searchResult = lyricsClient.SearchLyric(searchRequest);
 
             // Assert
-            Assert.IsNotNull(searchResult);
-            Assert.IsFalse(searchResult.IsEmpty());
-            Assert.AreEqual(ExternalProviderType.Musixmatch, searchResult.ExternalProviderType);
-            Assert.AreEqual(testData.LyricResultData.Replace("\r\n", "\n"), searchResult.LyricText);
-        }
-
-        public static IEnumerable<object[]> GetTestData()
-        {
-            foreach (var testData in Serializer.Deseialize<List<LyricsTestData>>(TEST_DATA_PATH))
-            {
-                yield return new object[] { testData };
-            }
+            Assert.NotNull(searchResult);
+            Assert.False(searchResult.IsEmpty());
+            Assert.Equal(ExternalProviderType.Musixmatch, searchResult.ExternalProviderType);
+            Assert.Equal(testData.LyricResultData.Replace("\r\n", "\n"), searchResult.LyricText);
         }
     }
 }

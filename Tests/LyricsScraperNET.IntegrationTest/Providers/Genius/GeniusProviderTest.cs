@@ -1,20 +1,16 @@
 ﻿using LyricsScraperNET.Models.Requests;
 using LyricsScraperNET.Providers.Genius;
 using LyricsScraperNET.Providers.Models;
+using LyricsScraperNET.TestShared.Providers;
 using LyricsScraperNET.UnitTest.TestModel;
-using LyricsScraperNET.UnitTest.Utils;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Collections.Generic;
+using Xunit;
 
 namespace LyricsScraperNET.IntegrationTest.Providers.Genius
 {
-    [TestClass]
-    public class GeniusProviderTest
+    public class GeniusProviderTest: ProviderTestBase
     {
-        private static readonly string[] TEST_DATA_PATH = { "Providers", "Genius", "test_data.json" };
-
-        [TestMethod]
-        [DynamicData(nameof(GetTestData), DynamicDataSourceType.Method)]
+        [Theory]
+        [MemberData(nameof(GetTestData), parameters: "Providers\\Genius\\test_data.json")]
         public void SearchLyric_IntegrationDynamicData_AreEqual(LyricsTestData testData)
         {
             // Arrange
@@ -28,18 +24,10 @@ namespace LyricsScraperNET.IntegrationTest.Providers.Genius
             var searchResult = lyricsClient.SearchLyric(searchRequest);
 
             // Assert
-            Assert.IsNotNull(searchResult);
-            Assert.IsFalse(searchResult.IsEmpty());
-            Assert.AreEqual(ExternalProviderType.Genius, searchResult.ExternalProviderType);
-            Assert.AreEqual(testData.LyricResultData.Replace("\r\n", "\n"), searchResult.LyricText.Replace("\r\n", "\n"));
-        }
-
-        public static IEnumerable<object[]> GetTestData()
-        {
-            foreach (var testData in Serializer.Deseialize<List<LyricsTestData>>(TEST_DATA_PATH))
-            {
-                yield return new object[] { testData };
-            }
+            Assert.NotNull(searchResult);
+            Assert.False(searchResult.IsEmpty());
+            Assert.Equal(ExternalProviderType.Genius, searchResult.ExternalProviderType);
+            Assert.Equal(testData.LyricResultData.Replace("\r\n", "\n"), searchResult.LyricText.Replace("\r\n", "\n"));
         }
     }
 }

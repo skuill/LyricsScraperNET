@@ -13,6 +13,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{A5F953E9
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LyricsScraperNET.IntegrationTest", "Tests\LyricsScraperNET.IntegrationTest\LyricsScraperNET.IntegrationTest.csproj", "{962D6B6F-F397-4B26-90F0-7B6D9CD0E4F9}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LyricsScraperNET.TestShared", "LyricsScraperNET.TestShared\LyricsScraperNET.TestShared.csproj", "{ED51A731-05DE-4F59-9EC0-77BE5F957432}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -35,6 +37,10 @@ Global
 		{962D6B6F-F397-4B26-90F0-7B6D9CD0E4F9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{962D6B6F-F397-4B26-90F0-7B6D9CD0E4F9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{962D6B6F-F397-4B26-90F0-7B6D9CD0E4F9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ED51A731-05DE-4F59-9EC0-77BE5F957432}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ED51A731-05DE-4F59-9EC0-77BE5F957432}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ED51A731-05DE-4F59-9EC0-77BE5F957432}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ED51A731-05DE-4F59-9EC0-77BE5F957432}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -42,6 +48,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{5D5B7D35-44A1-439C-B005-D3644DCD4E54} = {A5F953E9-5C82-4C0E-899C-36BE4F7EB342}
 		{962D6B6F-F397-4B26-90F0-7B6D9CD0E4F9} = {A5F953E9-5C82-4C0E-899C-36BE4F7EB342}
+		{ED51A731-05DE-4F59-9EC0-77BE5F957432} = {A5F953E9-5C82-4C0E-899C-36BE4F7EB342}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {234E67FA-12AF-4388-89B9-199F8EAFA2CD}
