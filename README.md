@@ -19,7 +19,7 @@ LyricsScraperNET is a library for .NET that provides an API to search for lyrics
 - [AZLyrics](https://www.azlyrics.com/)
 - [Genius](https://genius.com/)
 - [MusixMatch](https://www.musixmatch.com/)
-- [SongLyrics](https://www.songlyrics.com/) (**TODO**)
+- [SongLyrics](https://www.songlyrics.com/)
 - [LyricFind](https://www.lyricfind.com/) (**TODO**)
 - [Lyrics](https://www.lyrics.com/) (**TODO**)
 
@@ -33,12 +33,13 @@ class Program
 {
     static async Task Main()
     {
-        // Create instance of LyricScraperClient with Genius and AZLyrics providers
-        ILyricsScraperClient lyricsScraperClient 
+        // Create instance of LyricScraperClient with different lyrics providers
+        ILyricsScraperClient lyricsScraperClient
             = new LyricsScraperClient()
                 .WithAZLyrics()
                 .WithGenius()
-                .WithMusixmatch();
+                .WithMusixmatch()
+                .WithSongLyrics();
 
         var searchRequest = new ArtistAndSongSearchRequest(artist: "Metallica", song: "Nothing Else Matters");
 
