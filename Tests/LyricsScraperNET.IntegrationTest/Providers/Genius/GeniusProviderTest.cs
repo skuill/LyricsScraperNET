@@ -7,7 +7,7 @@ using Xunit;
 
 namespace LyricsScraperNET.IntegrationTest.Providers.Genius
 {
-    public class GeniusProviderTest: ProviderTestBase
+    public class GeniusProviderTest : ProviderTestBase
     {
         [Theory]
         [MemberData(nameof(GetTestData), parameters: "Providers\\Genius\\test_data.json")]

@@ -7,7 +7,7 @@ using Xunit;
 
 namespace LyricsScraperNET.IntegrationTest.Providers.Musixmatch
 {
-    public class MusixmatchProviderTest: ProviderTestBase
+    public class MusixmatchProviderTest : ProviderTestBase
     {
         [Theory]
         [MemberData(nameof(GetTestData), parameters: "Providers\\Musixmatch\\test_data.json")]

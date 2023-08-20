@@ -7,7 +7,7 @@ using Xunit;
 
 namespace LyricsScraperNET.IntegrationTest.Providers.SongLyrics
 {
-    public class SongLyricsProviderTest: ProviderTestBase
+    public class SongLyricsProviderTest : ProviderTestBase
     {
         [Theory]
         [MemberData(nameof(GetTestData), parameters: "Providers\\SongLyrics\\test_data.json")]

@@ -10,7 +10,7 @@ using Xunit;
 
 namespace LyricsScraperNET.UnitTest.Providers.AZLyrics
 {
-    public class AZLyricsProviderTest: ProviderTestBase
+    public class AZLyricsProviderTest : ProviderTestBase
     {
         [Theory]
         [MemberData(nameof(GetTestData), parameters: "Providers\\AZLyrics\\test_data.json")]
