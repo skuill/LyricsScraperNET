@@ -16,7 +16,7 @@ namespace LyricsScraperNET
         private readonly ILogger<LyricsScraperClient> _logger;
 
         private IList<IExternalProvider> _externalProviders;
-        private ILyricScraperClientConfig _lyricScraperClientConfig;
+        private readonly ILyricScraperClientConfig _lyricScraperClientConfig;
 
         public bool IsEnabled => _externalProviders != null && _externalProviders.Any(x => x.IsEnabled);
 

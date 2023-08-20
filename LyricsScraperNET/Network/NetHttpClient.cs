@@ -8,7 +8,7 @@ namespace LyricsScraperNET.Network
 {
     internal sealed class NetHttpClient : IWebClient
     {
-        private ILogger<NetHttpClient> _logger;
+        private readonly ILogger<NetHttpClient> _logger;
 
         public NetHttpClient()
         {
@@ -22,7 +22,7 @@ namespace LyricsScraperNET.Network
         public string Load(Uri uri)
         {
             var httpClient = new HttpClient();
-            string htmlPageBody = string.Empty;
+            string htmlPageBody;
 
             try
             {
@@ -42,7 +42,7 @@ namespace LyricsScraperNET.Network
         public async Task<string> LoadAsync(Uri uri)
         {
             var httpClient = new HttpClient();
-            string htmlPageBody = string.Empty;
+            string htmlPageBody;
 
             try
             {

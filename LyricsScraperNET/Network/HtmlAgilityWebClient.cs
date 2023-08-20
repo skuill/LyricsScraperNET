@@ -8,7 +8,7 @@ namespace LyricsScraperNET.Network
 {
     internal sealed class HtmlAgilityWebClient : IWebClient
     {
-        private ILogger<HtmlAgilityWebClient> _logger;
+        private readonly ILogger<HtmlAgilityWebClient> _logger;
 
         public HtmlAgilityWebClient()
         {
