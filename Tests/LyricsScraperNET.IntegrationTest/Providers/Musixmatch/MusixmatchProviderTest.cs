@@ -15,10 +15,7 @@ namespace LyricsScraperNET.IntegrationTest.Providers.Musixmatch
         {
             // Arrange
             var lyricsClient = new MusixmatchProvider();
-
-            SearchRequest searchRequest = !string.IsNullOrEmpty(testData.SongUri)
-                ? new UriSearchRequest(testData.SongUri)
-                : new ArtistAndSongSearchRequest(testData.ArtistName, testData.SongName);
+            SearchRequest searchRequest = CreateSearchRequest(testData);
 
             // Act
             var searchResult = lyricsClient.SearchLyric(searchRequest);

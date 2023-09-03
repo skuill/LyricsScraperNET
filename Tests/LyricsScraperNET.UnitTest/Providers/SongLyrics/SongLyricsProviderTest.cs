@@ -1,11 +1,9 @@
 ﻿using LyricsScraperNET.Models.Requests;
-using LyricsScraperNET.Network.Abstract;
 using LyricsScraperNET.Providers.Models;
 using LyricsScraperNET.Providers.SongLyrics;
+using LyricsScraperNET.TestShared.Extensions;
 using LyricsScraperNET.TestShared.Providers;
 using LyricsScraperNET.UnitTest.TestModel;
-using Moq;
-using System;
 using Xunit;
 
 namespace LyricsScraperNET.UnitTest.Providers.SongLyrics
@@ -17,15 +15,10 @@ namespace LyricsScraperNET.UnitTest.Providers.SongLyrics
         public void SearchLyric_UnitDynamicData_AreEqual(LyricsTestData testData)
         {
             // Arrange
-            var mockWebClient = new Mock<IWebClient>();
-            mockWebClient.Setup(x => x.Load(It.IsAny<Uri>())).Returns(testData.LyricPageData);
-
             var lyricsClient = new SongLyricsProvider();
-            lyricsClient.WithWebClient(mockWebClient.Object);
+            lyricsClient.ConfigureExternalProvider(testData);
 
-            SearchRequest searchRequest = !string.IsNullOrEmpty(testData.SongUri)
-                ? new UriSearchRequest(testData.SongUri)
-                : new ArtistAndSongSearchRequest(testData.ArtistName, testData.SongName);
+            SearchRequest searchRequest = CreateSearchRequest(testData);
 
             // Act
             var searchResult = lyricsClient.SearchLyric(searchRequest);

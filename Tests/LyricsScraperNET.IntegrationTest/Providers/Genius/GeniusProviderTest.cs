@@ -15,10 +15,7 @@ namespace LyricsScraperNET.IntegrationTest.Providers.Genius
         {
             // Arrange
             var lyricsClient = new GeniusProvider();
-
-            SearchRequest searchRequest = !string.IsNullOrEmpty(testData.SongUri)
-                ? new UriSearchRequest(testData.SongUri)
-                : new ArtistAndSongSearchRequest(testData.ArtistName, testData.SongName);
+            SearchRequest searchRequest = CreateSearchRequest(testData);
 
             // Act
             var searchResult = lyricsClient.SearchLyric(searchRequest);
