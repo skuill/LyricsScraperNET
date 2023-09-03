@@ -1,5 +1,4 @@
 ﻿using LyricsScraperNET.Models.Requests;
-using LyricsScraperNET.Providers.Abstract;
 using LyricsScraperNET.TestShared.Utils;
 using LyricsScraperNET.UnitTest.TestModel;
 using System;
@@ -21,7 +20,7 @@ namespace LyricsScraperNET.TestShared.Providers
             }
         }
 
-        public static SearchRequest CreateSearchRequest(LyricsTestData testData) 
+        public static SearchRequest CreateSearchRequest(LyricsTestData testData)
         {
             if (!string.IsNullOrEmpty(testData.SongUri))
                 return new UriSearchRequest(testData.SongUri);
