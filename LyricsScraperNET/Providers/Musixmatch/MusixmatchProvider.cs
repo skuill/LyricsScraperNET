@@ -1,6 +1,7 @@
 ﻿using LyricsScraperNET.Helpers;
 using LyricsScraperNET.Models.Responses;
 using LyricsScraperNET.Providers.Abstract;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MusixmatchClientLib;
@@ -16,6 +17,21 @@ namespace LyricsScraperNET.Providers.Musixmatch
     public sealed class MusixmatchProvider : ExternalProviderBase
     {
         private readonly ILogger<MusixmatchProvider> _logger;
+        private static readonly IMemoryCache _memoryCache;
+        private static readonly MemoryCacheEntryOptions _memoryCacheEntryOptions;
+        private static readonly string MusixmatchTokenKey = "MusixmatchToken";
+
+        static MusixmatchProvider()
+        {
+            _memoryCache = new MemoryCache(new MemoryCacheOptions()
+            {
+                SizeLimit = 1024,
+            });
+            _memoryCacheEntryOptions = new MemoryCacheEntryOptions()
+            {
+                Size = 1
+            };
+        }
 
         public MusixmatchProvider()
         {
@@ -48,9 +64,16 @@ namespace LyricsScraperNET.Providers.Musixmatch
             //else
             //{
             _logger?.LogInformation("Musixmatch. Use default MusixmatchToken.");
-            var musixmatchToken = new MusixmatchToken();
-            (Options as IExternalProviderOptionsWithApiKey).ApiKey = musixmatchToken.Token;
-            return new MusixmatchClient(musixmatchToken);
+            string musixmatchTokenValue;
+            if (!_memoryCache.TryGetValue(MusixmatchTokenKey, out musixmatchTokenValue))
+            {
+                _logger?.LogInformation("Musixmatch. Generate new token.");
+                var musixmatchToken = new MusixmatchToken();
+                musixmatchTokenValue = musixmatchToken.Token;
+                _memoryCache.Set(MusixmatchTokenKey, musixmatchTokenValue, _memoryCacheEntryOptions);
+            }
+            (Options as IExternalProviderOptionsWithApiKey).ApiKey = musixmatchTokenValue;
+            return new MusixmatchClient(musixmatchTokenValue);
             //}
         }
 
