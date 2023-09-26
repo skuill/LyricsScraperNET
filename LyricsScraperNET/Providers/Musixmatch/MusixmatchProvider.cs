@@ -5,6 +5,7 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MusixmatchClientLib;
+using MusixmatchClientLib.API.Model.Exceptions;
 using MusixmatchClientLib.API.Model.Types;
 using MusixmatchClientLib.Auth;
 using MusixmatchClientLib.Types;
@@ -17,9 +18,13 @@ namespace LyricsScraperNET.Providers.Musixmatch
     public sealed class MusixmatchProvider : ExternalProviderBase
     {
         private readonly ILogger<MusixmatchProvider> _logger;
+
+        // Musixmatch Token memory cache
         private static readonly IMemoryCache _memoryCache;
         private static readonly MemoryCacheEntryOptions _memoryCacheEntryOptions;
         private static readonly string MusixmatchTokenKey = "MusixmatchToken";
+
+        private readonly int _searchRetryAmount = 2;
 
         static MusixmatchProvider()
         {
@@ -53,7 +58,7 @@ namespace LyricsScraperNET.Providers.Musixmatch
 
         public override IExternalProviderOptions Options { get; }
 
-        private MusixmatchClient GetMusixmatchClient()
+        private MusixmatchClient GetMusixmatchClient(bool regenerateToken = false)
         {
             // TODO: uncomment after the fix of https://github.com/Eimaen/MusixmatchClientLib/issues/21
             //if (Options.TryGetApiKeyFromOptions(out var apiKey))
@@ -63,6 +68,9 @@ namespace LyricsScraperNET.Providers.Musixmatch
             //}
             //else
             //{
+            if (regenerateToken)
+                _memoryCache.Remove(MusixmatchTokenKey);
+
             _logger?.LogInformation("Musixmatch. Use default MusixmatchToken.");
             string musixmatchTokenValue;
             if (!_memoryCache.TryGetValue(MusixmatchTokenKey, out musixmatchTokenValue))
@@ -101,22 +109,35 @@ namespace LyricsScraperNET.Providers.Musixmatch
 
         protected override SearchResult SearchLyric(string artist, string song)
         {
-            var client = GetMusixmatchClient();
-            var trackSearchParameters = GetTrackSearchParameters(artist, song);
-
-            var trackId = client.SongSearch(trackSearchParameters)?.FirstOrDefault()?.TrackId;
-            if (trackId != null)
+            int? trackId;
+            bool regenerateToken = false;
+            for (int i = 1; i <= _searchRetryAmount; i++)
             {
-                Lyrics lyrics = client.GetTrackLyrics(trackId.Value);
-                return lyrics.Instrumental != 1
-                    ? new SearchResult(lyrics.LyricsBody, Models.ExternalProviderType.Musixmatch)
-                    : new SearchResult(); // lyrics.LyricsBody is null when the track is instrumental
+                var client = GetMusixmatchClient(regenerateToken);
+                var trackSearchParameters = GetTrackSearchParameters(artist, song);
+                try
+                {
+                    trackId = client.SongSearch(trackSearchParameters)?.FirstOrDefault()?.TrackId;
+                    if (trackId != null)
+                    {
+                        Lyrics lyrics = client.GetTrackLyrics(trackId.Value);
+                        return lyrics.Instrumental != 1
+                            ? new SearchResult(lyrics.LyricsBody, Models.ExternalProviderType.Musixmatch)
+                            : new SearchResult(); // lyrics.LyricsBody is null when the track is instrumental
+                    }
+                    else
+                    {
+                        _logger?.LogError($"Musixmatch. Can't find any information about artist {artist} and song {song}");
+                        return new SearchResult();
+                    }
+                }
+                catch (MusixmatchRequestException requestException) when (requestException.StatusCode == StatusCode.AuthFailed)
+                {
+                    _logger?.LogWarning($"Musixmatch. Authentication failed. Error: {requestException.Message}.");
+                    regenerateToken = true;
+                }
             }
-            else
-            {
-                _logger?.LogError($"Musixmatch. Can't find any information about artist {artist} and song {song}");
-                return new SearchResult();
-            }
+            return new SearchResult();
         }
 
         #endregion
@@ -132,24 +153,36 @@ namespace LyricsScraperNET.Providers.Musixmatch
 
         protected override async Task<SearchResult> SearchLyricAsync(string artist, string song)
         {
-            var client = GetMusixmatchClient();
-            var trackSearchParameters = GetTrackSearchParameters(artist, song);
-
-            var songSearchTask = await client.SongSearchAsync(trackSearchParameters);
-
-            var trackId = songSearchTask?.FirstOrDefault()?.TrackId;
-            if (trackId != null)
+            bool regenerateToken = false;
+            for (int i = 1; i <= _searchRetryAmount; i++)
             {
-                Lyrics lyrics = await client.GetTrackLyricsAsync(trackId.Value);
-                return lyrics.Instrumental != 1
-                    ? new SearchResult(lyrics.LyricsBody, Models.ExternalProviderType.Musixmatch)
-                    : new SearchResult(); // lyrics.LyricsBody is null when the track is instrumental
+                var client = GetMusixmatchClient(regenerateToken);
+                var trackSearchParameters = GetTrackSearchParameters(artist, song);
+                try
+                {
+                    var songSearchTask = await client.SongSearchAsync(trackSearchParameters);
+
+                    var trackId = songSearchTask?.FirstOrDefault()?.TrackId;
+                    if (trackId != null)
+                    {
+                        Lyrics lyrics = await client.GetTrackLyricsAsync(trackId.Value);
+                        return lyrics.Instrumental != 1
+                            ? new SearchResult(lyrics.LyricsBody, Models.ExternalProviderType.Musixmatch)
+                            : new SearchResult(); // lyrics.LyricsBody is null when the track is instrumental
+                    }
+                    else
+                    {
+                        _logger?.LogError($"Musixmatch. Can't find any information about artist {artist} and song {song}");
+                        return new SearchResult();
+                    }
+                }
+                catch (MusixmatchRequestException requestException) when (requestException.StatusCode == StatusCode.AuthFailed)
+                {
+                    _logger?.LogWarning($"Musixmatch. Authentication failed. Error: {requestException.Message}.");
+                    regenerateToken = true;
+                }
             }
-            else
-            {
-                _logger?.LogError($"Musixmatch. Can't find any information about artist {artist} and song {song}");
-                return new SearchResult();
-            }
+            return new SearchResult();
         }
 
         #endregion
