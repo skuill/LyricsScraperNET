@@ -43,7 +43,7 @@ namespace LyricsScraperNET.Network
         {
             if (document == null)
             {
-                _logger?.LogDebug($"HtmlPage Load return null for uri: {uri}");
+                _logger?.LogWarning($"HtmlPage could not load document for uri: {uri}");
             }
         }
     }

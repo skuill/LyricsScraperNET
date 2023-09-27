@@ -71,11 +71,11 @@ namespace LyricsScraperNET.Providers.Musixmatch
             if (regenerateToken)
                 _memoryCache.Remove(MusixmatchTokenKey);
 
-            _logger?.LogInformation("Musixmatch. Use default MusixmatchToken.");
+            _logger?.LogDebug("Musixmatch. Use default MusixmatchToken.");
             string musixmatchTokenValue;
             if (!_memoryCache.TryGetValue(MusixmatchTokenKey, out musixmatchTokenValue))
             {
-                _logger?.LogInformation("Musixmatch. Generate new token.");
+                _logger?.LogDebug("Musixmatch. Generate new token.");
                 var musixmatchToken = new MusixmatchToken();
                 musixmatchTokenValue = musixmatchToken.Token;
                 _memoryCache.Set(MusixmatchTokenKey, musixmatchTokenValue, _memoryCacheEntryOptions);
@@ -127,7 +127,7 @@ namespace LyricsScraperNET.Providers.Musixmatch
                     }
                     else
                     {
-                        _logger?.LogError($"Musixmatch. Can't find any information about artist {artist} and song {song}");
+                        _logger?.LogWarning($"Musixmatch. Can't find any information about artist {artist} and song {song}");
                         return new SearchResult();
                     }
                 }
@@ -172,7 +172,7 @@ namespace LyricsScraperNET.Providers.Musixmatch
                     }
                     else
                     {
-                        _logger?.LogError($"Musixmatch. Can't find any information about artist {artist} and song {song}");
+                        _logger?.LogWarning($"Musixmatch. Can't find any information about artist {artist} and song {song}");
                         return new SearchResult();
                     }
                 }

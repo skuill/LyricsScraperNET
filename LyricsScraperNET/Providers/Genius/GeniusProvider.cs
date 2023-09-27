@@ -167,7 +167,7 @@ namespace LyricsScraperNET.Providers.Genius
         {
             if (searchResponse.Meta.Status != 200)
             {
-                _logger?.LogError($"Genius. Can't find any information about artist {artist} and song {song}. Code: {searchResponse.Meta.Status}. Message: {searchResponse.Meta.Message}");
+                _logger?.LogWarning($"Genius. Can't find any information about artist {artist} and song {song}. Code: {searchResponse.Meta.Status}. Message: {searchResponse.Meta.Message}");
                 return string.Empty;
             }
             var artistAndSongHit = searchResponse.Response.Hits.FirstOrDefault(
@@ -175,7 +175,7 @@ namespace LyricsScraperNET.Providers.Genius
 
             if (artistAndSongHit == null || artistAndSongHit.Result == null)
             {
-                _logger?.LogError($"Genius. Can't find artist {artist} and song {song} hit.");
+                _logger?.LogWarning($"Genius. Can't find artist {artist} and song {song} hit.");
                 return string.Empty;
             }
 
