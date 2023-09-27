@@ -55,7 +55,7 @@ namespace LyricsScraperNET.Providers.SongLyrics
         {
             if (WebClient == null)
             {
-                _logger?.LogError($"SongLyrics. Please set up WebClient first");
+                _logger?.LogWarning($"SongLyrics. Please set up WebClient first");
                 return new SearchResult();
             }
             var htmlPageBody = WebClient.Load(uri);
@@ -76,7 +76,7 @@ namespace LyricsScraperNET.Providers.SongLyrics
         {
             if (WebClient == null)
             {
-                _logger?.LogError($"SongLyrics. Please set up WebClient first");
+                _logger?.LogWarning($"SongLyrics. Please set up WebClient first");
                 return new SearchResult();
             }
             var htmlPageBody = await WebClient.LoadAsync(uri);
@@ -100,7 +100,7 @@ namespace LyricsScraperNET.Providers.SongLyrics
         {
             if (string.IsNullOrEmpty(htmlPageBody))
             {
-                _logger?.LogError($"SongLyrics. Text is empty for {uri}");
+                _logger?.LogWarning($"SongLyrics. Text is empty for {uri}");
                 return new SearchResult();
             }
 
@@ -111,7 +111,7 @@ namespace LyricsScraperNET.Providers.SongLyrics
 
             if (lyricsContainerNode == null)
             {
-                _logger?.LogError($"SongLyrics. Can't find lyrics for {uri}");
+                _logger?.LogWarning($"SongLyrics. Can't find lyrics for {uri}");
                 return new SearchResult();
             }
 
