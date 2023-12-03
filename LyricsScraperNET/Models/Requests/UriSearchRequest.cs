@@ -2,7 +2,7 @@
 
 namespace LyricsScraperNET.Models.Requests
 {
-    public class UriSearchRequest : SearchRequest
+    public sealed class UriSearchRequest : SearchRequest
     {
         public Uri Uri { get; }
 

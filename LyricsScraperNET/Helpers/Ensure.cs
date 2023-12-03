@@ -16,12 +16,8 @@ namespace LyricsScraperNET.Helpers
         /// <param name = "name">The name of the argument</param>
         public static void ArgumentNotNull(object value, string name)
         {
-            if (value != null)
-            {
-                return;
-            }
-
-            throw new ArgumentNullException(name);
+            if (value == null)
+                throw new ArgumentNullException(name);
         }
 
         /// <summary>
@@ -31,12 +27,8 @@ namespace LyricsScraperNET.Helpers
         /// <param name = "name">The name of the argument</param>
         public static void ArgumentNotNullOrEmptyString(string value, string name)
         {
-            if (!string.IsNullOrEmpty(value))
-            {
-                return;
-            }
-
-            throw new ArgumentException("String is empty or null", name);
+            if (string.IsNullOrEmpty(value))
+                throw new ArgumentException("String is empty or null", name);
         }
 
         /// <summary>
@@ -46,12 +38,8 @@ namespace LyricsScraperNET.Helpers
         /// <param name = "name">The name of the argument</param>
         public static void ArgumentNotNullOrEmptyList<T>(IEnumerable<T> value, string name)
         {
-            if (value != null && value.Any())
-            {
-                return;
-            }
-
-            throw new ArgumentException("List is empty or null", name);
+            if (value == null || !value.Any())
+                throw new ArgumentException("List is empty or null", name);
         }
     }
 }

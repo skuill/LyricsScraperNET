@@ -22,8 +22,7 @@ namespace LyricsScraperNET
 
         public LyricsScraperClient() { }
 
-        public LyricsScraperClient(ILogger<LyricsScraperClient> logger,
-            ILyricScraperClientConfig lyricScraperClientConfig,
+        public LyricsScraperClient(ILyricScraperClientConfig lyricScraperClientConfig,
             IEnumerable<IExternalProvider> externalProviders)
         {
             Ensure.ArgumentNotNull(lyricScraperClientConfig, nameof(lyricScraperClientConfig));
@@ -31,7 +30,13 @@ namespace LyricsScraperNET
 
             Ensure.ArgumentNotNullOrEmptyList(externalProviders, nameof(externalProviders));
             _externalProviders = externalProviders.ToList();
+        }
 
+        public LyricsScraperClient(ILogger<LyricsScraperClient> logger,
+            ILyricScraperClientConfig lyricScraperClientConfig,
+            IEnumerable<IExternalProvider> externalProviders) 
+            : this(lyricScraperClientConfig, externalProviders)
+        {
             _logger = logger;
         }
 
