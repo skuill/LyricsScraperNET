@@ -1,4 +1,5 @@
 ﻿using LyricsScraperNET.Configuration;
+using LyricsScraperNET.TestShared.Helpers;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
@@ -12,7 +13,7 @@ namespace LyricsScraperNET.UnitTest.Configuration
             var configuration = new ConfigurationBuilder();
 
             if (!string.IsNullOrEmpty(settingsPath))
-                configuration.AddJsonFile(settingsPath, optional: false);
+                configuration.AddJsonFile(PathHelper.GetFullPathInCurrentDirectory(settingsPath), optional: false);
 
             return configuration.Build();
         }

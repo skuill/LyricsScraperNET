@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using LyricsScraperNET.TestShared.Helpers;
 using System.IO;
-using System.Linq;
 using System.Text.Json;
 
 namespace LyricsScraperNET.TestShared.Utils
@@ -10,8 +8,7 @@ namespace LyricsScraperNET.TestShared.Utils
     {
         public static T Deseialize<T>(string path)
         {
-            IEnumerable<string> paths = new List<string> { Environment.CurrentDirectory }.Concat(path.Split(new char[] { '\\', '/' }));
-            var jsonString = File.ReadAllText(Path.Combine(paths.ToArray()));
+            var jsonString = File.ReadAllText(PathHelper.GetFullPathInCurrentDirectory(path));
             return JsonSerializer.Deserialize<T>(jsonString);
         }
     }
