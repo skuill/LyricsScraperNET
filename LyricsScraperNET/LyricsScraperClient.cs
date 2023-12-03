@@ -34,7 +34,7 @@ namespace LyricsScraperNET
 
         public LyricsScraperClient(ILogger<LyricsScraperClient> logger,
             ILyricScraperClientConfig lyricScraperClientConfig,
-            IEnumerable<IExternalProvider> externalProviders) 
+            IEnumerable<IExternalProvider> externalProviders)
             : this(lyricScraperClientConfig, externalProviders)
         {
             _logger = logger;
