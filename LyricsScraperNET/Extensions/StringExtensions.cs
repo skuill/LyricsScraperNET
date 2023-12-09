@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace LyricsScraperNET.Extensions
 {
@@ -12,7 +13,9 @@ namespace LyricsScraperNET.Extensions
         {
             if (string.IsNullOrWhiteSpace(text))
                 return text;
+
             int idx = text.IndexOf('<');
+
             while (idx >= 0)
             {
                 var endIdx = text.IndexOf('>', idx + 1);
@@ -23,6 +26,7 @@ namespace LyricsScraperNET.Extensions
                 text = text.Remove(idx, endIdx - idx + 1);
                 idx = text.IndexOf('<', idx);
             }
+
             return text;
         }
 
@@ -30,7 +34,9 @@ namespace LyricsScraperNET.Extensions
         {
             if (string.IsNullOrWhiteSpace(input))
                 return input;
+
             var result = input.ToLowerInvariant().Trim();
+
             if (removeArticle)
                 foreach (var article in ARTICLES)
                 {
@@ -40,19 +46,29 @@ namespace LyricsScraperNET.Extensions
                         break;
                     }
                 }
+
             result = new string(result.Where(c => char.IsLetterOrDigit(c)).ToArray());
+
             return result;
         }
 
-        public static string СonvertToDashedFormat(this string input, bool useExceptionSymbols = true)
+        public static string СonvertToDashedFormat(this string input, bool useExceptionSymbols = true, bool removeProhibitedSymbols = false)
         {
             if (string.IsNullOrWhiteSpace(input))
                 return input;
+
             var result = input.ToLowerInvariant().Trim();
-            result = new string(result.Select(x =>
+
+            if (removeProhibitedSymbols)
+                result = new string(result.Where(x => char.IsLetterOrDigit(x) || char.IsWhiteSpace(x) || x == '-' || x == '.').ToArray());
+
+            result = Regex.Replace(new string(result.Select(x =>
             {
-                return (char.IsLetterOrDigit(x) || (useExceptionSymbols && EXCEPTION_SYMBOLS.Contains(x))) ? x : '-';
-            }).ToArray()).Replace("--", "-").Trim('-');
+                return (char.IsLetterOrDigit(x) || (useExceptionSymbols && EXCEPTION_SYMBOLS.Contains(x)))
+                    ? x
+                    : '-';
+            }).ToArray()), "-+", "-").Trim('-');
+
             return result;
         }
     }

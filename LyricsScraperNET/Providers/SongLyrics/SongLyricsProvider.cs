@@ -1,5 +1,4 @@
 ﻿using HtmlAgilityPack;
-using LyricsScraperNET.Extensions;
 using LyricsScraperNET.Helpers;
 using LyricsScraperNET.Models.Responses;
 using LyricsScraperNET.Network;
@@ -15,40 +14,43 @@ namespace LyricsScraperNET.Providers.SongLyrics
     public sealed class SongLyricsProvider : ExternalProviderBase
     {
         private readonly ILogger<SongLyricsProvider> _logger;
+        private readonly IExternalUriConverter _uriConverter;
 
-        // 0 - artist, 1 - song
-        private const string SongLyricsUriPathFormat = "https://www.songlyrics.com/{0}/{1}-lyrics/";
 
         private const string _lyricsContainerNodesXPath = "//p[contains(@id, 'songLyricsDiv')]";
 
         private const string NotExistLyricPattern = "We do not have the lyrics for (.*) yet.";
 
+
         public SongLyricsProvider()
         {
             WebClient = new NetHttpClient();
             Options = new SongLyricsOptions() { Enabled = true };
+            _uriConverter = new SongLyricsUriConverter();
         }
 
-        public SongLyricsProvider(ILogger<SongLyricsProvider> logger, SongLyricsOptions songLyricsOptions) : this()
+        public SongLyricsProvider(ILogger<SongLyricsProvider> logger, SongLyricsOptions options) : this()
         {
             _logger = logger;
-            Ensure.ArgumentNotNull(songLyricsOptions, nameof(songLyricsOptions));
-            Options = songLyricsOptions;
+            Ensure.ArgumentNotNull(options, nameof(options));
+            Options = options;
         }
 
-        public SongLyricsProvider(ILogger<SongLyricsProvider> logger, IOptionsSnapshot<SongLyricsOptions> songLyricsOptions)
-            : this(logger, songLyricsOptions.Value)
+        public SongLyricsProvider(ILogger<SongLyricsProvider> logger, IOptionsSnapshot<SongLyricsOptions> options)
+            : this(logger, options.Value)
         {
-            Ensure.ArgumentNotNull(songLyricsOptions, nameof(songLyricsOptions));
+            Ensure.ArgumentNotNull(options, nameof(options));
         }
+
 
         public override IExternalProviderOptions Options { get; }
+
 
         #region Sync
 
         protected override SearchResult SearchLyric(string artist, string song)
         {
-            return SearchLyric(GetLyricUri(artist, song));
+            return SearchLyric(_uriConverter.GetLyricUri(artist, song));
         }
 
         protected override SearchResult SearchLyric(Uri uri)
@@ -69,7 +71,7 @@ namespace LyricsScraperNET.Providers.SongLyrics
 
         protected override async Task<SearchResult> SearchLyricAsync(string artist, string song)
         {
-            return await SearchLyricAsync(GetLyricUri(artist, song));
+            return await SearchLyricAsync(_uriConverter.GetLyricUri(artist, song));
         }
 
         protected override async Task<SearchResult> SearchLyricAsync(Uri uri)
@@ -85,16 +87,6 @@ namespace LyricsScraperNET.Providers.SongLyrics
 
         #endregion
 
-
-        private Uri GetLyricUri(string artist, string song)
-        {
-            // Attack Attack! - I Swear I'll Change -> https://www.songlyrics.com/attack-attack!/i-swear-i-ll-change-lyrics/
-            // Against Me! - Stop! -> https://www.songlyrics.com/against-me!/stop!-lyrics/
-            // The Devil Wears Prada - You Can't Spell Crap Without "C" -> https://www.songlyrics.com/the-devil-wears-prada/you-can-t-spell-crap-without-c-lyrics/
-            var artistFormatted = artist.ToLowerInvariant().СonvertToDashedFormat();
-            var songFormatted = song.ToLowerInvariant().СonvertToDashedFormat();
-            return new Uri(string.Format(SongLyricsUriPathFormat, artistFormatted, songFormatted));
-        }
 
         private SearchResult GetParsedLyricFromHtmlPageBody(Uri uri, string htmlPageBody)
         {

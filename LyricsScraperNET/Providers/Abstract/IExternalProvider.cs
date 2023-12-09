@@ -23,5 +23,9 @@ namespace LyricsScraperNET.Providers.Abstract
         void WithParser(IExternalProviderLyricParser parser);
 
         void WithWebClient(IWebClient webClient);
+
+        void Enable();
+
+        void Disable();
     }
 }

@@ -37,14 +37,10 @@ namespace LyricsScraperNET.Providers.Abstract
         }
 
         protected virtual SearchResult SearchLyric(Uri uri)
-        {
-            throw new NotImplementedException();
-        }
+            => throw new NotImplementedException();
 
         protected virtual SearchResult SearchLyric(string artist, string song)
-        {
-            throw new NotImplementedException();
-        }
+            => throw new NotImplementedException();
 
         #endregion
 
@@ -68,14 +64,10 @@ namespace LyricsScraperNET.Providers.Abstract
         }
 
         protected virtual Task<SearchResult> SearchLyricAsync(Uri uri)
-        {
-            throw new NotImplementedException();
-        }
+            => throw new NotImplementedException();
 
         protected virtual Task<SearchResult> SearchLyricAsync(string artist, string song)
-        {
-            throw new NotImplementedException();
-        }
+            => throw new NotImplementedException();
 
         #endregion
 
@@ -90,6 +82,18 @@ namespace LyricsScraperNET.Providers.Abstract
         {
             if (webClient != null)
                 WebClient = webClient;
+        }
+
+        public void Enable()
+        {
+            if (Options != null)
+                Options.Enabled = true;
+        }
+
+        public void Disable()
+        {
+            if (Options != null)
+                Options.Enabled = false;
         }
     }
 }

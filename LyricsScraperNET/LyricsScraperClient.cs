@@ -3,6 +3,7 @@ using LyricsScraperNET.Helpers;
 using LyricsScraperNET.Models.Requests;
 using LyricsScraperNET.Models.Responses;
 using LyricsScraperNET.Providers.Abstract;
+using LyricsScraperNET.Providers.Models;
 using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,10 +16,17 @@ namespace LyricsScraperNET
 
         private readonly ILogger<LyricsScraperClient> _logger;
 
-        private IList<IExternalProvider> _externalProviders;
+        private List<IExternalProvider> _externalProviders;
         private readonly ILyricScraperClientConfig _lyricScraperClientConfig;
 
         public bool IsEnabled => _externalProviders != null && _externalProviders.Any(x => x.IsEnabled);
+
+        public IExternalProvider this[ExternalProviderType providerType]
+        {
+            get => !IsEmptyProviders()
+                ? _externalProviders.FirstOrDefault(p => p.Options.ExternalProviderType == providerType)
+                : null;
+        }
 
         public LyricsScraperClient() { }
 
@@ -88,7 +96,7 @@ namespace LyricsScraperNET
             else if (!IsEnabled)
             {
                 error = "All external providers is disabled. Searching lyrics is disabled.";
-                logLevel = LogLevel.Warning;
+                logLevel = LogLevel.Debug;
             }
 
             if (!string.IsNullOrWhiteSpace(error))
@@ -110,5 +118,35 @@ namespace LyricsScraperNET
         }
 
         private bool IsEmptyProviders() => _externalProviders == null || !_externalProviders.Any();
+
+        public void RemoveProvider(ExternalProviderType providerType)
+        {
+            if (IsEmptyProviders())
+                return;
+
+            _externalProviders.RemoveAll(x => x.Options.ExternalProviderType == providerType);
+        }
+
+        public void Enable()
+        {
+            if (IsEmptyProviders())
+                return;
+
+            foreach (var provider in _externalProviders)
+            {
+                provider.Enable();
+            }
+        }
+
+        public void Disable()
+        {
+            if (IsEmptyProviders())
+                return;
+
+            foreach (var provider in _externalProviders)
+            {
+                provider.Disable();
+            }
+        }
     }
 }

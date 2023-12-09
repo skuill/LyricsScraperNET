@@ -4,6 +4,7 @@ using LyricsScraperNET.Providers.Abstract;
 using LyricsScraperNET.Providers.AZLyrics;
 using LyricsScraperNET.Providers.Genius;
 using LyricsScraperNET.Providers.SongLyrics;
+using LyricsScraperNET.Providers.LyricFind;
 using LyricsScraperNET.Models.Requests;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -101,7 +102,8 @@ class Program
                 .WithGenius()
                 .WithAZLyrics()
                 .WithMusixmatch()
-                .WithSongLyrics();
+                .WithSongLyrics()
+                .WithLyricFind();
 
         //// Another way to configure:
         //// 1. First create instance of LyricScraperClient.

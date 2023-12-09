@@ -18,33 +18,38 @@ namespace LyricsScraperNET.Providers.Genius
     public sealed class GeniusProvider : ExternalProviderBase
     {
         private readonly ILogger<GeniusProvider> _logger;
+        private readonly IExternalUriConverter _uriConverter;
 
         // Format: "artist song". Example: "Parkway Drive Carrion".
         private const string GeniusSearchQueryFormat = "{0} {1}";
-        private const string GeniusApiSearchFormat = "https://genius.com/api/search?q={0}";
 
         private const string _referentFragmentNodesXPath = "//a[contains(@class, 'ReferentFragmentVariantdesktop') or contains(@class, 'ReferentFragmentdesktop')]";
         private const string _lyricsContainerNodesXPath = "//div[@data-lyrics-container]";
+
+        #region Constructors
 
         public GeniusProvider()
         {
             Parser = new GeniusParser();
             WebClient = new NetHttpClient();
             Options = new GeniusOptions() { Enabled = true };
+            _uriConverter = new GeniusUriConverter();
         }
 
-        public GeniusProvider(ILogger<GeniusProvider> logger, GeniusOptions geniusOptions) : this()
+        public GeniusProvider(ILogger<GeniusProvider> logger, GeniusOptions options) : this()
         {
             _logger = logger;
-            Ensure.ArgumentNotNull(geniusOptions, nameof(geniusOptions));
-            Options = geniusOptions;
+            Ensure.ArgumentNotNull(options, nameof(options));
+            Options = options;
         }
 
-        public GeniusProvider(ILogger<GeniusProvider> logger, IOptionsSnapshot<GeniusOptions> geniusOptions)
-            : this(logger, geniusOptions.Value)
+        public GeniusProvider(ILogger<GeniusProvider> logger, IOptionsSnapshot<GeniusOptions> options)
+            : this(logger, options.Value)
         {
-            Ensure.ArgumentNotNull(geniusOptions, nameof(geniusOptions));
+            Ensure.ArgumentNotNull(options, nameof(options));
         }
+
+        #endregion
 
         public override IExternalProviderOptions Options { get; }
 
@@ -82,7 +87,6 @@ namespace LyricsScraperNET.Providers.Genius
 
         #endregion
 
-
         #region Async
 
         protected override async Task<SearchResult> SearchLyricAsync(Uri uri)
@@ -119,7 +123,7 @@ namespace LyricsScraperNET.Providers.Genius
 
         private string GetLyricUrlWithoutApiKey(string artist, string song)
         {
-            var htmlPageBody = WebClient.Load(new Uri(GetApiSearchUrl(artist, song)));
+            var htmlPageBody = WebClient.Load(_uriConverter.GetLyricUri(artist, song));
 
             if (string.IsNullOrWhiteSpace(htmlPageBody))
                 return string.Empty;
@@ -187,8 +191,5 @@ namespace LyricsScraperNET.Providers.Genius
 
         private string GetApiSearchQuery(string artist, string song)
             => string.Format(GeniusSearchQueryFormat, artist, song);
-
-        private string GetApiSearchUrl(string artist, string song)
-            => string.Format(GeniusApiSearchFormat, GetApiSearchQuery(artist, song));
     }
 }

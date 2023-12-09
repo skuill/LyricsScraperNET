@@ -9,6 +9,8 @@ namespace LyricsScraperNET.UnitTest.Extensions
         [InlineData("Attack Attack!", "attack-attack!")]
         [InlineData("I Swear I'll Change", "i-swear-i-ll-change")]
         [InlineData("You Can't Spell Crap Without \"C\"", "you-can-t-spell-crap-without-c")]
+        [InlineData("Summer of '69", "summer-of-69")]
+        [InlineData(" Of Mice & Men ", "of-mice-men")]
         [InlineData("", "")]
         [InlineData(null, null)]
         public void СonvertToDashedFormat_MultipleInputs_ShouldBeParse(string input, string expected)

@@ -6,6 +6,7 @@
         AZLyrics,
         Genius,
         Musixmatch,
-        SongLyrics
+        SongLyrics,
+        LyricFind
     }
 }

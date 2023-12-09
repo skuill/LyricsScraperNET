@@ -22,9 +22,12 @@ namespace LyricsScraperNET.Providers.Musixmatch
         // Musixmatch Token memory cache
         private static readonly IMemoryCache _memoryCache;
         private static readonly MemoryCacheEntryOptions _memoryCacheEntryOptions;
+
         private static readonly string MusixmatchTokenKey = "MusixmatchToken";
 
         private readonly int _searchRetryAmount = 2;
+
+        #region Constructors
 
         static MusixmatchProvider()
         {
@@ -43,61 +46,22 @@ namespace LyricsScraperNET.Providers.Musixmatch
             Options = new MusixmatchOptions() { Enabled = true };
         }
 
-        public MusixmatchProvider(ILogger<MusixmatchProvider> logger, MusixmatchOptions musixmatchOptions)
+        public MusixmatchProvider(ILogger<MusixmatchProvider> logger, MusixmatchOptions options)
         {
             _logger = logger;
-            Ensure.ArgumentNotNull(musixmatchOptions, nameof(musixmatchOptions));
-            Options = musixmatchOptions;
+            Ensure.ArgumentNotNull(options, nameof(options));
+            Options = options;
         }
 
-        public MusixmatchProvider(ILogger<MusixmatchProvider> logger, IOptionsSnapshot<MusixmatchOptions> musixmatchOptions)
-            : this(logger, musixmatchOptions.Value)
+        public MusixmatchProvider(ILogger<MusixmatchProvider> logger, IOptionsSnapshot<MusixmatchOptions> options)
+            : this(logger, options.Value)
         {
-            Ensure.ArgumentNotNull(musixmatchOptions, nameof(musixmatchOptions));
+            Ensure.ArgumentNotNull(options, nameof(options));
         }
+
+        #endregion
 
         public override IExternalProviderOptions Options { get; }
-
-        private MusixmatchClient GetMusixmatchClient(bool regenerateToken = false)
-        {
-            // TODO: uncomment after the fix of https://github.com/Eimaen/MusixmatchClientLib/issues/21
-            //if (Options.TryGetApiKeyFromOptions(out var apiKey))
-            //{
-            //    _logger.LogInformation("Use MusixmatchToken from options.");
-            //    return new MusixmatchClient(apiKey);
-            //}
-            //else
-            //{
-            if (regenerateToken)
-                _memoryCache.Remove(MusixmatchTokenKey);
-
-            _logger?.LogDebug("Musixmatch. Use default MusixmatchToken.");
-            string musixmatchTokenValue;
-            if (!_memoryCache.TryGetValue(MusixmatchTokenKey, out musixmatchTokenValue))
-            {
-                _logger?.LogDebug("Musixmatch. Generate new token.");
-                var musixmatchToken = new MusixmatchToken();
-                musixmatchTokenValue = musixmatchToken.Token;
-                _memoryCache.Set(MusixmatchTokenKey, musixmatchTokenValue, _memoryCacheEntryOptions);
-            }
-            (Options as IExternalProviderOptionsWithApiKey).ApiKey = musixmatchTokenValue;
-            return new MusixmatchClient(musixmatchTokenValue);
-            //}
-        }
-
-        private TrackSearchParameters GetTrackSearchParameters(string artist, string song)
-        {
-            return new TrackSearchParameters
-            {
-                Artist = artist,
-                Title = song, // Track name
-                //Query = $"{artist} - {song}", // Search query, covers all the search parameters above
-                //HasLyrics = false, // Only search for tracks with lyrics
-                //HasSubtitles = false, // Only search for tracks with synced lyrics
-                //Language = "", // Only search for tracks with lyrics in specified language
-                Sort = TrackSearchParameters.SortStrategy.TrackRatingDesc // List sorting strategy 
-            };
-        }
 
         #region Sync
 
@@ -142,7 +106,6 @@ namespace LyricsScraperNET.Providers.Musixmatch
 
         #endregion
 
-
         #region Async
 
         // TODO: search by uri from the site. Example: https://www.musixmatch.com/lyrics/Parkway-Drive/Idols-and-Anchors
@@ -186,5 +149,46 @@ namespace LyricsScraperNET.Providers.Musixmatch
         }
 
         #endregion
+
+        private MusixmatchClient GetMusixmatchClient(bool regenerateToken = false)
+        {
+            // TODO: uncomment after the fix of https://github.com/Eimaen/MusixmatchClientLib/issues/21
+            //if (Options.TryGetApiKeyFromOptions(out var apiKey))
+            //{
+            //    _logger.LogInformation("Use MusixmatchToken from options.");
+            //    return new MusixmatchClient(apiKey);
+            //}
+            //else
+            //{
+            if (regenerateToken)
+                _memoryCache.Remove(MusixmatchTokenKey);
+
+            _logger?.LogDebug("Musixmatch. Use default MusixmatchToken.");
+            string musixmatchTokenValue;
+            if (!_memoryCache.TryGetValue(MusixmatchTokenKey, out musixmatchTokenValue))
+            {
+                _logger?.LogDebug("Musixmatch. Generate new token.");
+                var musixmatchToken = new MusixmatchToken();
+                musixmatchTokenValue = musixmatchToken.Token;
+                _memoryCache.Set(MusixmatchTokenKey, musixmatchTokenValue, _memoryCacheEntryOptions);
+            }
+            (Options as IExternalProviderOptionsWithApiKey).ApiKey = musixmatchTokenValue;
+            return new MusixmatchClient(musixmatchTokenValue);
+            //}
+        }
+
+        private TrackSearchParameters GetTrackSearchParameters(string artist, string song)
+        {
+            return new TrackSearchParameters
+            {
+                Artist = artist,
+                Title = song, // Track name
+                //Query = $"{artist} - {song}", // Search query, covers all the search parameters above
+                //HasLyrics = false, // Only search for tracks with lyrics
+                //HasSubtitles = false, // Only search for tracks with synced lyrics
+                //Language = "", // Only search for tracks with lyrics in specified language
+                Sort = TrackSearchParameters.SortStrategy.TrackRatingDesc // List sorting strategy 
+            };
+        }
     }
 }

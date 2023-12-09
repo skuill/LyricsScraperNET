@@ -7,34 +7,33 @@ using Microsoft.Extensions.Options;
 using System;
 using System.Threading.Tasks;
 
-namespace LyricsScraperNET.Providers.AZLyrics
+namespace LyricsScraperNET.Providers.LyricFind
 {
-    public sealed class AZLyricsProvider : ExternalProviderBase
+    public sealed class LyricFindProvider : ExternalProviderBase
     {
-        private readonly ILogger<AZLyricsProvider> _logger;
+        private readonly ILogger<LyricFindProvider> _logger;
         private readonly IExternalUriConverter _uriConverter;
 
-        private const string _lyricStart = "<!-- Usage of azlyrics.com content by any third-party lyrics provider is prohibited by our licensing agreement. Sorry about that. -->";
-        private const string _lyricEnd = "<!-- MxM banner -->";
+        private const string _lyricStart = "\"lyrics\"";
 
         #region Constructors
 
-        public AZLyricsProvider()
+        public LyricFindProvider()
         {
-            Parser = new AZLyricsParser();
+            Parser = new LyricFindParser();
             WebClient = new HtmlAgilityWebClient();
-            Options = new AZLyricsOptions() { Enabled = true };
-            _uriConverter = new AZLyricsUriConverter();
+            Options = new LyricFindOptions() { Enabled = true };
+            _uriConverter = new LyricFindUriConverter();
         }
 
-        public AZLyricsProvider(ILogger<AZLyricsProvider> logger, AZLyricsOptions options) : this()
+        public LyricFindProvider(ILogger<LyricFindProvider> logger, LyricFindOptions options) : this()
         {
             _logger = logger;
             Ensure.ArgumentNotNull(options, nameof(options));
             Options = options;
         }
 
-        public AZLyricsProvider(ILogger<AZLyricsProvider> logger, IOptionsSnapshot<AZLyricsOptions> options)
+        public LyricFindProvider(ILogger<LyricFindProvider> logger, IOptionsSnapshot<LyricFindOptions> options)
             : this(logger, options.Value)
         {
             Ensure.ArgumentNotNull(options, nameof(options));
@@ -55,7 +54,7 @@ namespace LyricsScraperNET.Providers.AZLyrics
         {
             if (WebClient == null || Parser == null)
             {
-                _logger?.LogWarning($"AZLyrics. Please set up WebClient and Parser first");
+                _logger?.LogWarning($"LyricFind. Please set up WebClient and Parser first");
                 return new SearchResult();
             }
             var text = WebClient.Load(uri);
@@ -75,7 +74,7 @@ namespace LyricsScraperNET.Providers.AZLyrics
         {
             if (WebClient == null || Parser == null)
             {
-                _logger?.LogWarning($"AZLyrics. Please set up WebClient and Parser first");
+                _logger?.LogWarning($"LyricFind. Please set up WebClient and Parser first");
                 return new SearchResult();
             }
             var text = await WebClient.LoadAsync(uri);
@@ -88,21 +87,35 @@ namespace LyricsScraperNET.Providers.AZLyrics
         {
             if (string.IsNullOrEmpty(text))
             {
-                _logger?.LogWarning($"AZLyrics. Text is empty for {uri}");
+                _logger?.LogWarning($"LyricFind. Text is empty for {uri}");
                 return new SearchResult();
             }
 
             var startIndex = text.IndexOf(_lyricStart);
-            var endIndex = text.IndexOf(_lyricEnd);
-            if (startIndex <= 0 || endIndex <= 0)
+            if (startIndex <= 0)
             {
-                _logger?.LogWarning($"AZLyrics. Can't find lyrics for {uri}");
+                _logger?.LogWarning($"LyricFind. Can't find lyrics for {uri}");
                 return new SearchResult();
             }
 
-            string result = Parser.Parse(text.Substring(startIndex, endIndex - startIndex));
+            // Trim the beginning of the text to the lyrics
+            text = text.Substring(startIndex + _lyricStart.Length + 1);
 
-            return new SearchResult(result, Models.ExternalProviderType.AZLyrics);
+            // Finding the end of the lyric text in the json field value.
+            int start = text.IndexOf("\"") + 1;
+
+            int endOfFieldValue = text.IndexOf("\",\"", start);
+            int endOfJsonObject = text.IndexOf("\"}", start);
+            int endOfLyricInJson = Math.Max(Math.Min(endOfFieldValue, endOfJsonObject), -1);
+            if (endOfLyricInJson < 0)
+            {
+                _logger?.LogWarning($"LyricFind. Can't parse lyrics for {uri}");
+                return new SearchResult();
+            }
+
+            string result = Parser.Parse(text.Substring(start, endOfLyricInJson - start));
+
+            return new SearchResult(result, Models.ExternalProviderType.LyricFind);
         }
     }
 }

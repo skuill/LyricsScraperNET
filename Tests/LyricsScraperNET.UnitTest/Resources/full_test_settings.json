@@ -1,21 +1,25 @@
 {
   "LyricScraperClient": {
     "GeniusOptions": {
-      "SearchPriority": 2,
+      "SearchPriority": 11,
       "Enabled": true,
       "ApiKey": ""
     },
     "AZLyricsOptions": {
-      "SearchPriority": 3,
+      "SearchPriority": 22,
       "Enabled": true
     },
     "MusixmatchOptions": {
-      "SearchPriority": 1,
+      "SearchPriority": 33,
       "Enabled": true,
       "ApiKey": ""
     },
     "SongLyricsOptions": {
-      "SearchPriority": 0,
+      "SearchPriority": 44,
+      "Enabled": true
+    },
+    "LyricFindOptions": {
+      "SearchPriority": 55,
       "Enabled": true
     }
   }
