@@ -40,6 +40,18 @@ namespace LyricsScraperNET.Providers.AZLyrics
             Ensure.ArgumentNotNull(options, nameof(options));
         }
 
+        public AZLyricsProvider(AZLyricsOptions options)
+            : this(null, options)
+        {
+            Ensure.ArgumentNotNull(options, nameof(options));
+        }
+
+        public AZLyricsProvider(IOptionsSnapshot<AZLyricsOptions> options)
+            : this(null, options.Value)
+        {
+            Ensure.ArgumentNotNull(options, nameof(options));
+        }
+
         #endregion
 
         public override IExternalProviderOptions Options { get; }

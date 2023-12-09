@@ -59,6 +59,18 @@ namespace LyricsScraperNET.Providers.Musixmatch
             Ensure.ArgumentNotNull(options, nameof(options));
         }
 
+        public MusixmatchProvider(MusixmatchOptions options)
+            : this(null, options)
+        {
+            Ensure.ArgumentNotNull(options, nameof(options));
+        }
+
+        public MusixmatchProvider(IOptionsSnapshot<MusixmatchOptions> options)
+            : this(null, options.Value)
+        {
+            Ensure.ArgumentNotNull(options, nameof(options));
+        }
+
         #endregion
 
         public override IExternalProviderOptions Options { get; }

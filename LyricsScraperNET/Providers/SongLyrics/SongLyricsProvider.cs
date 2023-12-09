@@ -21,6 +21,7 @@ namespace LyricsScraperNET.Providers.SongLyrics
 
         private const string NotExistLyricPattern = "We do not have the lyrics for (.*) yet.";
 
+        #region Constructors
 
         public SongLyricsProvider()
         {
@@ -42,6 +43,19 @@ namespace LyricsScraperNET.Providers.SongLyrics
             Ensure.ArgumentNotNull(options, nameof(options));
         }
 
+        public SongLyricsProvider(SongLyricsOptions options)
+            : this(null, options)
+        {
+            Ensure.ArgumentNotNull(options, nameof(options));
+        }
+
+        public SongLyricsProvider(IOptionsSnapshot<SongLyricsOptions> options)
+            : this(null, options.Value)
+        {
+            Ensure.ArgumentNotNull(options, nameof(options));
+        }
+
+        #endregion
 
         public override IExternalProviderOptions Options { get; }
 

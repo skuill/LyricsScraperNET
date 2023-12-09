@@ -39,6 +39,18 @@ namespace LyricsScraperNET.Providers.LyricFind
             Ensure.ArgumentNotNull(options, nameof(options));
         }
 
+        public LyricFindProvider(LyricFindOptions options)
+            : this(null, options)
+        {
+            Ensure.ArgumentNotNull(options, nameof(options));
+        }
+
+        public LyricFindProvider(IOptionsSnapshot<LyricFindOptions> options)
+            : this(null, options.Value)
+        {
+            Ensure.ArgumentNotNull(options, nameof(options));
+        }
+
         #endregion
 
         public override IExternalProviderOptions Options { get; }

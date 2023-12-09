@@ -49,6 +49,18 @@ namespace LyricsScraperNET.Providers.Genius
             Ensure.ArgumentNotNull(options, nameof(options));
         }
 
+        public GeniusProvider(GeniusOptions options)
+            : this(null, options)
+        {
+            Ensure.ArgumentNotNull(options, nameof(options));
+        }
+
+        public GeniusProvider(IOptionsSnapshot<GeniusOptions> options)
+            : this(null, options.Value)
+        {
+            Ensure.ArgumentNotNull(options, nameof(options));
+        }
+
         #endregion
 
         public override IExternalProviderOptions Options { get; }
