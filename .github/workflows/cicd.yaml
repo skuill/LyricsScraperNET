@@ -55,11 +55,13 @@ jobs:
       - name: Upload to GH Release
         if: startsWith( github.ref, 'refs/tags/')
         run: |
+          zip -j LyricsScraperNET-netstandard2.0.zip LyricsScraperNET/bin/Release/netstandard2.0/*
           zip -j LyricsScraperNET-netstandard2.1.zip LyricsScraperNET/bin/Release/netstandard2.1/*
           zip -j LyricsScraperNET-net5.0.zip LyricsScraperNET/bin/Release/net5.0/*
           zip -j LyricsScraperNET-net6.0.zip LyricsScraperNET/bin/Release/net6.0/*
           zip -j LyricsScraperNET-net7.0.zip LyricsScraperNET/bin/Release/net7.0/*
           gh release upload "$RELEASE_VERSION" \
+            "LyricsScraperNET-netstandard2.0.zip" \
             "LyricsScraperNET-netstandard2.1.zip" \
             "LyricsScraperNET-net5.0.zip" \
             "LyricsScraperNET-net6.0.zip" \

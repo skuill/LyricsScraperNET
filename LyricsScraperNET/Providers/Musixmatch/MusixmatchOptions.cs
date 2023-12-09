@@ -1,6 +1,5 @@
 ﻿using LyricsScraperNET.Providers.Abstract;
 using LyricsScraperNET.Providers.Models;
-using System;
 
 namespace LyricsScraperNET.Providers.Musixmatch
 {
@@ -26,7 +25,14 @@ namespace LyricsScraperNET.Providers.Musixmatch
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(ApiKey, ExternalProviderType);
+            unchecked
+            {
+                int hash = 17;
+                if (!string.IsNullOrEmpty(ApiKey))
+                    hash = hash * 31 + ApiKey.GetHashCode();
+                hash = hash * 31 + ExternalProviderType.GetHashCode();
+                return hash;
+            }
         }
     }
 }
