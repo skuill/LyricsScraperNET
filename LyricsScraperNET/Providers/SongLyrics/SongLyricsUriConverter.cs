@@ -13,7 +13,7 @@ namespace LyricsScraperNET.Providers.SongLyrics
         {
             var artistFormatted = artist.ToLowerInvariant().СonvertToDashedFormat();
             var songFormatted = song.ToLowerInvariant().СonvertToDashedFormat();
-            
+
             return new Uri(string.Format(uriPathFormat, artistFormatted, songFormatted));
         }
     }

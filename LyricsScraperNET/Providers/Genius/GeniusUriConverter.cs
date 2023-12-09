@@ -14,6 +14,6 @@ namespace LyricsScraperNET.Providers.Genius
 
         public Uri GetLyricUri(string artist, string song)
             => new Uri(string.Format(GeniusApiSearchFormat, GetApiSearchQuery(artist, song)));
-        
+
     }
 }
