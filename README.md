@@ -20,10 +20,12 @@ LyricsScraperNET is a library for .NET that provides an API to search for lyrics
 - [Genius](https://genius.com/)
 - [MusixMatch](https://www.musixmatch.com/)
 - [SongLyrics](https://www.songlyrics.com/)
-- [LyricFind](https://www.lyricfind.com/) (**TODO**)
+- [LyricFind](https://www.lyricfind.com/)
 - [Lyrics](https://www.lyrics.com/) (**TODO**)
 
 ## Example
+
+A simple way to initialize through a parameterless constructor with the addition of the necessary lyric providers:
 
 ```csharp
 using LyricsScraperNET;
@@ -36,10 +38,11 @@ class Program
         // Create instance of LyricScraperClient with different lyrics providers
         ILyricsScraperClient lyricsScraperClient
             = new LyricsScraperClient()
-                .WithAZLyrics()
                 .WithGenius()
+                .WithAZLyrics()
                 .WithMusixmatch()
-                .WithSongLyrics();
+                .WithSongLyrics()
+                .WithLyricFind();
 
         var searchRequest = new ArtistAndSongSearchRequest(artist: "Metallica", song: "Nothing Else Matters");
 
@@ -50,11 +53,14 @@ class Program
     }
 }
 ```
+There are also extension methods for setting up LyricScraperClient as IServiceCollection that stored in some IConfiguration.
+
 More examples can be found in example project: [LyricsScraperNET.Client](LyricsScraperNET.Client/Program.cs)
 
 ## Contributing and Feedback
 
 Feel free to send me feedback on [Telegram](https://t.me/skuill).
+
 You are more than welcome to contribute to this project. Fork and make a Pull Request, or [create an Issue](https://github.com/skuill/LyricScraperNET/issues/new) if you see any problem or want to propose a feature.
 
 ## Support
