@@ -9,17 +9,17 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
-      - uses: actions/setup-dotnet@v1
+        uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v3
         with:
           dotnet-version: "3.1.x"
-      - uses: actions/setup-dotnet@v1
+      - uses: actions/setup-dotnet@v3
         with:
           dotnet-version: "5.0.x"
-      - uses: actions/setup-dotnet@v1
+      - uses: actions/setup-dotnet@v3
         with:
           dotnet-version: "6.0.x"
-      - uses: actions/setup-dotnet@v1
+      - uses: actions/setup-dotnet@v3
         with:
           dotnet-version: "7.0.x"
       - name: Set RELEASE_VERSION
@@ -59,11 +59,10 @@ jobs:
           zip -j LyricsScraperNET-net5.0.zip LyricsScraperNET/bin/Release/net5.0/*
           zip -j LyricsScraperNET-net6.0.zip LyricsScraperNET/bin/Release/net6.0/*
           zip -j LyricsScraperNET-net7.0.zip LyricsScraperNET/bin/Release/net7.0/*
-          hub release edit \
-            -a "LyricsScraperNET-netstandard2.1.zip" \
-            -a "LyricsScraperNET-net5.0.zip" \
-            -a "LyricsScraperNET-net6.0.zip" \
-            -a "LyricsScraperNET-net7.0.zip" \
-            -m "" "$RELEASE_VERSION"
+          gh release upload "$RELEASE_VERSION" \
+            "LyricsScraperNET-netstandard2.1.zip" \
+            "LyricsScraperNET-net5.0.zip" \
+            "LyricsScraperNET-net6.0.zip" \
+            "LyricsScraperNET-net7.0.zip" \
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
