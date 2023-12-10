@@ -1,4 +1,5 @@
 ﻿using LyricsScraperNET.Models.Requests;
+using LyricsScraperNET.Models.Responses;
 using LyricsScraperNET.Providers.Genius;
 using LyricsScraperNET.Providers.Models;
 using LyricsScraperNET.TestShared.Extensions;
@@ -25,6 +26,8 @@ namespace LyricsScraperNET.UnitTest.Providers.Genius
 
             // Assert
             Assert.NotNull(searchResult);
+            Assert.Equal(ResponseStatusCode.Success, searchResult.ResponseStatusCode);
+            Assert.True(string.IsNullOrEmpty(searchResult.ResponseMessage));
             Assert.Equal(ExternalProviderType.Genius, searchResult.ExternalProviderType);
             Assert.Equal(testData.LyricResultData.Replace("\r\n", "\n"), searchResult.LyricText.Replace("\r\n", "\n"));
         }
