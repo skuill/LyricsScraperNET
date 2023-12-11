@@ -1,10 +1,13 @@
-﻿using LyricsScraperNET.Configuration;
+﻿using LyricsScraperNET.Common;
+using LyricsScraperNET.Configuration;
+using LyricsScraperNET.Extensions;
 using LyricsScraperNET.Helpers;
 using LyricsScraperNET.Models.Requests;
 using LyricsScraperNET.Models.Responses;
 using LyricsScraperNET.Providers.Abstract;
 using LyricsScraperNET.Providers.Models;
 using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -23,8 +26,8 @@ namespace LyricsScraperNET
 
         public IExternalProvider this[ExternalProviderType providerType]
         {
-            get => !IsEmptyProviders()
-                ? _externalProviders.FirstOrDefault(p => p.Options.ExternalProviderType == providerType)
+            get => IsProviderAvailable(providerType)
+                ? _externalProviders.First(p => p.Options.ExternalProviderType == providerType)
                 : null;
         }
 
@@ -50,66 +53,151 @@ namespace LyricsScraperNET
 
         public SearchResult SearchLyric(SearchRequest searchRequest)
         {
-            if (!ValidateRequest())
-                return new SearchResult();
+            var searchResult = new SearchResult();
 
-            foreach (var externalProvider in _externalProviders.OrderByDescending(x => x.SearchPriority))
+            if (!ValidSearchRequest(searchRequest, out var badRequestErrorMessage))
             {
-                var searchResult = externalProvider.SearchLyric(searchRequest);
-                if (!searchResult.IsEmpty())
+                searchResult.AddBadRequestMessage(badRequestErrorMessage);
+                return searchResult;
+            }
+
+            if (!ValidClientConfiguration(out var errorMessage))
+            {
+                searchResult.AddNoDataFoundMessage(errorMessage);
+                return searchResult;
+            }
+
+            foreach (var externalProvider in GetAvailableProvidersForSearchRequest(searchRequest))
+            {
+                var providerSearchResult = externalProvider.SearchLyric(searchRequest);
+                if (!providerSearchResult.IsEmpty())
                 {
-                    return searchResult;
+                    return providerSearchResult;
                 }
                 _logger?.LogWarning($"Can't find lyric by provider: {externalProvider}.");
             }
+
+            searchResult.AddNoDataFoundMessage(Constants.ResponseMessages.NotFoundLyric);
             _logger?.LogError($"Can't find lyrics for searchRequest: {searchRequest}.");
-            return new SearchResult();
+
+            return searchResult;
         }
 
         public async Task<SearchResult> SearchLyricAsync(SearchRequest searchRequest)
         {
-            if (!ValidateRequest())
-                return new SearchResult();
+            var searchResult = new SearchResult();
 
-            foreach (var externalProvider in _externalProviders.OrderByDescending(x => x.SearchPriority))
+            if (!ValidSearchRequest(searchRequest, out var badRequestErrorMessage))
             {
-                var searchResult = await externalProvider.SearchLyricAsync(searchRequest);
-                if (!searchResult.IsEmpty())
+                searchResult.AddBadRequestMessage(badRequestErrorMessage);
+                return searchResult;
+            }
+
+            if (!ValidClientConfiguration(out var errorMessage))
+            {
+                searchResult.AddNoDataFoundMessage(errorMessage);
+                return searchResult;
+            }
+
+            foreach (var externalProvider in GetAvailableProvidersForSearchRequest(searchRequest))
+            {
+                var providerSearchResult = await externalProvider.SearchLyricAsync(searchRequest);
+                if (!providerSearchResult.IsEmpty())
                 {
-                    return searchResult;
+                    return providerSearchResult;
                 }
                 _logger?.LogWarning($"Can't find lyric by provider: {externalProvider}.");
             }
+
+            searchResult.AddNoDataFoundMessage(Constants.ResponseMessages.NotFoundLyric);
             _logger?.LogError($"Can't find lyrics for searchRequest: {searchRequest}.");
-            return new SearchResult();
+
+            return searchResult;
         }
 
-        private bool ValidateRequest()
+        private IEnumerable<IExternalProvider> GetAvailableProvidersForSearchRequest(SearchRequest searchRequest)
         {
-            string error = string.Empty;
+            var searchRequestExternalProvider = searchRequest.GetProviderTypeFromRequest();
+
+            if (searchRequestExternalProvider.IsNoneProviderType())
+                return _externalProviders.Where(p => p.IsEnabled).OrderByDescending(p => p.SearchPriority);
+
+            var availableProviders = _externalProviders.Where(p => p.IsEnabled && p.Options.ExternalProviderType == searchRequestExternalProvider);
+
+            if (availableProviders.Any())
+                return availableProviders.OrderByDescending(p => p.SearchPriority);
+
+            return Array.Empty<IExternalProvider>();
+        }
+
+        private bool ValidClientConfiguration(out string errorMessage)
+        {
+            errorMessage = string.Empty;
             LogLevel logLevel = LogLevel.Error;
 
-            if (IsEmptyProviders())
+            if (IsEmptyProvidersList())
             {
-                error = "Empty providers list! Please set any external provider first.";
+                errorMessage = Constants.ResponseMessages.ExternalProvidersListIsEmpty;
             }
             else if (!IsEnabled)
             {
-                error = "All external providers is disabled. Searching lyrics is disabled.";
+                errorMessage = Constants.ResponseMessages.ExternalProvidersAreDisabled;
                 logLevel = LogLevel.Debug;
             }
 
-            if (!string.IsNullOrWhiteSpace(error))
+            if (!string.IsNullOrWhiteSpace(errorMessage))
             {
-                _logger?.Log(logLevel, error);
+                _logger?.Log(logLevel, errorMessage);
                 return false;
             }
             return true;
         }
 
+        private bool ValidSearchRequest(SearchRequest searchRequest, out string errorMessage)
+        {
+            errorMessage = string.Empty;
+            LogLevel logLevel = LogLevel.Error;
+
+            if (searchRequest == null)
+            {
+                errorMessage = Constants.ResponseMessages.SearchRequestIsEmpty;
+                _logger?.Log(logLevel, errorMessage);
+                return false;
+            }
+
+            switch (searchRequest)
+            {
+                case ArtistAndSongSearchRequest artistAndSongSearchRequest:
+                    errorMessage = string.IsNullOrEmpty(artistAndSongSearchRequest.Artist) || string.IsNullOrEmpty(artistAndSongSearchRequest.Song)
+                        ? Constants.ResponseMessages.ArtistAndSongSearchRequestFieldsAreEmpty
+                        : string.Empty;
+                    break;
+                case UriSearchRequest uriSearchRequest:
+                    errorMessage = uriSearchRequest.Uri == null
+                        ? Constants.ResponseMessages.UriSearchRequestFieldsAreEmpty
+                        : string.Empty;
+                    break;
+            }
+
+            var searchRequestExternalProvider = searchRequest.GetProviderTypeFromRequest();
+
+            if (!searchRequestExternalProvider.IsNoneProviderType() && !IsProviderEnabled(searchRequestExternalProvider))
+            {
+                errorMessage = Constants.ResponseMessages.ExternalProviderForRequestNotSpecified;
+            }
+
+            if (!string.IsNullOrWhiteSpace(errorMessage))
+            {
+                _logger?.Log(logLevel, errorMessage);
+                return false;
+            }
+
+            return true;
+        }
+
         public void AddProvider(IExternalProvider provider)
         {
-            if (IsEmptyProviders())
+            if (IsEmptyProvidersList())
                 _externalProviders = new List<IExternalProvider>();
             if (!_externalProviders.Contains(provider))
                 _externalProviders.Add(provider);
@@ -117,11 +205,9 @@ namespace LyricsScraperNET
                 _logger?.LogWarning($"External provider {provider} already added");
         }
 
-        private bool IsEmptyProviders() => _externalProviders == null || !_externalProviders.Any();
-
         public void RemoveProvider(ExternalProviderType providerType)
         {
-            if (IsEmptyProviders())
+            if (providerType.IsNoneProviderType() || IsEmptyProvidersList())
                 return;
 
             _externalProviders.RemoveAll(x => x.Options.ExternalProviderType == providerType);
@@ -129,7 +215,7 @@ namespace LyricsScraperNET
 
         public void Enable()
         {
-            if (IsEmptyProviders())
+            if (IsEmptyProvidersList())
                 return;
 
             foreach (var provider in _externalProviders)
@@ -140,7 +226,7 @@ namespace LyricsScraperNET
 
         public void Disable()
         {
-            if (IsEmptyProviders())
+            if (IsEmptyProvidersList())
                 return;
 
             foreach (var provider in _externalProviders)
@@ -148,5 +234,17 @@ namespace LyricsScraperNET
                 provider.Disable();
             }
         }
+
+        private bool IsEmptyProvidersList() => _externalProviders == null || !_externalProviders.Any();
+
+        private bool IsProviderAvailable(ExternalProviderType providerType)
+            => !providerType.IsNoneProviderType()
+                && !IsEmptyProvidersList()
+                && _externalProviders.Any(p => p.Options.ExternalProviderType == providerType);
+
+        private bool IsProviderEnabled(ExternalProviderType providerType)
+            => !providerType.IsNoneProviderType()
+                && IsProviderAvailable(providerType)
+                && this[providerType].IsEnabled;
     }
 }

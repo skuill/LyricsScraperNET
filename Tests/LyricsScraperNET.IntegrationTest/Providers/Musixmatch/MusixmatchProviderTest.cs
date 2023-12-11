@@ -1,4 +1,5 @@
 ﻿using LyricsScraperNET.Models.Requests;
+using LyricsScraperNET.Models.Responses;
 using LyricsScraperNET.Providers.Models;
 using LyricsScraperNET.Providers.Musixmatch;
 using LyricsScraperNET.TestShared.Providers;
@@ -23,6 +24,8 @@ namespace LyricsScraperNET.IntegrationTest.Providers.Musixmatch
             // Assert
             Assert.NotNull(searchResult);
             Assert.False(searchResult.IsEmpty());
+            Assert.Equal(ResponseStatusCode.Success, searchResult.ResponseStatusCode);
+            Assert.True(string.IsNullOrEmpty(searchResult.ResponseMessage));
             Assert.Equal(ExternalProviderType.Musixmatch, searchResult.ExternalProviderType);
             Assert.Equal(testData.LyricResultData.Replace("\r\n", "\n"), searchResult.LyricText);
         }
