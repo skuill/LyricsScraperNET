@@ -98,11 +98,11 @@ namespace LyricsScraperNET.Providers.Musixmatch
                     if (trackId != null)
                     {
                         Lyrics lyrics = client.GetTrackLyrics(trackId.Value);
-                        
+
                         // lyrics.LyricsBody is null when the track is instrumental
                         if (lyrics.Instrumental != 1)
                             return new SearchResult(lyrics.LyricsBody, Models.ExternalProviderType.Musixmatch);
-                        
+
                         // Instrumental music without lyric
                         return new SearchResult(Models.ExternalProviderType.Musixmatch)
                             .AddInstrumental(true);

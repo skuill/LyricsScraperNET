@@ -196,7 +196,7 @@ namespace LyricsScraperNET.Providers.Genius
             {
                 // lyricNodes could be null in case of instrumental.
                 var instrumentalNodes = htmlDocument.DocumentNode.SelectNodes(_lyricsPlaceholderNodesXPath);
-                if (instrumentalNodes != null 
+                if (instrumentalNodes != null
                     && instrumentalNodes.Any(node => node.InnerHtml.Contains(_instrumentalLyricText)))
                 {
                     instrumental = true;

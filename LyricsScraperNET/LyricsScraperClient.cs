@@ -239,7 +239,7 @@ namespace LyricsScraperNET
         {
             _loggerFactory = loggerFactory;
             _logger = loggerFactory.CreateLogger<LyricsScraperClient>();
-            
+
             if (IsEmptyProvidersList())
                 return;
 
