@@ -1,4 +1,5 @@
-﻿using LyricsScraperNET.Helpers;
+﻿using LyricsScraperNET.Extensions;
+using LyricsScraperNET.Helpers;
 using LyricsScraperNET.Models.Responses;
 using LyricsScraperNET.Providers.Abstract;
 using Microsoft.Extensions.Caching.Memory;
@@ -17,7 +18,7 @@ namespace LyricsScraperNET.Providers.Musixmatch
 {
     public sealed class MusixmatchProvider : ExternalProviderBase
     {
-        private readonly ILogger<MusixmatchProvider> _logger;
+        private ILogger<MusixmatchProvider> _logger;
 
         // Musixmatch Token memory cache
         private static readonly IMemoryCache _memoryCache;
@@ -80,7 +81,7 @@ namespace LyricsScraperNET.Providers.Musixmatch
         // TODO: search by uri from the site. Example: https://www.musixmatch.com/lyrics/Parkway-Drive/Idols-and-Anchors
         protected override SearchResult SearchLyric(Uri uri)
         {
-            return new SearchResult();
+            return new SearchResult(Models.ExternalProviderType.Musixmatch);
         }
 
         protected override SearchResult SearchLyric(string artist, string song)
@@ -97,14 +98,19 @@ namespace LyricsScraperNET.Providers.Musixmatch
                     if (trackId != null)
                     {
                         Lyrics lyrics = client.GetTrackLyrics(trackId.Value);
-                        return lyrics.Instrumental != 1
-                            ? new SearchResult(lyrics.LyricsBody, Models.ExternalProviderType.Musixmatch)
-                            : new SearchResult(); // lyrics.LyricsBody is null when the track is instrumental
+                        
+                        // lyrics.LyricsBody is null when the track is instrumental
+                        if (lyrics.Instrumental != 1)
+                            return new SearchResult(lyrics.LyricsBody, Models.ExternalProviderType.Musixmatch);
+                        
+                        // Instrumental music without lyric
+                        return new SearchResult(Models.ExternalProviderType.Musixmatch)
+                            .AddInstrumental(true);
                     }
                     else
                     {
                         _logger?.LogWarning($"Musixmatch. Can't find any information about artist {artist} and song {song}");
-                        return new SearchResult();
+                        return new SearchResult(Models.ExternalProviderType.Musixmatch);
                     }
                 }
                 catch (MusixmatchRequestException requestException) when (requestException.StatusCode == StatusCode.AuthFailed)
@@ -113,7 +119,7 @@ namespace LyricsScraperNET.Providers.Musixmatch
                     regenerateToken = true;
                 }
             }
-            return new SearchResult();
+            return new SearchResult(Models.ExternalProviderType.Musixmatch);
         }
 
         #endregion
@@ -123,7 +129,7 @@ namespace LyricsScraperNET.Providers.Musixmatch
         // TODO: search by uri from the site. Example: https://www.musixmatch.com/lyrics/Parkway-Drive/Idols-and-Anchors
         protected override Task<SearchResult> SearchLyricAsync(Uri uri)
         {
-            return Task.FromResult<SearchResult>(new SearchResult());
+            return Task.FromResult<SearchResult>(new SearchResult(Models.ExternalProviderType.Musixmatch));
         }
 
         protected override async Task<SearchResult> SearchLyricAsync(string artist, string song)
@@ -141,14 +147,19 @@ namespace LyricsScraperNET.Providers.Musixmatch
                     if (trackId != null)
                     {
                         Lyrics lyrics = await client.GetTrackLyricsAsync(trackId.Value);
-                        return lyrics.Instrumental != 1
-                            ? new SearchResult(lyrics.LyricsBody, Models.ExternalProviderType.Musixmatch)
-                            : new SearchResult(); // lyrics.LyricsBody is null when the track is instrumental
+
+                        // lyrics.LyricsBody is null when the track is instrumental
+                        if (lyrics.Instrumental != 1)
+                            return new SearchResult(lyrics.LyricsBody, Models.ExternalProviderType.Musixmatch);
+
+                        // Instrumental music without lyric
+                        return new SearchResult(Models.ExternalProviderType.Musixmatch)
+                            .AddInstrumental(true);
                     }
                     else
                     {
                         _logger?.LogWarning($"Musixmatch. Can't find any information about artist {artist} and song {song}");
-                        return new SearchResult();
+                        return new SearchResult(Models.ExternalProviderType.Musixmatch);
                     }
                 }
                 catch (MusixmatchRequestException requestException) when (requestException.StatusCode == StatusCode.AuthFailed)
@@ -157,10 +168,15 @@ namespace LyricsScraperNET.Providers.Musixmatch
                     regenerateToken = true;
                 }
             }
-            return new SearchResult();
+            return new SearchResult(Models.ExternalProviderType.Musixmatch);
         }
 
         #endregion
+
+        public override void WithLogger(ILoggerFactory loggerFactory)
+        {
+            _logger = loggerFactory.CreateLogger<MusixmatchProvider>();
+        }
 
         private MusixmatchClient GetMusixmatchClient(bool regenerateToken = false)
         {

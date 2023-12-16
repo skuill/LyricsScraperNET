@@ -17,7 +17,7 @@ namespace LyricsScraperNET.Providers.Genius
 {
     public sealed class GeniusProvider : ExternalProviderBase
     {
-        private readonly ILogger<GeniusProvider> _logger;
+        private ILogger<GeniusProvider> _logger;
         private readonly IExternalUriConverter _uriConverter;
 
         // Format: "artist song". Example: "Parkway Drive Carrion".
@@ -25,6 +25,10 @@ namespace LyricsScraperNET.Providers.Genius
 
         private const string _referentFragmentNodesXPath = "//a[contains(@class, 'ReferentFragmentVariantdesktop') or contains(@class, 'ReferentFragmentdesktop')]";
         private const string _lyricsContainerNodesXPath = "//div[@data-lyrics-container]";
+
+        // In case of instrumental song without a lyric.
+        private const string _lyricsPlaceholderNodesXPath = "//div[contains(@class, 'LyricsPlaceholder')]";
+        private const string _instrumentalLyricText = "This song is an instrumental";
 
         #region Constructors
 
@@ -71,7 +75,10 @@ namespace LyricsScraperNET.Providers.Genius
         {
             var htmlPageBody = WebClient.Load(uri);
 
-            return new SearchResult(GetParsedLyricFromHtmlPageBody(htmlPageBody), Models.ExternalProviderType.Genius);
+            var lyricResult = GetParsedLyricFromHtmlPageBody(htmlPageBody, out var instrumental);
+
+            return new SearchResult(lyricResult, Models.ExternalProviderType.Genius)
+                .AddInstrumental(instrumental);
         }
 
         protected override SearchResult SearchLyric(string artist, string song)
@@ -94,7 +101,7 @@ namespace LyricsScraperNET.Providers.Genius
 
             return !string.IsNullOrWhiteSpace(lyricUrl)
                 ? SearchLyric(new Uri(lyricUrl))
-                : new SearchResult();
+                : new SearchResult(Models.ExternalProviderType.Genius);
         }
 
         #endregion
@@ -105,7 +112,10 @@ namespace LyricsScraperNET.Providers.Genius
         {
             var htmlPageBody = await WebClient.LoadAsync(uri);
 
-            return new SearchResult(GetParsedLyricFromHtmlPageBody(htmlPageBody), Models.ExternalProviderType.Genius);
+            var lyricResult = GetParsedLyricFromHtmlPageBody(htmlPageBody, out var instrumental);
+
+            return new SearchResult(lyricResult, Models.ExternalProviderType.Genius)
+                .AddInstrumental(instrumental);
         }
 
         protected override async Task<SearchResult> SearchLyricAsync(string artist, string song)
@@ -128,10 +138,15 @@ namespace LyricsScraperNET.Providers.Genius
 
             return !string.IsNullOrWhiteSpace(lyricUrl)
                 ? await SearchLyricAsync(new Uri(lyricUrl))
-                : new SearchResult();
+                : new SearchResult(Models.ExternalProviderType.Genius);
         }
 
         #endregion
+
+        public override void WithLogger(ILoggerFactory loggerFactory)
+        {
+            _logger = loggerFactory.CreateLogger<GeniusProvider>();
+        }
 
         private string GetLyricUrlWithoutApiKey(string artist, string song)
         {
@@ -160,8 +175,10 @@ namespace LyricsScraperNET.Providers.Genius
             return string.Empty;
         }
 
-        private string GetParsedLyricFromHtmlPageBody(string htmlPageBody)
+        private string GetParsedLyricFromHtmlPageBody(string htmlPageBody, out bool instrumental)
         {
+            instrumental = false;
+
             var htmlDocument = new HtmlDocument();
             htmlDocument.LoadHtml(htmlPageBody.Replace("https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js", ""));
 
@@ -175,8 +192,20 @@ namespace LyricsScraperNET.Providers.Genius
                     spanNode.Remove();
 
             var lyricNodes = htmlDocument.DocumentNode.SelectNodes(_lyricsContainerNodesXPath);
+            if (lyricNodes == null)
+            {
+                // lyricNodes could be null in case of instrumental.
+                var instrumentalNodes = htmlDocument.DocumentNode.SelectNodes(_lyricsPlaceholderNodesXPath);
+                if (instrumentalNodes != null 
+                    && instrumentalNodes.Any(node => node.InnerHtml.Contains(_instrumentalLyricText)))
+                {
+                    instrumental = true;
+                    return string.Empty;
+                }
+                _logger?.LogWarning($"Genius. Can't parse lyric from the page.");
+            }
 
-            return Parser.Parse(string.Join("", lyricNodes.Select(Node => Node.InnerHtml)));
+            return Parser.Parse(string.Join("", lyricNodes.Select(node => node.InnerHtml)));
         }
 
         private string GetLyricUrlFromSearchResponse(SearchResponse searchResponse, string artist, string song)

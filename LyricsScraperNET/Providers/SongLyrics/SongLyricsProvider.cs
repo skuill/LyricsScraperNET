@@ -13,7 +13,7 @@ namespace LyricsScraperNET.Providers.SongLyrics
 {
     public sealed class SongLyricsProvider : ExternalProviderBase
     {
-        private readonly ILogger<SongLyricsProvider> _logger;
+        private ILogger<SongLyricsProvider> _logger;
         private readonly IExternalUriConverter _uriConverter;
 
 
@@ -59,7 +59,6 @@ namespace LyricsScraperNET.Providers.SongLyrics
 
         public override IExternalProviderOptions Options { get; }
 
-
         #region Sync
 
         protected override SearchResult SearchLyric(string artist, string song)
@@ -79,7 +78,6 @@ namespace LyricsScraperNET.Providers.SongLyrics
         }
 
         #endregion
-
 
         #region Async
 
@@ -101,6 +99,10 @@ namespace LyricsScraperNET.Providers.SongLyrics
 
         #endregion
 
+        public override void WithLogger(ILoggerFactory loggerFactory)
+        {
+            _logger = loggerFactory.CreateLogger<SongLyricsProvider>();
+        }
 
         private SearchResult GetParsedLyricFromHtmlPageBody(Uri uri, string htmlPageBody)
         {

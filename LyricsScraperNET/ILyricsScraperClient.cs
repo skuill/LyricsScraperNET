@@ -2,6 +2,7 @@
 using LyricsScraperNET.Models.Responses;
 using LyricsScraperNET.Providers.Abstract;
 using LyricsScraperNET.Providers.Models;
+using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
 
 namespace LyricsScraperNET
@@ -49,5 +50,11 @@ namespace LyricsScraperNET
         /// Calling the lyrics search method will return an empty result.
         /// </summary>
         void Disable();
+
+        /// <summary>
+        /// Creates a new ILogger instance from <paramref name="loggerFactory"/>.
+        /// Can be useful for error analysis if the lyric text is not found.
+        /// </summary>
+        void WithLogger(ILoggerFactory loggerFactory);
     }
 }

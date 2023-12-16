@@ -11,7 +11,7 @@ namespace LyricsScraperNET.Providers.AZLyrics
 {
     public sealed class AZLyricsProvider : ExternalProviderBase
     {
-        private readonly ILogger<AZLyricsProvider> _logger;
+        private ILogger<AZLyricsProvider> _logger;
         private readonly IExternalUriConverter _uriConverter;
 
         private const string _lyricStart = "<!-- Usage of azlyrics.com content by any third-party lyrics provider is prohibited by our licensing agreement. Sorry about that. -->";
@@ -95,6 +95,11 @@ namespace LyricsScraperNET.Providers.AZLyrics
         }
 
         #endregion
+
+        public override void WithLogger(ILoggerFactory loggerFactory)
+        {
+            _logger = loggerFactory.CreateLogger<AZLyricsProvider>();
+        }
 
         private SearchResult PostProcessLyric(Uri uri, string text)
         {

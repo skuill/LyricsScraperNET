@@ -11,7 +11,7 @@ namespace LyricsScraperNET.Providers.LyricFind
 {
     public sealed class LyricFindProvider : ExternalProviderBase
     {
-        private readonly ILogger<LyricFindProvider> _logger;
+        private ILogger<LyricFindProvider> _logger;
         private readonly IExternalUriConverter _uriConverter;
 
         private const string _lyricStart = "\"lyrics\"";
@@ -94,6 +94,11 @@ namespace LyricsScraperNET.Providers.LyricFind
         }
 
         #endregion
+
+        public override void WithLogger(ILoggerFactory loggerFactory)
+        {
+            _logger = loggerFactory.CreateLogger<LyricFindProvider>();
+        }
 
         private SearchResult PostProcessLyric(Uri uri, string text)
         {

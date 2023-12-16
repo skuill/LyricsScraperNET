@@ -12,6 +12,7 @@ using Microsoft.Extensions.Hosting;
 using LyricsScraperNET.Models.Responses;
 using System.Threading.Tasks;
 using System;
+using Microsoft.Extensions.Logging;
 
 class Program
 {
@@ -28,11 +29,23 @@ class Program
         //var result = ExampleWithCertainProvider(artistToSearch, songToSearch);
 
         //// Checking if something was found. 
-        //// If not, search errors can be found in the logs. 
+        //// May not be found in two cases:
+        //// 1) search errors can be found in the logs or in response fields like ResponseStatusCode and ResponseMessage.
+        //// 2) The requested song contains only the instrumental, no lyrics. In this case the flag will be true.
         if (result.IsEmpty())
         {
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine($"Can't find lyrics for: {artistToSearch} - {songToSearch}");
+            if (result.Instrumental)
+            {
+                Console.ForegroundColor = ConsoleColor.Gray;
+                Console.WriteLine("This song is instrumental.\r\nIt does not contain any lyrics");
+            }
+            else
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"Can't find lyrics for: [ {artistToSearch} - {songToSearch} ]. " +
+                    $"Status code: [ {result.ResponseStatusCode} ]. " +
+                    $"Response message: [ {result.ResponseMessage} ].");
+            }
             Console.ResetColor();
 
             Console.ReadLine();
@@ -41,13 +54,13 @@ class Program
 
         //// Output result to console
         Console.ForegroundColor = ConsoleColor.Yellow;
-        Console.WriteLine($"{artistToSearch} - {songToSearch}\r\n");
+        Console.WriteLine($"[ {artistToSearch} - {songToSearch} ]\r\n");
         Console.ResetColor();
 
         Console.WriteLine(result.LyricText);
 
         Console.ForegroundColor = ConsoleColor.Magenta;
-        Console.WriteLine($"\r\nThis text was found by {result.ExternalProviderType}\r\n");
+        Console.WriteLine($"\r\nThis lyric was found by [ {result.ExternalProviderType} ]\r\n");
         Console.ResetColor();
 
         Console.ReadLine();
@@ -104,6 +117,16 @@ class Program
                 .WithMusixmatch()
                 .WithSongLyrics()
                 .WithLyricFind();
+
+        // To enable library logging, the LoggerFactory must be configured and passed to the client.
+        var loggerFactory = LoggerFactory.Create(builder =>
+        {
+            builder.AddFilter("Microsoft", LogLevel.Warning)
+                   .AddFilter("System", LogLevel.Warning)
+                   .AddFilter("LyricsScraperNET", LogLevel.Trace)
+                   .AddConsole();
+        });
+        lyricsScraperClient.WithLogger(loggerFactory);
 
         //// Another way to configure:
         //// 1. First create instance of LyricScraperClient.

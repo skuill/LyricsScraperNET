@@ -29,5 +29,11 @@ namespace LyricsScraperNET.Extensions
                 : responseMessage;
             return searchResult;
         }
+
+        internal static SearchResult AddInstrumental(this SearchResult searchResult, bool instrumental)
+        {
+            searchResult.Instrumental = instrumental;
+            return searchResult;
+        }
     }
 }
