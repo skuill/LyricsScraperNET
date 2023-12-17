@@ -22,6 +22,10 @@ class Program
         string artistToSearch = "Parkway Drive";
         string songToSearch = "Idols And Anchors";
 
+        //// The case when a song contains only an instrumental, without vocals.
+        //string artistToSearch = "Rush";
+        //string songToSearch = "YYZ";
+
         //// How to configure for ASP.NET applications:
         var result = ExampleWithHostConfiguration(artistToSearch, songToSearch);
 
@@ -37,14 +41,14 @@ class Program
             if (result.Instrumental)
             {
                 Console.ForegroundColor = ConsoleColor.Gray;
-                Console.WriteLine("This song is instrumental.\r\nIt does not contain any lyrics");
+                Console.WriteLine($"This song [{artistToSearch} - {songToSearch}] is instrumental.\r\nIt does not contain any lyrics");
             }
             else
             {
                 Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"Can't find lyrics for: [ {artistToSearch} - {songToSearch} ]. " +
-                    $"Status code: [ {result.ResponseStatusCode} ]. " +
-                    $"Response message: [ {result.ResponseMessage} ].");
+                Console.WriteLine($"Can't find lyrics for: [{artistToSearch} - {songToSearch}]. " +
+                    $"Status code: [{result.ResponseStatusCode}]. " +
+                    $"Response message: [{result.ResponseMessage}].");
             }
             Console.ResetColor();
 
@@ -54,13 +58,13 @@ class Program
 
         //// Output result to console
         Console.ForegroundColor = ConsoleColor.Yellow;
-        Console.WriteLine($"[ {artistToSearch} - {songToSearch} ]\r\n");
+        Console.WriteLine($"[{artistToSearch} - {songToSearch}]\r\n");
         Console.ResetColor();
 
         Console.WriteLine(result.LyricText);
 
         Console.ForegroundColor = ConsoleColor.Magenta;
-        Console.WriteLine($"\r\nThis lyric was found by [ {result.ExternalProviderType} ]\r\n");
+        Console.WriteLine($"\r\nThis lyric was found by [{result.ExternalProviderType}]\r\n");
         Console.ResetColor();
 
         Console.ReadLine();

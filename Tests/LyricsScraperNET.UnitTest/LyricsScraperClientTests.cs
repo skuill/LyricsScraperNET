@@ -34,10 +34,12 @@ namespace LyricsScraperNET.UnitTest
             Assert.True(searchResult.IsEmpty());
             Assert.Equal(ResponseStatusCode.NoDataFound, searchResult.ResponseStatusCode);
             Assert.Equal(Constants.ResponseMessages.ExternalProvidersAreDisabled, searchResult.ResponseMessage);
+            Assert.False(searchResult.Instrumental);
             Assert.NotNull(searchResultAsync);
             Assert.True(searchResultAsync.IsEmpty());
             Assert.Equal(ResponseStatusCode.NoDataFound, searchResultAsync.ResponseStatusCode);
             Assert.Equal(Constants.ResponseMessages.ExternalProvidersAreDisabled, searchResultAsync.ResponseMessage);
+            Assert.False(searchResultAsync.Instrumental);
         }
 
         [Fact]
@@ -57,10 +59,12 @@ namespace LyricsScraperNET.UnitTest
             Assert.True(searchResult.IsEmpty());
             Assert.Equal(ResponseStatusCode.NoDataFound, searchResult.ResponseStatusCode);
             Assert.Equal(Constants.ResponseMessages.ExternalProvidersListIsEmpty, searchResult.ResponseMessage);
+            Assert.False(searchResult.Instrumental);
             Assert.NotNull(searchResultAsync);
             Assert.True(searchResultAsync.IsEmpty());
             Assert.Equal(ResponseStatusCode.NoDataFound, searchResultAsync.ResponseStatusCode);
             Assert.Equal(Constants.ResponseMessages.ExternalProvidersListIsEmpty, searchResultAsync.ResponseMessage);
+            Assert.False(searchResultAsync.Instrumental);
         }
 
         [Theory]
@@ -85,11 +89,13 @@ namespace LyricsScraperNET.UnitTest
             Assert.Equal(ExternalProviderType.None, searchResult.ExternalProviderType);
             Assert.Equal(ResponseStatusCode.BadRequest, searchResult.ResponseStatusCode);
             Assert.Equal(Constants.ResponseMessages.ArtistAndSongSearchRequestFieldsAreEmpty, searchResult.ResponseMessage);
+            Assert.False(searchResult.Instrumental);
             Assert.NotNull(searchResultAsync);
             Assert.True(searchResultAsync.IsEmpty());
             Assert.Equal(ExternalProviderType.None, searchResultAsync.ExternalProviderType);
             Assert.Equal(ResponseStatusCode.BadRequest, searchResultAsync.ResponseStatusCode);
             Assert.Equal(Constants.ResponseMessages.ArtistAndSongSearchRequestFieldsAreEmpty, searchResultAsync.ResponseMessage);
+            Assert.False(searchResultAsync.Instrumental);
         }
 
         [Theory]
@@ -111,11 +117,13 @@ namespace LyricsScraperNET.UnitTest
             Assert.Equal(ExternalProviderType.None, searchResult.ExternalProviderType);
             Assert.Equal(ResponseStatusCode.BadRequest, searchResult.ResponseStatusCode);
             Assert.Equal(Constants.ResponseMessages.UriSearchRequestFieldsAreEmpty, searchResult.ResponseMessage);
+            Assert.False(searchResult.Instrumental);
             Assert.NotNull(searchResultAsync);
             Assert.True(searchResultAsync.IsEmpty());
             Assert.Equal(ExternalProviderType.None, searchResultAsync.ExternalProviderType);
             Assert.Equal(ResponseStatusCode.BadRequest, searchResultAsync.ResponseStatusCode);
             Assert.Equal(Constants.ResponseMessages.UriSearchRequestFieldsAreEmpty, searchResultAsync.ResponseMessage);
+            Assert.False(searchResultAsync.Instrumental);
         }
 
         [Fact]
@@ -135,11 +143,13 @@ namespace LyricsScraperNET.UnitTest
             Assert.Equal(ExternalProviderType.None, searchResult.ExternalProviderType);
             Assert.Equal(ResponseStatusCode.BadRequest, searchResult.ResponseStatusCode);
             Assert.Equal(Constants.ResponseMessages.SearchRequestIsEmpty, searchResult.ResponseMessage);
+            Assert.False(searchResult.Instrumental);
             Assert.NotNull(searchResultAsync);
             Assert.True(searchResultAsync.IsEmpty());
             Assert.Equal(ExternalProviderType.None, searchResultAsync.ExternalProviderType);
             Assert.Equal(ResponseStatusCode.BadRequest, searchResultAsync.ResponseStatusCode);
             Assert.Equal(Constants.ResponseMessages.SearchRequestIsEmpty, searchResultAsync.ResponseMessage);
+            Assert.False(searchResultAsync.Instrumental);
         }
 
         [Fact]
@@ -159,11 +169,13 @@ namespace LyricsScraperNET.UnitTest
             Assert.Equal(ExternalProviderType.None, searchResult.ExternalProviderType);
             Assert.Equal(ResponseStatusCode.NoDataFound, searchResult.ResponseStatusCode);
             Assert.Equal(Constants.ResponseMessages.NotFoundLyric, searchResult.ResponseMessage);
+            Assert.False(searchResult.Instrumental);
             Assert.NotNull(searchResultAsync);
             Assert.True(searchResultAsync.IsEmpty());
             Assert.Equal(ExternalProviderType.None, searchResultAsync.ExternalProviderType);
             Assert.Equal(ResponseStatusCode.NoDataFound, searchResultAsync.ResponseStatusCode);
             Assert.Equal(Constants.ResponseMessages.NotFoundLyric, searchResultAsync.ResponseMessage);
+            Assert.False(searchResultAsync.Instrumental);
         }
 
         [Fact]
@@ -183,11 +195,13 @@ namespace LyricsScraperNET.UnitTest
             Assert.Equal(ExternalProviderType.None, searchResult.ExternalProviderType);
             Assert.Equal(ResponseStatusCode.BadRequest, searchResult.ResponseStatusCode);
             Assert.Equal(Constants.ResponseMessages.ExternalProviderForRequestNotSpecified, searchResult.ResponseMessage);
+            Assert.False(searchResult.Instrumental);
             Assert.NotNull(searchResultAsync);
             Assert.True(searchResultAsync.IsEmpty());
             Assert.Equal(ExternalProviderType.None, searchResultAsync.ExternalProviderType);
             Assert.Equal(ResponseStatusCode.BadRequest, searchResultAsync.ResponseStatusCode);
             Assert.Equal(Constants.ResponseMessages.ExternalProviderForRequestNotSpecified, searchResultAsync.ResponseMessage);
+            Assert.False(searchResultAsync.Instrumental);
         }
 
         [Fact]

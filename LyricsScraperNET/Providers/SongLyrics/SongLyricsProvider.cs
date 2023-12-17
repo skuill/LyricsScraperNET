@@ -1,4 +1,5 @@
 ﻿using HtmlAgilityPack;
+using LyricsScraperNET.Extensions;
 using LyricsScraperNET.Helpers;
 using LyricsScraperNET.Models.Responses;
 using LyricsScraperNET.Network;
@@ -20,6 +21,11 @@ namespace LyricsScraperNET.Providers.SongLyrics
         private const string _lyricsContainerNodesXPath = "//p[contains(@id, 'songLyricsDiv')]";
 
         private const string NotExistLyricPattern = "We do not have the lyrics for (.*) yet.";
+
+        /// <summary>
+        /// For instrumental songs, the text "[Instrumental]" is returned in the songLyricsDiv
+        /// </summary>
+        private const string InstrumentalLyricText = "Instrumental";
 
         #region Constructors
 
@@ -71,7 +77,7 @@ namespace LyricsScraperNET.Providers.SongLyrics
             if (WebClient == null)
             {
                 _logger?.LogWarning($"SongLyrics. Please set up WebClient first");
-                return new SearchResult();
+                return new SearchResult(Models.ExternalProviderType.SongLyrics);
             }
             var htmlPageBody = WebClient.Load(uri);
             return GetParsedLyricFromHtmlPageBody(uri, htmlPageBody);
@@ -91,7 +97,7 @@ namespace LyricsScraperNET.Providers.SongLyrics
             if (WebClient == null)
             {
                 _logger?.LogWarning($"SongLyrics. Please set up WebClient first");
-                return new SearchResult();
+                return new SearchResult(Models.ExternalProviderType.SongLyrics);
             }
             var htmlPageBody = await WebClient.LoadAsync(uri);
             return GetParsedLyricFromHtmlPageBody(uri, htmlPageBody);
@@ -108,8 +114,8 @@ namespace LyricsScraperNET.Providers.SongLyrics
         {
             if (string.IsNullOrEmpty(htmlPageBody))
             {
-                _logger?.LogWarning($"SongLyrics. Text is empty for {uri}");
-                return new SearchResult();
+                _logger?.LogWarning($"SongLyrics. Text is empty for Uri: [{uri}]");
+                return new SearchResult(Models.ExternalProviderType.SongLyrics);
             }
 
             var htmlDocument = new HtmlDocument();
@@ -119,15 +125,21 @@ namespace LyricsScraperNET.Providers.SongLyrics
 
             if (lyricsContainerNode == null)
             {
-                _logger?.LogWarning($"SongLyrics. Can't find lyrics for {uri}");
-                return new SearchResult();
+                _logger?.LogWarning($"SongLyrics. Can't find lyrics for Uri: [{uri}]");
+                return new SearchResult(Models.ExternalProviderType.SongLyrics);
             }
 
+            // Check if lyric not exist on site yet
             if (Regex.IsMatch(lyricsContainerNode.InnerText, NotExistLyricPattern, RegexOptions.IgnoreCase))
             {
                 _logger?.LogDebug($"SongLyrics. Returns empty result: \"{lyricsContainerNode.InnerText}\"");
-                return new SearchResult();
+                return new SearchResult(Models.ExternalProviderType.SongLyrics);
             }
+
+            // Check if lyric is instrumental
+            if (string.Equals(lyricsContainerNode.InnerText, InstrumentalLyricText, StringComparison.OrdinalIgnoreCase)
+                || string.Equals(lyricsContainerNode.InnerText, $"[{InstrumentalLyricText}]", StringComparison.OrdinalIgnoreCase))
+                return new SearchResult(Models.ExternalProviderType.SongLyrics).AddInstrumental(true);
 
             return new SearchResult(lyricsContainerNode.InnerText, Models.ExternalProviderType.SongLyrics);
         }

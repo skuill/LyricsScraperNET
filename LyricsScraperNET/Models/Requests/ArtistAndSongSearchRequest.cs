@@ -34,5 +34,10 @@ namespace LyricsScraperNET.Models.Requests
         {
             Provider = provider;
         }
+
+        public override string ToString()
+        {
+            return $"Artist: [{Artist}]. Song: [{Song}]. Provider: [{Provider}]";
+        }
     }
 }

@@ -68,7 +68,7 @@ namespace LyricsScraperNET.Providers.AZLyrics
             if (WebClient == null || Parser == null)
             {
                 _logger?.LogWarning($"AZLyrics. Please set up WebClient and Parser first");
-                return new SearchResult();
+                return new SearchResult(Models.ExternalProviderType.AZLyrics);
             }
             var text = WebClient.Load(uri);
             return PostProcessLyric(uri, text);
@@ -88,7 +88,7 @@ namespace LyricsScraperNET.Providers.AZLyrics
             if (WebClient == null || Parser == null)
             {
                 _logger?.LogWarning($"AZLyrics. Please set up WebClient and Parser first");
-                return new SearchResult();
+                return new SearchResult(Models.ExternalProviderType.AZLyrics);
             }
             var text = await WebClient.LoadAsync(uri);
             return PostProcessLyric(uri, text);
@@ -105,16 +105,16 @@ namespace LyricsScraperNET.Providers.AZLyrics
         {
             if (string.IsNullOrEmpty(text))
             {
-                _logger?.LogWarning($"AZLyrics. Text is empty for {uri}");
-                return new SearchResult();
+                _logger?.LogWarning($"AZLyrics. Text is empty for Uri: [{uri}]");
+                return new SearchResult(Models.ExternalProviderType.AZLyrics);
             }
 
             var startIndex = text.IndexOf(_lyricStart);
             var endIndex = text.IndexOf(_lyricEnd);
             if (startIndex <= 0 || endIndex <= 0)
             {
-                _logger?.LogWarning($"AZLyrics. Can't find lyrics for {uri}");
-                return new SearchResult();
+                _logger?.LogWarning($"AZLyrics. Can't find lyrics for Uri: [{uri}]");
+                return new SearchResult(Models.ExternalProviderType.AZLyrics);
             }
 
             string result = Parser.Parse(text.Substring(startIndex, endIndex - startIndex));

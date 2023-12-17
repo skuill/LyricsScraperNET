@@ -74,11 +74,11 @@ namespace LyricsScraperNET
                 {
                     return providerSearchResult;
                 }
-                _logger?.LogWarning($"Can't find lyric by provider: {externalProvider}.");
+                _logger?.LogWarning($"Can't find lyric by provider: [{externalProvider.Options?.ExternalProviderType}].");
             }
 
             searchResult.AddNoDataFoundMessage(Constants.ResponseMessages.NotFoundLyric);
-            _logger?.LogError($"Can't find lyrics for searchRequest: {searchRequest}.");
+            _logger?.LogError($"Can't find lyrics for searchRequest: [{searchRequest}].");
 
             return searchResult;
         }
@@ -106,11 +106,11 @@ namespace LyricsScraperNET
                 {
                     return providerSearchResult;
                 }
-                _logger?.LogWarning($"Can't find lyric by provider: {externalProvider}.");
+                _logger?.LogWarning($"Can't find lyric by provider: [{externalProvider.Options?.ExternalProviderType}].");
             }
 
             searchResult.AddNoDataFoundMessage(Constants.ResponseMessages.NotFoundLyric);
-            _logger?.LogError($"Can't find lyrics for searchRequest: {searchRequest}.");
+            _logger?.LogError($"Can't find lyrics for searchRequest: [{searchRequest}].");
 
             return searchResult;
         }

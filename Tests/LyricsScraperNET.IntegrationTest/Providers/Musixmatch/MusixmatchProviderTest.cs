@@ -28,6 +28,27 @@ namespace LyricsScraperNET.IntegrationTest.Providers.Musixmatch
             Assert.True(string.IsNullOrEmpty(searchResult.ResponseMessage));
             Assert.Equal(ExternalProviderType.Musixmatch, searchResult.ExternalProviderType);
             Assert.Equal(testData.LyricResultData.Replace("\r\n", "\n"), searchResult.LyricText);
+            Assert.False(searchResult.Instrumental);
+        }
+
+        [Theory]
+        [MemberData(nameof(GetTestData), parameters: "Providers\\Musixmatch\\instrumental_test_data.json")]
+        public void SearchLyric_IntegrationDynamicData_Instrumental(LyricsTestData testData)
+        {
+            // Arrange
+            var lyricsClient = new MusixmatchProvider();
+            SearchRequest searchRequest = CreateSearchRequest(testData);
+
+            // Act
+            var searchResult = lyricsClient.SearchLyric(searchRequest);
+
+            // Assert
+            Assert.NotNull(searchResult);
+            Assert.True(searchResult.IsEmpty());
+            Assert.Equal(ResponseStatusCode.Success, searchResult.ResponseStatusCode);
+            Assert.True(string.IsNullOrEmpty(searchResult.ResponseMessage));
+            Assert.Equal(ExternalProviderType.Musixmatch, searchResult.ExternalProviderType);
+            Assert.True(searchResult.Instrumental);
         }
     }
 }

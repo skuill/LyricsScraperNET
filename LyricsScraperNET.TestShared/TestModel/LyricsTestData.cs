@@ -10,8 +10,11 @@ namespace LyricsScraperNET.UnitTest.TestModel
         public string SongName { get; set; }
         public string SongUri { get; set; }
 
-        public string LyricPageData => File.ReadAllText(LyricPagePath);
+        public string LyricPageData => ReadFileData(LyricPagePath);
 
-        public string LyricResultData => File.ReadAllText(LyricResultPath);
+        public string LyricResultData => ReadFileData(LyricResultPath);
+
+        private string ReadFileData(string path) =>
+            !string.IsNullOrEmpty(path) ? File.ReadAllText(path) : string.Empty;
     }
 }
