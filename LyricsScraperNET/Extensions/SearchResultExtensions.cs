@@ -32,6 +32,7 @@ namespace LyricsScraperNET.Extensions
 
         internal static SearchResult AddInstrumental(this SearchResult searchResult, bool instrumental)
         {
+            searchResult.ResponseStatusCode = ResponseStatusCode.Success;
             searchResult.Instrumental = instrumental;
             return searchResult;
         }

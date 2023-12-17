@@ -40,28 +40,28 @@
     <None Update="Providers\LyricFind\Resources\Lyrics_Result_01.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Providers\LyricFind\test_data.json">
+    <None Update="Providers\LyricFind\lyric_test_data.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="Providers\Musixmatch\Resources\Lyrics_Result_01.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Providers\Musixmatch\test_data.json">
+    <None Update="Providers\Musixmatch\lyric_test_data.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="Providers\Genius\Resources\Lyrics_Result_01.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Providers\Genius\test_data.json">
+    <None Update="Providers\Genius\lyric_test_data.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Providers\AZLyrics\test_data.json">
+    <None Update="Providers\AZLyrics\lyric_test_data.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="Providers\SongLyrics\Resources\Lyrics_Result_01.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Providers\SongLyrics\test_data.json">
+    <None Update="Providers\SongLyrics\lyric_test_data.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

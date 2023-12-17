@@ -11,8 +11,8 @@ namespace LyricsScraperNET.IntegrationTest.Providers.Genius
     public class GeniusProviderTest : ProviderTestBase
     {
         [Theory]
-        [MemberData(nameof(GetTestData), parameters: "Providers\\Genius\\test_data.json")]
-        public void SearchLyric_IntegrationDynamicData_AreEqual(LyricsTestData testData)
+        [MemberData(nameof(GetTestData), parameters: "Providers\\Genius\\lyric_test_data.json")]
+        public void SearchLyric_IntegrationDynamicData_Success(LyricsTestData testData)
         {
             // Arrange
             var lyricsClient = new GeniusProvider();

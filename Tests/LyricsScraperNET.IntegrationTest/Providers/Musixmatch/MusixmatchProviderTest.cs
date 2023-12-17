@@ -11,8 +11,8 @@ namespace LyricsScraperNET.IntegrationTest.Providers.Musixmatch
     public class MusixmatchProviderTest : ProviderTestBase
     {
         [Theory]
-        [MemberData(nameof(GetTestData), parameters: "Providers\\Musixmatch\\test_data.json")]
-        public void SearchLyric_IntegrationDynamicData_AreEqual(LyricsTestData testData)
+        [MemberData(nameof(GetTestData), parameters: "Providers\\Musixmatch\\lyric_test_data.json")]
+        public void SearchLyric_IntegrationDynamicData_Success(LyricsTestData testData)
         {
             // Arrange
             var lyricsClient = new MusixmatchProvider();

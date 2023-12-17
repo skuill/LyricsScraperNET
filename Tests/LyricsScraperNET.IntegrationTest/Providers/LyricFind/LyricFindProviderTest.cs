@@ -11,8 +11,8 @@ namespace LyricsScraperNET.IntegrationTest.Providers.LyricFind
     public class LyricFindProviderTest : ProviderTestBase
     {
         [Theory]
-        [MemberData(nameof(GetTestData), parameters: "Providers\\LyricFind\\test_data.json")]
-        public void SearchLyric_IntegrationDynamicData_AreEqual(LyricsTestData testData)
+        [MemberData(nameof(GetTestData), parameters: "Providers\\LyricFind\\lyric_test_data.json")]
+        public void SearchLyric_IntegrationDynamicData_Success(LyricsTestData testData)
         {
             // Arrange
             var lyricsClient = new LyricFindProvider();

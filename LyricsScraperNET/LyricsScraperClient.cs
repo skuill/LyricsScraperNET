@@ -70,7 +70,7 @@ namespace LyricsScraperNET
             foreach (var externalProvider in GetAvailableProvidersForSearchRequest(searchRequest))
             {
                 var providerSearchResult = externalProvider.SearchLyric(searchRequest);
-                if (!providerSearchResult.IsEmpty())
+                if (!providerSearchResult.IsEmpty() || providerSearchResult.Instrumental)
                 {
                     return providerSearchResult;
                 }
@@ -102,7 +102,7 @@ namespace LyricsScraperNET
             foreach (var externalProvider in GetAvailableProvidersForSearchRequest(searchRequest))
             {
                 var providerSearchResult = await externalProvider.SearchLyricAsync(searchRequest);
-                if (!providerSearchResult.IsEmpty())
+                if (!providerSearchResult.IsEmpty() || providerSearchResult.Instrumental)
                 {
                     return providerSearchResult;
                 }
