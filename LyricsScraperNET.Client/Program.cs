@@ -32,10 +32,9 @@ class Program
         //// How to configure for a certain external provider:
         //var result = ExampleWithCertainProvider(artistToSearch, songToSearch);
 
-        //// Checking if something was found. 
-        //// May not be found in two cases:
-        //// 1) search errors can be found in the logs or in response fields like ResponseStatusCode and ResponseMessage.
-        //// 2) The requested song contains only the instrumental, no lyrics. In this case the flag will be true.
+        //// Checking that something was found. The response can be empty in two cases:
+        //// 1) A search error occurred. Detailed information can be found in the logs or in response fields like 'ResponseStatusCode' and 'ResponseMessage'.
+        //// 2) The requested song contains only the instrumental, no lyrics. In this case the flag 'Instrumental' will be true.
         if (result.IsEmpty())
         {
             if (result.Instrumental)

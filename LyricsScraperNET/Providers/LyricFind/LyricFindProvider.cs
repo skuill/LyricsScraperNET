@@ -162,7 +162,7 @@ namespace LyricsScraperNET.Providers.LyricFind
         }
 
         /// <summary>
-        /// Try to find and return the fielad value as boolean. Pattern: "<paramref name="fieldName"/>":<true|false>.
+        /// Try to find and return the fielad value as boolean. Pattern: [<paramref name="fieldName"/>:true(or false)].
         /// In case if fieldName is not found returns false.
         /// </summary>
         private bool TryReturnBooleanFieldValue(string text, string fieldName)
