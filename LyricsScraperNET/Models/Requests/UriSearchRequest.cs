@@ -35,5 +35,10 @@ namespace LyricsScraperNET.Models.Requests
 
         public UriSearchRequest(string uri, ExternalProviderType provider) : this(new Uri(uri), provider)
         { }
+
+        public override string ToString()
+        {
+            return $"Uri: [{Uri}]. Provider: [{Provider}]";
+        }
     }
 }

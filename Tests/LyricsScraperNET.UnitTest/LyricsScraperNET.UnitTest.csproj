@@ -31,13 +31,19 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="Providers\Genius\instrumental_test_data.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Providers\Genius\Resources\Instrumental_HtmlPage_01.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="Providers\Genius\Resources\Lyrics_HtmlPage_01.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="Providers\Genius\Resources\Lyrics_Result_01.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Providers\Genius\test_data.json">
+    <None Update="Providers\Genius\lyric_test_data.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="Providers\AZLyrics\Resources\Lyrics_Result_01.txt">
@@ -46,7 +52,13 @@
     <None Update="Providers\AZLyrics\Resources\Lyrics_HtmlPage_01.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Providers\AZLyrics\test_data.json">
+    <None Update="Providers\AZLyrics\lyric_test_data.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Providers\LyricFind\instrumental_test_data.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Providers\LyricFind\Resources\Instrumental_HtmlPage_01.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="Providers\LyricFind\Resources\Lyrics_HtmlPage_01.txt">
@@ -55,7 +67,13 @@
     <None Update="Providers\LyricFind\Resources\Lyrics_Result_01.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Providers\LyricFind\test_data.json">
+    <None Update="Providers\LyricFind\lyric_test_data.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Providers\SongLyrics\instrumental_test_data.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Providers\SongLyrics\Resources\Instrumental_HtmlPage_01.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="Providers\SongLyrics\Resources\Lyrics_HtmlPage_01.txt">
@@ -64,7 +82,7 @@
     <None Update="Providers\SongLyrics\Resources\Lyrics_Result_01.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Providers\SongLyrics\test_data.json">
+    <None Update="Providers\SongLyrics\lyric_test_data.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="Resources\full_test_settings.json">

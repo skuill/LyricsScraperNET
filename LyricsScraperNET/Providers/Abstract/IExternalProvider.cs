@@ -1,6 +1,7 @@
 ﻿using LyricsScraperNET.Models.Requests;
 using LyricsScraperNET.Models.Responses;
 using LyricsScraperNET.Network.Abstract;
+using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
 
 namespace LyricsScraperNET.Providers.Abstract
@@ -27,5 +28,7 @@ namespace LyricsScraperNET.Providers.Abstract
         void Enable();
 
         void Disable();
+
+        void WithLogger(ILoggerFactory loggerFactory);
     }
 }

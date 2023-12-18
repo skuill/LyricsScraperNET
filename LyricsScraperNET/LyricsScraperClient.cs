@@ -16,8 +16,8 @@ namespace LyricsScraperNET
 {
     public sealed class LyricsScraperClient : ILyricsScraperClient
     {
-
-        private readonly ILogger<LyricsScraperClient> _logger;
+        private ILoggerFactory _loggerFactory;
+        private ILogger<LyricsScraperClient> _logger;
 
         private List<IExternalProvider> _externalProviders;
         private readonly ILyricScraperClientConfig _lyricScraperClientConfig;
@@ -70,15 +70,15 @@ namespace LyricsScraperNET
             foreach (var externalProvider in GetAvailableProvidersForSearchRequest(searchRequest))
             {
                 var providerSearchResult = externalProvider.SearchLyric(searchRequest);
-                if (!providerSearchResult.IsEmpty())
+                if (!providerSearchResult.IsEmpty() || providerSearchResult.Instrumental)
                 {
                     return providerSearchResult;
                 }
-                _logger?.LogWarning($"Can't find lyric by provider: {externalProvider}.");
+                _logger?.LogWarning($"Can't find lyric by provider: [{externalProvider.Options?.ExternalProviderType}].");
             }
 
             searchResult.AddNoDataFoundMessage(Constants.ResponseMessages.NotFoundLyric);
-            _logger?.LogError($"Can't find lyrics for searchRequest: {searchRequest}.");
+            _logger?.LogError($"Can't find lyrics for searchRequest: [{searchRequest}].");
 
             return searchResult;
         }
@@ -102,15 +102,15 @@ namespace LyricsScraperNET
             foreach (var externalProvider in GetAvailableProvidersForSearchRequest(searchRequest))
             {
                 var providerSearchResult = await externalProvider.SearchLyricAsync(searchRequest);
-                if (!providerSearchResult.IsEmpty())
+                if (!providerSearchResult.IsEmpty() || providerSearchResult.Instrumental)
                 {
                     return providerSearchResult;
                 }
-                _logger?.LogWarning($"Can't find lyric by provider: {externalProvider}.");
+                _logger?.LogWarning($"Can't find lyric by provider: [{externalProvider.Options?.ExternalProviderType}].");
             }
 
             searchResult.AddNoDataFoundMessage(Constants.ResponseMessages.NotFoundLyric);
-            _logger?.LogError($"Can't find lyrics for searchRequest: {searchRequest}.");
+            _logger?.LogError($"Can't find lyrics for searchRequest: [{searchRequest}].");
 
             return searchResult;
         }
@@ -200,7 +200,11 @@ namespace LyricsScraperNET
             if (IsEmptyProvidersList())
                 _externalProviders = new List<IExternalProvider>();
             if (!_externalProviders.Contains(provider))
+            {
+                if (_loggerFactory != null)
+                    provider.WithLogger(_loggerFactory);
                 _externalProviders.Add(provider);
+            }
             else
                 _logger?.LogWarning($"External provider {provider} already added");
         }
@@ -219,9 +223,7 @@ namespace LyricsScraperNET
                 return;
 
             foreach (var provider in _externalProviders)
-            {
                 provider.Enable();
-            }
         }
 
         public void Disable()
@@ -230,9 +232,19 @@ namespace LyricsScraperNET
                 return;
 
             foreach (var provider in _externalProviders)
-            {
                 provider.Disable();
-            }
+        }
+
+        public void WithLogger(ILoggerFactory loggerFactory)
+        {
+            _loggerFactory = loggerFactory;
+            _logger = loggerFactory.CreateLogger<LyricsScraperClient>();
+
+            if (IsEmptyProvidersList())
+                return;
+
+            foreach (var provider in _externalProviders)
+                provider.WithLogger(loggerFactory);
         }
 
         private bool IsEmptyProvidersList() => _externalProviders == null || !_externalProviders.Any();

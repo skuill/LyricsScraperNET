@@ -48,6 +48,11 @@ namespace LyricsScraperNET.Models.Responses
         public string ResponseMessage { get; internal set; } = string.Empty;
 
         /// <summary>
+        /// The flag indicates that the search results are for music only, without text.
+        /// </summary>
+        public bool Instrumental { get; internal set; } = false;
+
+        /// <summary>
         /// Returns true if the field <seealso cref="LyricText"/> is empty.
         /// </summary>
         public bool IsEmpty() => string.IsNullOrWhiteSpace(LyricText);
