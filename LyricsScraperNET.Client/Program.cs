@@ -66,6 +66,9 @@ class Program
         Console.WriteLine($"\r\nThis lyric was found by [{result.ExternalProviderType}]\r\n");
         Console.ResetColor();
 
+        Console.ForegroundColor = ConsoleColor.DarkGray;
+        Console.WriteLine("Press any key to exit..");
+        Console.ResetColor();
         Console.ReadLine();
     }
 
