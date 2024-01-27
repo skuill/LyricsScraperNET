@@ -22,6 +22,9 @@ jobs:
       - uses: actions/setup-dotnet@v3
         with:
           dotnet-version: "7.0.x"
+      - uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: "8.0.x"
       - name: Set RELEASE_VERSION
         run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
       - name: Restore Packages
@@ -60,11 +63,13 @@ jobs:
           zip -j LyricsScraperNET-net5.0.zip LyricsScraperNET/bin/Release/net5.0/*
           zip -j LyricsScraperNET-net6.0.zip LyricsScraperNET/bin/Release/net6.0/*
           zip -j LyricsScraperNET-net7.0.zip LyricsScraperNET/bin/Release/net7.0/*
+          zip -j LyricsScraperNET-net8.0.zip LyricsScraperNET/bin/Release/net8.0/*
           gh release upload "$RELEASE_VERSION" \
             "LyricsScraperNET-netstandard2.0.zip" \
             "LyricsScraperNET-netstandard2.1.zip" \
             "LyricsScraperNET-net5.0.zip" \
             "LyricsScraperNET-net6.0.zip" \
             "LyricsScraperNET-net7.0.zip" \
+            "LyricsScraperNET-net8.0.zip" \
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
