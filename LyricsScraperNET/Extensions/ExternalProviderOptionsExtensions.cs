@@ -2,7 +2,7 @@
 
 namespace LyricsScraperNET.Extensions
 {
-    public static class ExternalProviderOptionsExtensions
+    internal static class ExternalProviderOptionsExtensions
     {
         public static bool TryGetApiKeyFromOptions(this IExternalProviderOptions options, out string apiKey)
         {
