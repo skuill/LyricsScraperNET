@@ -1,6 +1,7 @@
 ﻿using LyricsScraperNET.Providers.AZLyrics;
 using LyricsScraperNET.Providers.Genius;
 using LyricsScraperNET.Providers.LyricFind;
+using LyricsScraperNET.Providers.Models;
 using LyricsScraperNET.Providers.Musixmatch;
 using LyricsScraperNET.Providers.SongLyrics;
 
@@ -36,6 +37,20 @@ namespace LyricsScraperNET
         {
             lyricsScraperClient.AddProvider(new LyricFindProvider());
             return lyricsScraperClient;
+        }
+
+        /// <summary>
+        /// Configure LyricsScraperClient with all available providers in <seealso cref="ExternalProviderType"/>.
+        /// Search lyrics enabled by default for all providers.
+        /// </summary>
+        public static ILyricsScraperClient WithAllProviders(this ILyricsScraperClient lyricsScraperClient)
+        {
+            return lyricsScraperClient
+                .WithGenius()
+                .WithAZLyrics()
+                .WithMusixmatch()
+                .WithSongLyrics()
+                .WithLyricFind();
         }
     }
 }

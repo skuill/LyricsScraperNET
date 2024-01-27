@@ -1,4 +1,6 @@
 ﻿using LyricsScraperNET.Providers.Models;
+using System;
+using System.Linq;
 using Xunit;
 
 namespace LyricsScraperNET.UnitTest.Extensions
@@ -80,6 +82,27 @@ namespace LyricsScraperNET.UnitTest.Extensions
             Assert.NotNull(externalTypeProvider);
             Assert.True(externalTypeProvider.IsEnabled);
             Assert.Equal(3, externalTypeProvider.SearchPriority);
+        }
+
+        [Fact]
+        public void LyricsScraperClient_WithAllProviders_ReturnsIsEnabled()
+        {
+            // Act
+            var lyricsScraperClient = _lyricsScraperClient.WithAllProviders();
+
+            Assert.NotNull(lyricsScraperClient);
+            Assert.True(lyricsScraperClient.IsEnabled);
+
+            foreach (var providerType in Enum.GetValues(typeof(ExternalProviderType)).Cast<ExternalProviderType>())
+            {
+                if (providerType == ExternalProviderType.None)
+                    continue;
+                var externalTypeProvider = lyricsScraperClient[providerType];
+
+                // Assert
+                Assert.NotNull(externalTypeProvider);
+                Assert.True(externalTypeProvider.IsEnabled);
+            }
         }
     }
 }

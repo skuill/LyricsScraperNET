@@ -96,20 +96,32 @@ class Program
     /// <returns>lyrics text</returns>
     private static SearchResult ExampleWithCertainProvider(string artistToSearch, string songToSearch)
     {
-        //// Create instance of LyricScraperClient with different lyrics providers
+        //// Create instance of LyricScraperClient with all available lyrics providers
         ILyricsScraperClient lyricsScraperClient
             = new LyricsScraperClient()
-                .WithGenius()
-                .WithAZLyrics()
-                .WithMusixmatch()
-                .WithSongLyrics()
-                .WithLyricFind();
+                .WithAllProviders();
+
+        //// To configure a specific provider, use a method like With[ProviderName]()
+        // ILyricsScraperClient lyricsScraperClient
+        //     = new LyricsScraperClient()
+        //         .WithGenius()
+        //         .WithAZLyrics()
+        //         .WithMusixmatch()
+        //         .WithSongLyrics()
+        //         .WithLyricFind();
 
         //// Another way to configure:
         //// 1. First create instance of LyricScraperClient.
         // ILyricsScraperClient lyricsScraperClient = new LyricsScraperClient();
-        //// 2. Create some external provider instanse. For example Genius:
+        //// 2. Create some external provider instanse with default settings. For example Genius:
         // IExternalProvider externalProvider = new GeniusProvider();
+        //// 2. Or create provider with custom settings like:
+        // GeniusOptions geniusOptions = new GeniusOptions()
+        // {
+        //     Enabled = true,
+        //     SearchPriority = 1
+        // };
+        // IExternalProvider externalProvider = new GeniusProvider(geniusOptions);
         //// 3. Add external provider to client:
         // lyricsScraperClient.AddProvider(externalProvider);
 
