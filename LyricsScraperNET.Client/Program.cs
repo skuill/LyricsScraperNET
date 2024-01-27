@@ -37,36 +37,40 @@ class Program
         //// 2) The requested song contains only the instrumental, no lyrics. In this case the flag 'Instrumental' will be true.
         if (result.IsEmpty())
         {
+            ConsoleExtensions.WriteLineDelimeter();
             if (result.Instrumental)
             {
-                Console.ForegroundColor = ConsoleColor.Gray;
-                Console.WriteLine($"This song [{artistToSearch} - {songToSearch}] is instrumental.\r\nIt does not contain any lyrics");
+                $"This song [{artistToSearch} - {songToSearch}] is instrumental.\r\nIt does not contain any lyrics"
+                    .WriteLineColored(ConsoleColor.Gray);
             }
             else
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"Can't find lyrics for: [{artistToSearch} - {songToSearch}]. " +
+                ($"Can't find lyrics for: [{artistToSearch} - {songToSearch}]. " +
                     $"Status code: [{result.ResponseStatusCode}]. " +
-                    $"Response message: [{result.ResponseMessage}].");
+                    $"Response message: [{result.ResponseMessage}].").WriteLineColored(ConsoleColor.Red);
             }
-            Console.ResetColor();
+            ConsoleExtensions.WriteLineDelimeter();
 
+            "Press any key to exit..".WriteLineColored(ConsoleColor.DarkGray);
             Console.ReadLine();
             return;
         }
 
         //// Output result to console
-        Console.ForegroundColor = ConsoleColor.Yellow;
-        Console.WriteLine($"[{artistToSearch} - {songToSearch}]\r\n");
-        Console.ResetColor();
+        //// Artist and song information
+        $"[{artistToSearch} - {songToSearch}]".WriteLineColored(ConsoleColor.Yellow);
 
-        Console.WriteLine(result.LyricText);
+        ConsoleExtensions.WriteLineDelimeter();
+        //// Lyric text
+        result.LyricText.WriteLineColored();
+        ConsoleExtensions.WriteLineDelimeter();
 
-        Console.ForegroundColor = ConsoleColor.Magenta;
-        Console.WriteLine($"\r\nThis lyric was found by [{result.ExternalProviderType}]\r\n");
-        Console.ResetColor();
+        //// Lyrics provider information
+        $"This lyric was found by [{result.ExternalProviderType}]\r\n".WriteLineColored(ConsoleColor.Magenta);
 
+        "Press any key to exit..".WriteLineColored(ConsoleColor.DarkGray);
         Console.ReadLine();
+        return;
     }
 
     /// <summary>
