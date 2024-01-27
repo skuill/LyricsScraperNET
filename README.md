@@ -25,7 +25,7 @@ LyricsScraperNET is a library for .NET that provides an API to search for lyrics
 
 ## Example
 
-A simple way to initialize through a parameterless constructor with the addition of the necessary lyric providers:
+A simple way to initialize through a parameterless constructor with the addition of the all available lyric providers:
 
 ```csharp
 using LyricsScraperNET;
@@ -38,11 +38,7 @@ class Program
         // Create instance of LyricScraperClient with different lyrics providers
         ILyricsScraperClient lyricsScraperClient
             = new LyricsScraperClient()
-                .WithGenius()
-                .WithAZLyrics()
-                .WithMusixmatch()
-                .WithSongLyrics()
-                .WithLyricFind();
+                .WithAllProviders();
 
         var searchRequest = new ArtistAndSongSearchRequest(artist: "Metallica", song: "Nothing Else Matters");
 
