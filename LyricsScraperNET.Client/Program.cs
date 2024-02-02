@@ -149,7 +149,7 @@ class Program
         // GeniusOptions geniusOptions = new GeniusOptions()
         // {
         //     Enabled = true,
-        //     SearchPriority = 1
+        //     SearchPriority = 1 // If there are multiple external providers, then the search will start from the provider with the highest priority.
         // };
         // IExternalProvider externalProvider = new GeniusProvider(geniusOptions);
         //// 3. Add external provider to client:
