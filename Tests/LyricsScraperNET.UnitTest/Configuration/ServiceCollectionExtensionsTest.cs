@@ -33,7 +33,12 @@ namespace LyricsScraperNET.UnitTest.Configuration
             // Act
             serviceCollection.AddLyricScraperClientService(configuration);
 
-            var serviceProvider = serviceCollection.BuildServiceProvider();
+            var serviceProvider = serviceCollection.BuildServiceProvider(
+                new ServiceProviderOptions
+                {
+                    ValidateOnBuild = true,
+                    ValidateScopes = true
+                }).CreateScope().ServiceProvider;
             var service = serviceProvider.GetService<ILyricsScraperClient>();
             var searchResult = service.SearchLyric(new ArtistAndSongSearchRequest(null, null));
 
@@ -71,7 +76,12 @@ namespace LyricsScraperNET.UnitTest.Configuration
             // Act
             serviceCollection.AddLyricScraperClientService(configuration);
 
-            var serviceProvider = serviceCollection.BuildServiceProvider();
+            var serviceProvider = serviceCollection.BuildServiceProvider(
+                new ServiceProviderOptions
+                {
+                    ValidateOnBuild = true,
+                    ValidateScopes = true
+                }).CreateScope().ServiceProvider;
             var service = serviceProvider.GetService<ILyricsScraperClient>();
 
             // Assert
