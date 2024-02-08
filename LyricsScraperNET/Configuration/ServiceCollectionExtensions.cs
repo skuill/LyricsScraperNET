@@ -73,6 +73,8 @@ namespace LyricsScraperNET.Configuration
             {
                 services.Configure<MusixmatchOptions>(configurationSection);
 
+                services.AddSingleton<IMusixmatchTokenCache, MusixmatchTokenCache>();
+                services.AddScoped<IMusixmatchClientWrapper, MusixmatchClientWrapper>();
                 services.AddScoped(typeof(IExternalProvider), typeof(MusixmatchProvider));
             }
 
