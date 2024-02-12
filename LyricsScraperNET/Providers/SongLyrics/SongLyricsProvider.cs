@@ -17,9 +17,14 @@ namespace LyricsScraperNET.Providers.SongLyrics
         private ILogger<SongLyricsProvider> _logger;
         private readonly IExternalUriConverter _uriConverter;
 
+        /// <summary>
+        /// The html node that contains part of the lyric.
+        /// </summary>
+        private const string LyricsContainerNodesXPath = "//p[contains(@id, 'songLyricsDiv')]";
 
-        private const string _lyricsContainerNodesXPath = "//p[contains(@id, 'songLyricsDiv')]";
-
+        /// <summary>
+        /// The text in the <see cref="LyricsContainerNodesXPath"/> if the lyrics do not exist on the site.
+        /// </summary>
         private const string NotExistLyricPattern = "We do not have the lyrics for (.*) yet.";
 
         /// <summary>
@@ -121,7 +126,7 @@ namespace LyricsScraperNET.Providers.SongLyrics
             var htmlDocument = new HtmlDocument();
             htmlDocument.LoadHtml(htmlPageBody);
 
-            var lyricsContainerNode = htmlDocument.DocumentNode.SelectSingleNode(_lyricsContainerNodesXPath);
+            var lyricsContainerNode = htmlDocument.DocumentNode.SelectSingleNode(LyricsContainerNodesXPath);
 
             if (lyricsContainerNode == null)
             {

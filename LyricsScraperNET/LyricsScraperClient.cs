@@ -53,17 +53,8 @@ namespace LyricsScraperNET
 
         public SearchResult SearchLyric(SearchRequest searchRequest)
         {
-            var searchResult = new SearchResult();
-
-            if (!ValidSearchRequest(searchRequest, out var badRequestErrorMessage))
+            if (!ValidSearchRequestAndConfig(searchRequest, out var searchResult))
             {
-                searchResult.AddBadRequestMessage(badRequestErrorMessage);
-                return searchResult;
-            }
-
-            if (!ValidClientConfiguration(out var errorMessage))
-            {
-                searchResult.AddNoDataFoundMessage(errorMessage);
                 return searchResult;
             }
 
@@ -85,17 +76,8 @@ namespace LyricsScraperNET
 
         public async Task<SearchResult> SearchLyricAsync(SearchRequest searchRequest)
         {
-            var searchResult = new SearchResult();
-
-            if (!ValidSearchRequest(searchRequest, out var badRequestErrorMessage))
+            if (!ValidSearchRequestAndConfig(searchRequest, out var searchResult))
             {
-                searchResult.AddBadRequestMessage(badRequestErrorMessage);
-                return searchResult;
-            }
-
-            if (!ValidClientConfiguration(out var errorMessage))
-            {
-                searchResult.AddNoDataFoundMessage(errorMessage);
                 return searchResult;
             }
 
@@ -130,6 +112,25 @@ namespace LyricsScraperNET
             return Array.Empty<IExternalProvider>();
         }
 
+        private bool ValidSearchRequestAndConfig(SearchRequest searchRequest, out SearchResult searchResult)
+        {
+            searchResult = new SearchResult();
+
+            if (!ValidSearchRequest(searchRequest, out var badRequestErrorMessage))
+            {
+                searchResult.AddBadRequestMessage(badRequestErrorMessage);
+                return false;
+            }
+
+            if (!ValidClientConfiguration(out var errorMessage))
+            {
+                searchResult.AddNoDataFoundMessage(errorMessage);
+                return false;
+            }
+
+            return true;
+        }
+
         private bool ValidClientConfiguration(out string errorMessage)
         {
             errorMessage = string.Empty;
@@ -155,7 +156,6 @@ namespace LyricsScraperNET
 
         private bool ValidSearchRequest(SearchRequest searchRequest, out string errorMessage)
         {
-            errorMessage = string.Empty;
             LogLevel logLevel = LogLevel.Error;
 
             if (searchRequest == null)
@@ -165,27 +165,18 @@ namespace LyricsScraperNET
                 return false;
             }
 
-            switch (searchRequest)
+            var isSearchRequestValid = searchRequest.IsValid(out errorMessage);
+            if (!isSearchRequestValid)
             {
-                case ArtistAndSongSearchRequest artistAndSongSearchRequest:
-                    errorMessage = string.IsNullOrEmpty(artistAndSongSearchRequest.Artist) || string.IsNullOrEmpty(artistAndSongSearchRequest.Song)
-                        ? Constants.ResponseMessages.ArtistAndSongSearchRequestFieldsAreEmpty
-                        : string.Empty;
-                    break;
-                case UriSearchRequest uriSearchRequest:
-                    errorMessage = uriSearchRequest.Uri == null
-                        ? Constants.ResponseMessages.UriSearchRequestFieldsAreEmpty
-                        : string.Empty;
-                    break;
+                _logger?.Log(logLevel, errorMessage);
+                return false;
             }
 
             var searchRequestExternalProvider = searchRequest.GetProviderTypeFromRequest();
-
             if (!searchRequestExternalProvider.IsNoneProviderType() && !IsProviderEnabled(searchRequestExternalProvider))
             {
                 errorMessage = Constants.ResponseMessages.ExternalProviderForRequestNotSpecified;
             }
-
             if (!string.IsNullOrWhiteSpace(errorMessage))
             {
                 _logger?.Log(logLevel, errorMessage);

@@ -1,4 +1,6 @@
-﻿using LyricsScraperNET.Providers.Models;
+﻿using Genius.Models.Song;
+using LyricsScraperNET.Common;
+using LyricsScraperNET.Providers.Models;
 using System;
 
 namespace LyricsScraperNET.Models.Requests
@@ -39,6 +41,15 @@ namespace LyricsScraperNET.Models.Requests
         public override string ToString()
         {
             return $"Uri: [{Uri}]. Provider: [{Provider}]";
+        }
+
+        public override bool IsValid(out string error)
+        {
+            bool result = Uri == null;
+            error = result
+                ? Constants.ResponseMessages.UriSearchRequestFieldsAreEmpty
+                : string.Empty;
+            return !result;
         }
     }
 }

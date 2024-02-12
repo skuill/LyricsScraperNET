@@ -24,7 +24,7 @@ namespace LyricsScraperNET.Providers.SongLyrics
             unchecked
             {
                 int hash = 17;
-                hash = hash * 31 + ExternalProviderType.GetHashCode();
+                hash = (hash * 31) + ExternalProviderType.GetHashCode();
                 return hash;
             }
         }

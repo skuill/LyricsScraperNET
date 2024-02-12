@@ -38,7 +38,6 @@ namespace LyricsScraperNET.UnitTest.Extensions
             Assert.Equal(expected, actual);
         }
 
-
         [Theory]
         [InlineData("<div>test</div>", "test")]
         [InlineData("This text < is for fun", "This text < is for fun")]

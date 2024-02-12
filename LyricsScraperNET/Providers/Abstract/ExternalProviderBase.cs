@@ -18,7 +18,6 @@ namespace LyricsScraperNET.Providers.Abstract
 
         public int SearchPriority => Options != null ? Options.SearchPriority : 0;
 
-
         #region Sync
 
         public virtual SearchResult SearchLyric(SearchRequest searchRequest)
@@ -45,7 +44,6 @@ namespace LyricsScraperNET.Providers.Abstract
 
         #endregion
 
-
         #region Async
 
         public virtual async Task<SearchResult> SearchLyricAsync(SearchRequest searchRequest)
@@ -71,7 +69,6 @@ namespace LyricsScraperNET.Providers.Abstract
             => throw new NotImplementedException();
 
         #endregion
-
 
         public void WithParser(IExternalProviderLyricParser parser)
         {

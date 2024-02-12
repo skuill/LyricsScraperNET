@@ -29,8 +29,8 @@ namespace LyricsScraperNET.Providers.Musixmatch
             {
                 int hash = 17;
                 if (!string.IsNullOrEmpty(ApiKey))
-                    hash = hash * 31 + ApiKey.GetHashCode();
-                hash = hash * 31 + ExternalProviderType.GetHashCode();
+                    hash = (hash * 31) + ApiKey.GetHashCode();
+                hash = (hash * 31) + ExternalProviderType.GetHashCode();
                 return hash;
             }
         }

@@ -16,7 +16,7 @@ namespace LyricsScraperNET.UnitTest
         {
             // Arrange
             var lyricsScraperClient = GetLyricsScraperClient();
-            var searchRequestMock = new Mock<SearchRequest>();
+            var searchRequestMock = GetSearchRequestMock();
             var externalProviderTypes = GetExternalProviderTypes();
 
             // Act
@@ -47,7 +47,7 @@ namespace LyricsScraperNET.UnitTest
         {
             // Arrange
             var lyricsScraperClient = new LyricsScraperClient();
-            var searchRequestMock = new Mock<SearchRequest>();
+            var searchRequestMock = GetSearchRequestMock();
 
             // Act
             var searchResult = lyricsScraperClient.SearchLyric(searchRequestMock.Object);
@@ -157,7 +157,7 @@ namespace LyricsScraperNET.UnitTest
         {
             // Arrange
             var lyricsScraperClient = GetLyricsScraperClientWithMockedProvider();
-            var searchRequestMock = new Mock<SearchRequest>();
+            var searchRequestMock = GetSearchRequestMock();
 
             // Act
             var searchResult = lyricsScraperClient.SearchLyric(searchRequestMock.Object);
@@ -291,7 +291,6 @@ namespace LyricsScraperNET.UnitTest
 
         private ILyricsScraperClient GetLyricsScraperClientWithMockedProvider()
         {
-
             var client = new LyricsScraperClient();
             var externalProvider = GetExternalProviderMock(ExternalProviderType.AZLyrics);
             client.AddProvider(externalProvider.Object);
@@ -309,6 +308,14 @@ namespace LyricsScraperNET.UnitTest
             externalProviderMock.Setup(p => p.Options.ExternalProviderType).Returns(externalProviderType);
 
             return externalProviderMock;
+        }
+
+        private Mock<SearchRequest> GetSearchRequestMock()
+        {
+            var searchRequestMock = new Mock<SearchRequest>();
+            string error = string.Empty;
+            searchRequestMock.Setup(x => x.IsValid(out error)).Returns(true);
+            return searchRequestMock;
         }
     }
 }
