@@ -29,5 +29,25 @@ namespace LyricsScraperNET.IntegrationTest.Providers.AZLyrics
             Assert.Equal(ExternalProviderType.AZLyrics, searchResult.ExternalProviderType);
             Assert.Equal(testData.LyricResultData.Replace("\r\n", "\n"), searchResult.LyricText.Replace("\r\n", "\n"));
         }
+
+        [Theory]
+        [InlineData("asdfasdfasdfasdf", "asdfasdfasdfasdf")]
+        public void SearchLyric_NotExistsLyrics_ShouldReturnNoDataFoundStatus(string artist, string song)
+        {
+            // Arrange
+            var lyricsClient = new AZLyricsProvider();
+            var searchRequest = new ArtistAndSongSearchRequest(artist, song);
+
+            // Act
+            var searchResult = lyricsClient.SearchLyric(searchRequest);
+
+            // Assert
+            Assert.NotNull(searchResult);
+            Assert.True(searchResult.IsEmpty());
+            Assert.Equal(ResponseStatusCode.NoDataFound, searchResult.ResponseStatusCode);
+            Assert.Equal(ExternalProviderType.AZLyrics, searchResult.ExternalProviderType);
+            Assert.True(string.IsNullOrEmpty(searchResult.ResponseMessage));
+            Assert.False(searchResult.Instrumental);
+        }
     }
 }
