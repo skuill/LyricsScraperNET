@@ -5,6 +5,7 @@ using LyricsScraperNET.Providers.Abstract;
 using LyricsScraperNET.Providers.Models;
 using Moq;
 using System;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace LyricsScraperNET.UnitTest
@@ -12,7 +13,7 @@ namespace LyricsScraperNET.UnitTest
     public class LyricsScraperClientTests
     {
         [Fact]
-        public async void SearchLyric_WithDisabledClient_ShouldReturnEmptySearchResult()
+        public async Task SearchLyric_WithDisabledClient_ShouldReturnEmptySearchResult()
         {
             // Arrange
             var lyricsScraperClient = GetLyricsScraperClient();
@@ -43,7 +44,7 @@ namespace LyricsScraperNET.UnitTest
         }
 
         [Fact]
-        public async void SearchLyric_DefaultClient_ShouldReturnEmptySearchResult()
+        public async Task SearchLyric_DefaultClient_ShouldReturnEmptySearchResult()
         {
             // Arrange
             var lyricsScraperClient = new LyricsScraperClient();
@@ -72,7 +73,7 @@ namespace LyricsScraperNET.UnitTest
         [InlineData(null, null)]
         [InlineData("Muse", null)]
         [InlineData(null, "Hysteria")]
-        public async void SearchLyric_MalformedArtistAndSongSearchRequest_ShouldReturnBadRequestStatus(string artist, string song)
+        public async Task SearchLyric_MalformedArtistAndSongSearchRequest_ShouldReturnBadRequestStatus(string artist, string song)
         {
             // Arrange
             var lyricsScraperClient = new LyricsScraperClient();
@@ -100,7 +101,7 @@ namespace LyricsScraperNET.UnitTest
 
         [Theory]
         [InlineData(null)]
-        public async void SearchLyric_MalformedUriSearchRequest_ShouldReturnBadRequestStatus(Uri uri)
+        public async Task SearchLyric_MalformedUriSearchRequest_ShouldReturnBadRequestStatus(Uri uri)
         {
             // Arrange
             var lyricsScraperClient = new LyricsScraperClient();
@@ -127,7 +128,7 @@ namespace LyricsScraperNET.UnitTest
         }
 
         [Fact]
-        public async void SearchLyric_EmptySearchRequest_ShouldReturnBadRequestStatus()
+        public async Task SearchLyric_EmptySearchRequest_ShouldReturnBadRequestStatus()
         {
             // Arrange
             var lyricsScraperClient = new LyricsScraperClient();
@@ -153,7 +154,7 @@ namespace LyricsScraperNET.UnitTest
         }
 
         [Fact]
-        public async void SearchLyric_ProviderWithEmptyResult_ShouldReturnNotFoundStatus()
+        public async Task SearchLyric_ProviderWithEmptyResult_ShouldReturnNotFoundStatus()
         {
             // Arrange
             var lyricsScraperClient = GetLyricsScraperClientWithMockedProvider();
@@ -179,7 +180,7 @@ namespace LyricsScraperNET.UnitTest
         }
 
         [Fact]
-        public async void SearchLyric_ProviderNotSpecifiedForRequest_ShouldReturnNotFoundStatus()
+        public async Task SearchLyric_ProviderNotSpecifiedForRequest_ShouldReturnNotFoundStatus()
         {
             // Arrange
             var lyricsScraperClient = GetLyricsScraperClientWithMockedProvider();
@@ -231,7 +232,7 @@ namespace LyricsScraperNET.UnitTest
         }
 
         [Fact]
-        public async void Enable_WithDisabledClient_ShouldBeEnabled()
+        public void Enable_WithDisabledClient_ShouldBeEnabled()
         {
             // Arrange
             var lyricsScraperClient = GetLyricsScraperClient();
