@@ -10,7 +10,7 @@ namespace LyricsScraperNET.IntegrationTest.Providers.Musixmatch
 {
     public class MusixmatchProviderTest : ProviderTestBase
     {
-        [Theory (Skip="Bug with the infinite requests loop. Should be enabled after https://github.com/skuill/LyricsScraperNET/issues/24")]
+        [Theory]
         [MemberData(nameof(GetTestData), parameters: "Providers\\Musixmatch\\lyric_test_data.json")]
         public void SearchLyric_IntegrationDynamicData_Success(LyricsTestData testData)
         {
@@ -31,7 +31,7 @@ namespace LyricsScraperNET.IntegrationTest.Providers.Musixmatch
             Assert.False(searchResult.Instrumental);
         }
 
-        [Theory(Skip = "Bug with the infinite requests loop. Should be enabled after https://github.com/skuill/LyricsScraperNET/issues/24")]
+        [Theory]
         [MemberData(nameof(GetTestData), parameters: "Providers\\Musixmatch\\instrumental_test_data.json")]
         public void SearchLyric_IntegrationDynamicData_Instrumental(LyricsTestData testData)
         {
