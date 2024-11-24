@@ -1,9 +1,9 @@
-﻿using LyricsScraperNET.Common;
+﻿using FakeItEasy;
+using LyricsScraperNET.Common;
 using LyricsScraperNET.Models.Requests;
 using LyricsScraperNET.Models.Responses;
 using LyricsScraperNET.Providers.Abstract;
 using LyricsScraperNET.Providers.Models;
-using Moq;
 using System;
 using System.Threading.Tasks;
 using Xunit;
@@ -22,8 +22,8 @@ namespace LyricsScraperNET.UnitTest
 
             // Act
             lyricsScraperClient.Disable();
-            var searchResult = lyricsScraperClient.SearchLyric(searchRequestMock.Object);
-            var searchResultAsync = await lyricsScraperClient.SearchLyricAsync(searchRequestMock.Object);
+            var searchResult = lyricsScraperClient.SearchLyric(searchRequestMock);
+            var searchResultAsync = await lyricsScraperClient.SearchLyricAsync(searchRequestMock);
 
             // Assert
             Assert.False(lyricsScraperClient.IsEnabled);
@@ -51,8 +51,8 @@ namespace LyricsScraperNET.UnitTest
             var searchRequestMock = GetSearchRequestMock();
 
             // Act
-            var searchResult = lyricsScraperClient.SearchLyric(searchRequestMock.Object);
-            var searchResultAsync = await lyricsScraperClient.SearchLyricAsync(searchRequestMock.Object);
+            var searchResult = lyricsScraperClient.SearchLyric(searchRequestMock);
+            var searchResultAsync = await lyricsScraperClient.SearchLyricAsync(searchRequestMock);
 
             // Assert
             Assert.False(lyricsScraperClient.IsEnabled);
@@ -161,8 +161,8 @@ namespace LyricsScraperNET.UnitTest
             var searchRequestMock = GetSearchRequestMock();
 
             // Act
-            var searchResult = lyricsScraperClient.SearchLyric(searchRequestMock.Object);
-            var searchResultAsync = await lyricsScraperClient.SearchLyricAsync(searchRequestMock.Object);
+            var searchResult = lyricsScraperClient.SearchLyric(searchRequestMock);
+            var searchResultAsync = await lyricsScraperClient.SearchLyricAsync(searchRequestMock);
 
             // Assert
             Assert.NotNull(searchResult);
@@ -236,7 +236,6 @@ namespace LyricsScraperNET.UnitTest
         {
             // Arrange
             var lyricsScraperClient = GetLyricsScraperClient();
-            var searchRequestMock = new Mock<SearchRequest>();
             var externalProviderTypes = GetExternalProviderTypes();
 
             // Act
@@ -265,7 +264,7 @@ namespace LyricsScraperNET.UnitTest
             Assert.Null(lyricsScraperClient[externalProviderType]);
 
             // Act 1
-            lyricsScraperClient.AddProvider(externalProvider.Object);
+            lyricsScraperClient.AddProvider(externalProvider);
             var externalProviderActual = lyricsScraperClient[externalProviderType];
 
             // Assert 1
@@ -294,28 +293,28 @@ namespace LyricsScraperNET.UnitTest
         {
             var client = new LyricsScraperClient();
             var externalProvider = GetExternalProviderMock(ExternalProviderType.AZLyrics);
-            client.AddProvider(externalProvider.Object);
+            client.AddProvider(externalProvider);
 
             return client;
         }
 
-        private Mock<IExternalProvider> GetExternalProviderMock(ExternalProviderType externalProviderType)
+        private IExternalProvider GetExternalProviderMock(ExternalProviderType externalProviderType)
         {
-            var externalProviderMock = new Mock<IExternalProvider>();
+            var externalProviderMock = A.Fake<IExternalProvider>();
 
-            externalProviderMock.Setup(p => p.IsEnabled).Returns(true);
-            externalProviderMock.Setup(p => p.SearchLyric(It.IsAny<SearchRequest>())).Returns(new SearchResult());
-            externalProviderMock.Setup(p => p.SearchLyricAsync(It.IsAny<SearchRequest>())).ReturnsAsync(new SearchResult());
-            externalProviderMock.Setup(p => p.Options.ExternalProviderType).Returns(externalProviderType);
+            A.CallTo(() => externalProviderMock.IsEnabled).Returns(true);
+            A.CallTo(() => externalProviderMock.SearchLyric(A<SearchRequest>._)).Returns(new SearchResult());
+            A.CallTo(() => externalProviderMock.SearchLyricAsync(A<SearchRequest>._)).Returns(new SearchResult());
+            A.CallTo(() => externalProviderMock.Options.ExternalProviderType).Returns(externalProviderType);
 
             return externalProviderMock;
         }
 
-        private Mock<SearchRequest> GetSearchRequestMock()
+        private SearchRequest GetSearchRequestMock()
         {
-            var searchRequestMock = new Mock<SearchRequest>();
+            var searchRequestMock = A.Fake<SearchRequest>();
             string error = string.Empty;
-            searchRequestMock.Setup(x => x.IsValid(out error)).Returns(true);
+            A.CallTo(() => searchRequestMock.IsValid(out error)).Returns(true);
             return searchRequestMock;
         }
     }

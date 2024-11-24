@@ -1,7 +1,7 @@
-﻿using LyricsScraperNET.Network.Abstract;
+﻿using FakeItEasy;
+using LyricsScraperNET.Network.Abstract;
 using LyricsScraperNET.Providers.Abstract;
 using LyricsScraperNET.UnitTest.TestModel;
-using Moq;
 using System;
 
 namespace LyricsScraperNET.TestShared.Extensions
@@ -10,10 +10,10 @@ namespace LyricsScraperNET.TestShared.Extensions
     {
         public static IExternalProvider ConfigureExternalProvider(this IExternalProvider externalProvider, LyricsTestData testData)
         {
-            var mockWebClient = new Mock<IWebClient>();
-            mockWebClient.Setup(x => x.Load(It.IsAny<Uri>())).Returns(testData.LyricPageData);
+            var mockWebClient = A.Fake<IWebClient>();
+            A.CallTo(() => mockWebClient.Load(A<Uri>._)).Returns(testData.LyricPageData);
 
-            externalProvider.WithWebClient(mockWebClient.Object);
+            externalProvider.WithWebClient(mockWebClient);
             return externalProvider;
         }
     }
