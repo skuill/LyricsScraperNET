@@ -52,50 +52,99 @@ namespace LyricsScraperNET
             _logger = logger;
         }
 
-        public SearchResult SearchLyric(SearchRequest searchRequest, CancellationToken cancellationToken = default(CancellationToken))
+        public SearchResult SearchLyric(SearchRequest searchRequest, CancellationToken cancellationToken = default)
         {
+            // Check if the operation was already canceled before starting
+            cancellationToken.ThrowIfCancellationRequested();
+
             if (!ValidSearchRequestAndConfig(searchRequest, out var searchResult))
             {
                 return searchResult;
             }
 
-            var childCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            // Create a linked cancellation token to propagate cancellation
+            using var childCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
 
             foreach (var externalProvider in GetAvailableProvidersForSearchRequest(searchRequest))
             {
-                var providerSearchResult = externalProvider.SearchLyric(searchRequest, childCancellationTokenSource.Token);
-                if (!providerSearchResult.IsEmpty() || providerSearchResult.Instrumental)
+                // Check for cancellation before calling external providers
+                cancellationToken.ThrowIfCancellationRequested();
+
+                try
                 {
-                    return providerSearchResult;
+                    var providerSearchResult = externalProvider.SearchLyric(searchRequest, childCancellationTokenSource.Token);
+
+                    if (!providerSearchResult.IsEmpty() || providerSearchResult.Instrumental)
+                    {
+                        return providerSearchResult;
+                    }
+
+                    _logger?.LogWarning($"Can't find lyric by provider: [{externalProvider.Options?.ExternalProviderType}].");
                 }
-                _logger?.LogWarning($"Can't find lyric by provider: [{externalProvider.Options?.ExternalProviderType}].");
+                catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+                {
+                    // Log the cancellation and rethrow the exception
+                    _logger?.LogInformation("Search operation was canceled by the user.");
+                    throw;
+                }
+                catch (Exception ex)
+                {
+                    // Log any unexpected errors to prevent the method from crashing
+                    _logger?.LogError(ex, "Unexpected error occurred during provider search.");
+                }
             }
 
+            // No providers found valid results, log the failure and add a message
             searchResult.AddNoDataFoundMessage(Constants.ResponseMessages.NotFoundLyric);
             _logger?.LogError($"Can't find lyrics for searchRequest: [{searchRequest}].");
 
             return searchResult;
         }
 
-        public async Task<SearchResult> SearchLyricAsync(SearchRequest searchRequest, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<SearchResult> SearchLyricAsync(SearchRequest searchRequest, CancellationToken cancellationToken = default)
         {
+            // Check if the operation was already canceled before starting
+            cancellationToken.ThrowIfCancellationRequested();
+
             if (!ValidSearchRequestAndConfig(searchRequest, out var searchResult))
             {
                 return searchResult;
             }
 
-            var childCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            // Create a linked cancellation token to propagate cancellation
+            using var childCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
 
             foreach (var externalProvider in GetAvailableProvidersForSearchRequest(searchRequest))
             {
-                var providerSearchResult = await externalProvider.SearchLyricAsync(searchRequest, childCancellationTokenSource.Token);
-                if (!providerSearchResult.IsEmpty() || providerSearchResult.Instrumental)
+                // Check for cancellation before each external provider call
+                cancellationToken.ThrowIfCancellationRequested();
+
+                try
                 {
-                    return providerSearchResult;
+                    // Await the asynchronous search method with the linked cancellation token
+                    var providerSearchResult = await externalProvider.SearchLyricAsync(searchRequest, childCancellationTokenSource.Token);
+
+                    if (!providerSearchResult.IsEmpty() || providerSearchResult.Instrumental)
+                    {
+                        return providerSearchResult; // Return the result if it is valid
+                    }
+
+                    _logger?.LogWarning($"Can't find lyric by provider: [{externalProvider.Options?.ExternalProviderType}].");
                 }
-                _logger?.LogWarning($"Can't find lyric by provider: [{externalProvider.Options?.ExternalProviderType}].");
+                catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+                {
+                    // Log the cancellation and rethrow the exception
+                    _logger?.LogInformation("Search operation was canceled by the user.");
+                    throw;
+                }
+                catch (Exception ex)
+                {
+                    // Log any unexpected errors to prevent the method from crashing
+                    _logger?.LogError(ex, "Unexpected error occurred during provider search.");
+                }
             }
 
+            // No providers found valid results, log the failure and add a message
             searchResult.AddNoDataFoundMessage(Constants.ResponseMessages.NotFoundLyric);
             _logger?.LogError($"Can't find lyrics for searchRequest: [{searchRequest}].");
 
