@@ -27,11 +27,11 @@ namespace LyricsScraperNET.Network
 
             try
             {
-                #if NETSTANDARD
+#if NETSTANDARD
                 htmlPageBody = httpClient.GetStringAsync(uri).GetAwaiter().GetResult();
-                #else
+#else
                 htmlPageBody = httpClient.GetStringAsync(uri, cancellationToken).GetAwaiter().GetResult();
-                #endif
+#endif
             }
             catch (HttpRequestException ex)
             {
@@ -51,11 +51,11 @@ namespace LyricsScraperNET.Network
 
             try
             {
-                #if NETSTANDARD
+#if NETSTANDARD
                 htmlPageBody = await httpClient.GetStringAsync(uri);
-                #else
+#else
                 htmlPageBody = await httpClient.GetStringAsync(uri, cancellationToken);
-                #endif
+#endif
             }
             catch (HttpRequestException ex)
             {
