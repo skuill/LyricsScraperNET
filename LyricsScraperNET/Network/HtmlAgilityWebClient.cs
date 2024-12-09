@@ -2,6 +2,7 @@
 using LyricsScraperNET.Network.Abstract;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace LyricsScraperNET.Network
@@ -19,7 +20,7 @@ namespace LyricsScraperNET.Network
             _logger = logger;
         }
 
-        public string Load(Uri uri)
+        public string Load(Uri uri, CancellationToken cancellationToken)
         {
             var htmlPage = new HtmlWeb();
             var document = htmlPage.Load(uri, "GET");
@@ -29,10 +30,10 @@ namespace LyricsScraperNET.Network
             return document?.ParsedText;
         }
 
-        public async Task<string> LoadAsync(Uri uri)
+        public async Task<string> LoadAsync(Uri uri, CancellationToken cancellationToken)
         {
             var htmlPage = new HtmlWeb();
-            var document = await htmlPage.LoadFromWebAsync(uri.ToString());
+            var document = await htmlPage.LoadFromWebAsync(uri.ToString(), cancellationToken);
 
             CheckDocument(document, uri);
 

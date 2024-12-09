@@ -2,6 +2,7 @@
 using LyricsScraperNET.Models.Responses;
 using LyricsScraperNET.Network.Abstract;
 using Microsoft.Extensions.Logging;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace LyricsScraperNET.Providers.Abstract
@@ -17,9 +18,9 @@ namespace LyricsScraperNET.Providers.Abstract
         /// </summary>
         int SearchPriority { get; }
 
-        SearchResult SearchLyric(SearchRequest searchRequest);
+        SearchResult SearchLyric(SearchRequest searchRequest, CancellationToken cancellationToken);
 
-        Task<SearchResult> SearchLyricAsync(SearchRequest searchRequest);
+        Task<SearchResult> SearchLyricAsync(SearchRequest searchRequest, CancellationToken cancellationToken);
 
         void WithParser(IExternalProviderLyricParser parser);
 

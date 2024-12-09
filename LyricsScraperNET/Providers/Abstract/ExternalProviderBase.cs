@@ -3,6 +3,7 @@ using LyricsScraperNET.Models.Responses;
 using LyricsScraperNET.Network.Abstract;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace LyricsScraperNET.Providers.Abstract
@@ -20,7 +21,7 @@ namespace LyricsScraperNET.Providers.Abstract
 
         #region Sync
 
-        public virtual SearchResult SearchLyric(SearchRequest searchRequest)
+        public virtual SearchResult SearchLyric(SearchRequest searchRequest, CancellationToken cancellationToken)
         {
             if (!IsEnabled)
                 return new SearchResult();
@@ -28,25 +29,25 @@ namespace LyricsScraperNET.Providers.Abstract
             switch (searchRequest)
             {
                 case ArtistAndSongSearchRequest artistAndSongSearchRequest:
-                    return SearchLyric(artistAndSongSearchRequest.Artist, artistAndSongSearchRequest.Song);
+                    return SearchLyric(artistAndSongSearchRequest.Artist, artistAndSongSearchRequest.Song, cancellationToken);
                 case UriSearchRequest uriSearchRequest:
-                    return SearchLyric(uriSearchRequest.Uri);
+                    return SearchLyric(uriSearchRequest.Uri, cancellationToken);
                 default:
                     return new SearchResult();
             }
         }
 
-        protected virtual SearchResult SearchLyric(Uri uri)
+        protected virtual SearchResult SearchLyric(Uri uri, CancellationToken cancellationToken)
             => throw new NotImplementedException();
 
-        protected virtual SearchResult SearchLyric(string artist, string song)
+        protected virtual SearchResult SearchLyric(string artist, string song, CancellationToken cancellationToken)
             => throw new NotImplementedException();
 
         #endregion
 
         #region Async
 
-        public virtual async Task<SearchResult> SearchLyricAsync(SearchRequest searchRequest)
+        public virtual async Task<SearchResult> SearchLyricAsync(SearchRequest searchRequest, CancellationToken cancellationToken)
         {
             if (!IsEnabled)
                 return new SearchResult();
@@ -54,18 +55,18 @@ namespace LyricsScraperNET.Providers.Abstract
             switch (searchRequest)
             {
                 case ArtistAndSongSearchRequest artistAndSongSearchRequest:
-                    return await SearchLyricAsync(artistAndSongSearchRequest.Artist, artistAndSongSearchRequest.Song);
+                    return await SearchLyricAsync(artistAndSongSearchRequest.Artist, artistAndSongSearchRequest.Song, cancellationToken);
                 case UriSearchRequest uriSearchRequest:
-                    return await SearchLyricAsync(uriSearchRequest.Uri);
+                    return await SearchLyricAsync(uriSearchRequest.Uri, cancellationToken);
                 default:
                     return new SearchResult();
             }
         }
 
-        protected virtual Task<SearchResult> SearchLyricAsync(Uri uri)
+        protected virtual Task<SearchResult> SearchLyricAsync(Uri uri, CancellationToken cancellationToken)
             => throw new NotImplementedException();
 
-        protected virtual Task<SearchResult> SearchLyricAsync(string artist, string song)
+        protected virtual Task<SearchResult> SearchLyricAsync(string artist, string song, CancellationToken cancellationToken)
             => throw new NotImplementedException();
 
         #endregion

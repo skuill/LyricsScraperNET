@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using System;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace LyricsScraperNET.Network
@@ -19,14 +20,18 @@ namespace LyricsScraperNET.Network
             _logger = logger;
         }
 
-        public string Load(Uri uri)
+        public string Load(Uri uri, CancellationToken cancellationToken)
         {
             var httpClient = new HttpClient();
             string htmlPageBody;
 
             try
             {
+                #if NETSTANDARD
                 htmlPageBody = httpClient.GetStringAsync(uri).GetAwaiter().GetResult();
+                #else
+                htmlPageBody = httpClient.GetStringAsync(uri, cancellationToken).GetAwaiter().GetResult();
+                #endif
             }
             catch (HttpRequestException ex)
             {
@@ -39,14 +44,18 @@ namespace LyricsScraperNET.Network
             return htmlPageBody;
         }
 
-        public async Task<string> LoadAsync(Uri uri)
+        public async Task<string> LoadAsync(Uri uri, CancellationToken cancellationToken)
         {
             var httpClient = new HttpClient();
             string htmlPageBody;
 
             try
             {
+                #if NETSTANDARD
                 htmlPageBody = await httpClient.GetStringAsync(uri);
+                #else
+                htmlPageBody = await httpClient.GetStringAsync(uri, cancellationToken);
+                #endif
             }
             catch (HttpRequestException ex)
             {

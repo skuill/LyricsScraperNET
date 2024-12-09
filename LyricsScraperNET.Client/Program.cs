@@ -13,6 +13,7 @@ using LyricsScraperNET.Models.Responses;
 using System.Threading.Tasks;
 using System;
 using Microsoft.Extensions.Logging;
+using System.Threading;
 
 class Program
 {
@@ -103,7 +104,8 @@ class Program
 
         //// Create request and search 
         var searchRequest = new ArtistAndSongSearchRequest(artistToSearch, songToSearch);
-        var result = lyricsScraperClient.SearchLyric(searchRequest);
+        CancellationToken cancellationToken = new CancellationToken();
+        var result = lyricsScraperClient.SearchLyric(searchRequest, cancellationToken);
 
         return result;
     }
@@ -157,7 +159,8 @@ class Program
 
         //// Create request and search 
         var searchRequest = new ArtistAndSongSearchRequest(artistToSearch, songToSearch);
-        var result = lyricsScraperClient.SearchLyric(searchRequest);
+        CancellationToken cancellationToken = new CancellationToken();
+        var result = lyricsScraperClient.SearchLyric(searchRequest, cancellationToken);
 
         return result;
     }

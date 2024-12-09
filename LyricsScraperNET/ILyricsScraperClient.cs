@@ -3,6 +3,7 @@ using LyricsScraperNET.Models.Responses;
 using LyricsScraperNET.Providers.Abstract;
 using LyricsScraperNET.Providers.Models;
 using Microsoft.Extensions.Logging;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace LyricsScraperNET
@@ -21,14 +22,14 @@ namespace LyricsScraperNET
         /// 1) Search by Uri: <see cref="UriSearchRequest"/>
         /// 2) Search by Artist and Song name: <see cref="ArtistAndSongSearchRequest"/>
         /// </summary>
-        SearchResult SearchLyric(SearchRequest searchRequest);
+        SearchResult SearchLyric(SearchRequest searchRequest, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         /// Async search lyric by different search requests:
         /// 1) Search by Uri: <see cref="UriSearchRequest"/>
         /// 2) Search by Artist and Song name: <see cref="ArtistAndSongSearchRequest"/>
         /// </summary>
-        Task<SearchResult> SearchLyricAsync(SearchRequest searchRequest);
+        Task<SearchResult> SearchLyricAsync(SearchRequest searchRequest, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         /// Adding a new external provider that will be used to search for lyrics.

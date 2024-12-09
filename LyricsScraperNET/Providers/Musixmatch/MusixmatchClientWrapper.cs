@@ -5,6 +5,7 @@ using MusixmatchClientLib;
 using MusixmatchClientLib.API.Model.Types;
 using MusixmatchClientLib.Types;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace LyricsScraperNET.Providers.Musixmatch
@@ -29,7 +30,7 @@ namespace LyricsScraperNET.Providers.Musixmatch
             _logger = logger;
         }
 
-        public SearchResult SearchLyric(string artist, string song, bool regenerateToken = false)
+        public SearchResult SearchLyric(string artist, string song, CancellationToken cancellationToken, bool regenerateToken = false)
         {
             var client = GetMusixmatchClient(regenerateToken);
             var trackSearchParameters = GetTrackSearchParameters(artist, song);
@@ -54,7 +55,7 @@ namespace LyricsScraperNET.Providers.Musixmatch
             }
         }
 
-        public async Task<SearchResult> SearchLyricAsync(string artist, string song, bool regenerateToken = false)
+        public async Task<SearchResult> SearchLyricAsync(string artist, string song, CancellationToken cancellationToken, bool regenerateToken = false)
         {
             var client = GetMusixmatchClient(regenerateToken);
             var trackSearchParameters = GetTrackSearchParameters(artist, song);

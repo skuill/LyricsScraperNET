@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace LyricsScraperNET.Providers.SongLyrics
@@ -72,19 +73,19 @@ namespace LyricsScraperNET.Providers.SongLyrics
 
         #region Sync
 
-        protected override SearchResult SearchLyric(string artist, string song)
+        protected override SearchResult SearchLyric(string artist, string song, CancellationToken cancellationToken)
         {
-            return SearchLyric(_uriConverter.GetLyricUri(artist, song));
+            return SearchLyric(_uriConverter.GetLyricUri(artist, song), cancellationToken);
         }
 
-        protected override SearchResult SearchLyric(Uri uri)
+        protected override SearchResult SearchLyric(Uri uri, CancellationToken cancellationToken)
         {
             if (WebClient == null)
             {
                 _logger?.LogWarning($"SongLyrics. Please set up WebClient first");
                 return new SearchResult(Models.ExternalProviderType.SongLyrics);
             }
-            var htmlPageBody = WebClient.Load(uri);
+            var htmlPageBody = WebClient.Load(uri, cancellationToken);
             return GetParsedLyricFromHtmlPageBody(uri, htmlPageBody);
         }
 
@@ -92,19 +93,19 @@ namespace LyricsScraperNET.Providers.SongLyrics
 
         #region Async
 
-        protected override async Task<SearchResult> SearchLyricAsync(string artist, string song)
+        protected override async Task<SearchResult> SearchLyricAsync(string artist, string song, CancellationToken cancellationToken)
         {
-            return await SearchLyricAsync(_uriConverter.GetLyricUri(artist, song));
+            return await SearchLyricAsync(_uriConverter.GetLyricUri(artist, song), cancellationToken);
         }
 
-        protected override async Task<SearchResult> SearchLyricAsync(Uri uri)
+        protected override async Task<SearchResult> SearchLyricAsync(Uri uri, CancellationToken cancellationToken)
         {
             if (WebClient == null)
             {
                 _logger?.LogWarning($"SongLyrics. Please set up WebClient first");
                 return new SearchResult(Models.ExternalProviderType.SongLyrics);
             }
-            var htmlPageBody = await WebClient.LoadAsync(uri);
+            var htmlPageBody = await WebClient.LoadAsync(uri, cancellationToken);
             return GetParsedLyricFromHtmlPageBody(uri, htmlPageBody);
         }
 

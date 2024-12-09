@@ -1,4 +1,5 @@
 ﻿using LyricsScraperNET.Models.Responses;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace LyricsScraperNET.Providers.Musixmatch
@@ -8,8 +9,8 @@ namespace LyricsScraperNET.Providers.Musixmatch
     /// </summary>
     public interface IMusixmatchClientWrapper
     {
-        SearchResult SearchLyric(string artist, string song, bool regenerateToken = false);
+        SearchResult SearchLyric(string artist, string song, CancellationToken cancellationToken, bool regenerateToken = false);
 
-        Task<SearchResult> SearchLyricAsync(string artist, string song, bool regenerateToken = false);
+        Task<SearchResult> SearchLyricAsync(string artist, string song, CancellationToken cancellationToken, bool regenerateToken = false);
     }
 }

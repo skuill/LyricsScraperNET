@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace LyricsScraperNET
@@ -51,16 +52,18 @@ namespace LyricsScraperNET
             _logger = logger;
         }
 
-        public SearchResult SearchLyric(SearchRequest searchRequest)
+        public SearchResult SearchLyric(SearchRequest searchRequest, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (!ValidSearchRequestAndConfig(searchRequest, out var searchResult))
             {
                 return searchResult;
             }
 
+            var childCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+
             foreach (var externalProvider in GetAvailableProvidersForSearchRequest(searchRequest))
             {
-                var providerSearchResult = externalProvider.SearchLyric(searchRequest);
+                var providerSearchResult = externalProvider.SearchLyric(searchRequest, childCancellationTokenSource.Token);
                 if (!providerSearchResult.IsEmpty() || providerSearchResult.Instrumental)
                 {
                     return providerSearchResult;
@@ -74,16 +77,18 @@ namespace LyricsScraperNET
             return searchResult;
         }
 
-        public async Task<SearchResult> SearchLyricAsync(SearchRequest searchRequest)
+        public async Task<SearchResult> SearchLyricAsync(SearchRequest searchRequest, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (!ValidSearchRequestAndConfig(searchRequest, out var searchResult))
             {
                 return searchResult;
             }
 
+            var childCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+
             foreach (var externalProvider in GetAvailableProvidersForSearchRequest(searchRequest))
             {
-                var providerSearchResult = await externalProvider.SearchLyricAsync(searchRequest);
+                var providerSearchResult = await externalProvider.SearchLyricAsync(searchRequest, childCancellationTokenSource.Token);
                 if (!providerSearchResult.IsEmpty() || providerSearchResult.Instrumental)
                 {
                     return providerSearchResult;

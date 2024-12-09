@@ -5,6 +5,7 @@ using LyricsScraperNET.Models.Responses;
 using LyricsScraperNET.Providers.Abstract;
 using LyricsScraperNET.Providers.Models;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -19,11 +20,12 @@ namespace LyricsScraperNET.UnitTest
             var lyricsScraperClient = GetLyricsScraperClient();
             var searchRequestMock = GetSearchRequestMock();
             var externalProviderTypes = GetExternalProviderTypes();
+            CancellationToken cancellationToken = CancellationToken.None;
 
             // Act
             lyricsScraperClient.Disable();
-            var searchResult = lyricsScraperClient.SearchLyric(searchRequestMock);
-            var searchResultAsync = await lyricsScraperClient.SearchLyricAsync(searchRequestMock);
+            var searchResult = lyricsScraperClient.SearchLyric(searchRequestMock, cancellationToken);
+            var searchResultAsync = await lyricsScraperClient.SearchLyricAsync(searchRequestMock, cancellationToken);
 
             // Assert
             Assert.False(lyricsScraperClient.IsEnabled);
@@ -49,10 +51,11 @@ namespace LyricsScraperNET.UnitTest
             // Arrange
             var lyricsScraperClient = new LyricsScraperClient();
             var searchRequestMock = GetSearchRequestMock();
+            CancellationToken cancellationToken = CancellationToken.None;
 
             // Act
-            var searchResult = lyricsScraperClient.SearchLyric(searchRequestMock);
-            var searchResultAsync = await lyricsScraperClient.SearchLyricAsync(searchRequestMock);
+            var searchResult = lyricsScraperClient.SearchLyric(searchRequestMock, cancellationToken);
+            var searchResultAsync = await lyricsScraperClient.SearchLyricAsync(searchRequestMock, cancellationToken);
 
             // Assert
             Assert.False(lyricsScraperClient.IsEnabled);
@@ -78,10 +81,11 @@ namespace LyricsScraperNET.UnitTest
             // Arrange
             var lyricsScraperClient = new LyricsScraperClient();
             var searchRequest = new ArtistAndSongSearchRequest(artist, song);
+            CancellationToken cancellationToken = CancellationToken.None;
 
             // Act
-            var searchResult = lyricsScraperClient.SearchLyric(searchRequest);
-            var searchResultAsync = await lyricsScraperClient.SearchLyricAsync(searchRequest);
+            var searchResult = lyricsScraperClient.SearchLyric(searchRequest, cancellationToken);
+            var searchResultAsync = await lyricsScraperClient.SearchLyricAsync(searchRequest, cancellationToken);
 
             // Assert
             Assert.False(lyricsScraperClient.IsEnabled);
@@ -106,10 +110,11 @@ namespace LyricsScraperNET.UnitTest
             // Arrange
             var lyricsScraperClient = new LyricsScraperClient();
             var searchRequest = new UriSearchRequest(uri);
+            CancellationToken cancellationToken = CancellationToken.None;
 
             // Act
-            var searchResult = lyricsScraperClient.SearchLyric(searchRequest);
-            var searchResultAsync = await lyricsScraperClient.SearchLyricAsync(searchRequest);
+            var searchResult = lyricsScraperClient.SearchLyric(searchRequest, cancellationToken);
+            var searchResultAsync = await lyricsScraperClient.SearchLyricAsync(searchRequest, cancellationToken);
 
             // Assert
             Assert.False(lyricsScraperClient.IsEnabled);
@@ -132,10 +137,11 @@ namespace LyricsScraperNET.UnitTest
         {
             // Arrange
             var lyricsScraperClient = new LyricsScraperClient();
+            CancellationToken cancellationToken = CancellationToken.None;
 
             // Act
-            var searchResult = lyricsScraperClient.SearchLyric(null);
-            var searchResultAsync = await lyricsScraperClient.SearchLyricAsync(null);
+            var searchResult = lyricsScraperClient.SearchLyric(null, cancellationToken);
+            var searchResultAsync = await lyricsScraperClient.SearchLyricAsync(null, cancellationToken);
 
             // Assert
             Assert.False(lyricsScraperClient.IsEnabled);
@@ -159,10 +165,11 @@ namespace LyricsScraperNET.UnitTest
             // Arrange
             var lyricsScraperClient = GetLyricsScraperClientWithMockedProvider();
             var searchRequestMock = GetSearchRequestMock();
+            CancellationToken cancellationToken = CancellationToken.None;
 
             // Act
-            var searchResult = lyricsScraperClient.SearchLyric(searchRequestMock);
-            var searchResultAsync = await lyricsScraperClient.SearchLyricAsync(searchRequestMock);
+            var searchResult = lyricsScraperClient.SearchLyric(searchRequestMock, cancellationToken);
+            var searchResultAsync = await lyricsScraperClient.SearchLyricAsync(searchRequestMock, cancellationToken);
 
             // Assert
             Assert.NotNull(searchResult);
@@ -185,10 +192,11 @@ namespace LyricsScraperNET.UnitTest
             // Arrange
             var lyricsScraperClient = GetLyricsScraperClientWithMockedProvider();
             var searchRequest = new ArtistAndSongSearchRequest("test", "test", ExternalProviderType.Genius);
+            CancellationToken cancellationToken = CancellationToken.None;
 
             // Act
-            var searchResult = lyricsScraperClient.SearchLyric(searchRequest);
-            var searchResultAsync = await lyricsScraperClient.SearchLyricAsync(searchRequest);
+            var searchResult = lyricsScraperClient.SearchLyric(searchRequest, cancellationToken);
+            var searchResultAsync = await lyricsScraperClient.SearchLyricAsync(searchRequest, cancellationToken);
 
             // Assert
             Assert.NotNull(searchResult);
@@ -303,8 +311,8 @@ namespace LyricsScraperNET.UnitTest
             var externalProviderMock = A.Fake<IExternalProvider>();
 
             A.CallTo(() => externalProviderMock.IsEnabled).Returns(true);
-            A.CallTo(() => externalProviderMock.SearchLyric(A<SearchRequest>._)).Returns(new SearchResult());
-            A.CallTo(() => externalProviderMock.SearchLyricAsync(A<SearchRequest>._)).Returns(new SearchResult());
+            A.CallTo(() => externalProviderMock.SearchLyric(A<SearchRequest>._, A<CancellationToken>._)).Returns(new SearchResult());
+            A.CallTo(() => externalProviderMock.SearchLyricAsync(A<SearchRequest>._, A<CancellationToken>._)).Returns(new SearchResult());
             A.CallTo(() => externalProviderMock.Options.ExternalProviderType).Returns(externalProviderType);
 
             return externalProviderMock;
