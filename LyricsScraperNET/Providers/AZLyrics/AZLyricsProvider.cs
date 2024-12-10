@@ -61,6 +61,7 @@ namespace LyricsScraperNET.Providers.AZLyrics
 
         protected override SearchResult SearchLyric(string artist, string song, CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested(); // Ensure cancellation is handled early
             return SearchLyric(_uriConverter.GetLyricUri(artist, song), cancellationToken);
         }
 
@@ -71,7 +72,13 @@ namespace LyricsScraperNET.Providers.AZLyrics
                 _logger?.LogWarning($"AZLyrics. Please set up WebClient and Parser first");
                 return new SearchResult(Models.ExternalProviderType.AZLyrics);
             }
+
+            cancellationToken.ThrowIfCancellationRequested();
+
             var text = WebClient.Load(uri, cancellationToken);
+
+            cancellationToken.ThrowIfCancellationRequested();
+
             return PostProcessLyric(uri, text);
         }
 
@@ -81,6 +88,7 @@ namespace LyricsScraperNET.Providers.AZLyrics
 
         protected override async Task<SearchResult> SearchLyricAsync(string artist, string song, CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested(); // Ensure cancellation is handled early
             return await SearchLyricAsync(_uriConverter.GetLyricUri(artist, song), cancellationToken);
         }
 
@@ -91,7 +99,13 @@ namespace LyricsScraperNET.Providers.AZLyrics
                 _logger?.LogWarning($"AZLyrics. Please set up WebClient and Parser first");
                 return new SearchResult(Models.ExternalProviderType.AZLyrics);
             }
+
+            cancellationToken.ThrowIfCancellationRequested();
+
             var text = await WebClient.LoadAsync(uri, cancellationToken);
+
+            cancellationToken.ThrowIfCancellationRequested();
+
             return PostProcessLyric(uri, text);
         }
 
@@ -117,7 +131,6 @@ namespace LyricsScraperNET.Providers.AZLyrics
                 _logger?.LogWarning($"AZLyrics. Can't find lyrics for Uri: [{uri}]");
                 return new SearchResult(Models.ExternalProviderType.AZLyrics);
             }
-
             string result = Parser.Parse(text.Substring(startIndex, endIndex - startIndex));
 
             return new SearchResult(result, Models.ExternalProviderType.AZLyrics);

@@ -10,56 +10,58 @@ namespace LyricsScraperNET.Network
     internal sealed class NetHttpClient : IWebClient
     {
         private readonly ILogger<NetHttpClient> _logger;
+        private readonly HttpClient _httpClient;
 
         public NetHttpClient()
         {
+            _httpClient = new HttpClient();
         }
 
-        public NetHttpClient(ILogger<NetHttpClient> logger)
+        public NetHttpClient(ILogger<NetHttpClient> logger) : this()
         {
             _logger = logger;
         }
 
         public string Load(Uri uri, CancellationToken cancellationToken)
         {
-            var httpClient = new HttpClient();
             string htmlPageBody;
 
             try
             {
-#if NETSTANDARD
-                htmlPageBody = httpClient.GetStringAsync(uri).GetAwaiter().GetResult();
-#else
-                htmlPageBody = httpClient.GetStringAsync(uri, cancellationToken).GetAwaiter().GetResult();
-#endif
+                return LoadAsync(uri, cancellationToken).GetAwaiter().GetResult();
             }
             catch (HttpRequestException ex)
             {
                 _logger?.LogWarning($"HttpClient GetStringAsync throw exception for uri: {uri}. Exception: {ex}");
                 return string.Empty;
             }
-
-            CheckResult(htmlPageBody, uri);
-
-            return htmlPageBody;
         }
 
         public async Task<string> LoadAsync(Uri uri, CancellationToken cancellationToken)
         {
-            var httpClient = new HttpClient();
             string htmlPageBody;
 
             try
             {
 #if NETSTANDARD
-                htmlPageBody = await httpClient.GetStringAsync(uri);
+                htmlPageBody = await _httpClient.GetStringAsync(uri);
 #else
-                htmlPageBody = await httpClient.GetStringAsync(uri, cancellationToken);
+                htmlPageBody = await _httpClient.GetStringAsync(uri, cancellationToken);
 #endif
             }
             catch (HttpRequestException ex)
             {
-                _logger?.LogWarning($"HttpClient GetStringAsync throw exception for uri: {uri}. Exception: {ex}");
+                _logger?.LogWarning($"HttpClient GetStringAsync threw exception for URI: {uri}. Exception: {ex}");
+                return string.Empty;
+            }
+            catch (OperationCanceledException ex)
+            {
+                _logger?.LogInformation($"Load request for URI: {uri} was canceled. Exception: {ex}");
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError($"An unexpected error occurred while loading URI: {uri}. Exception: {ex}");
                 return string.Empty;
             }
 
