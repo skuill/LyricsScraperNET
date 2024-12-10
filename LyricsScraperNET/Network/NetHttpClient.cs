@@ -10,11 +10,10 @@ namespace LyricsScraperNET.Network
     internal sealed class NetHttpClient : IWebClient
     {
         private readonly ILogger<NetHttpClient> _logger;
-        private readonly HttpClient _httpClient;
+        private static HttpClient _httpClient = new HttpClient();
 
         public NetHttpClient()
         {
-            _httpClient = new HttpClient();
         }
 
         public NetHttpClient(ILogger<NetHttpClient> logger) : this()

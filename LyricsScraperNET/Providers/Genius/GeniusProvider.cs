@@ -76,6 +76,8 @@ namespace LyricsScraperNET.Providers.Genius
         {
             var htmlPageBody = WebClient.Load(uri, cancellationToken);
 
+            cancellationToken.ThrowIfCancellationRequested();
+
             var lyricResult = GetParsedLyricFromHtmlPageBody(htmlPageBody, out var instrumental);
 
             return new SearchResult(lyricResult, Models.ExternalProviderType.Genius)
@@ -84,25 +86,7 @@ namespace LyricsScraperNET.Providers.Genius
 
         protected override SearchResult SearchLyric(string artist, string song, CancellationToken cancellationToken)
         {
-            string lyricUrl = string.Empty;
-
-            if (Options.TryGetApiKeyFromOptions(out var apiKey))
-            {
-                var geniusClient = new GeniusClient(apiKey);
-
-                var searchQuery = GetApiSearchQuery(artist, song);
-                var searchGeniusResponse = geniusClient.SearchClient.Search(searchQuery).GetAwaiter().GetResult();
-
-                lyricUrl = GetLyricUrlFromSearchResponse(searchGeniusResponse, artist, song);
-            }
-            if (string.IsNullOrEmpty(lyricUrl))
-            {
-                lyricUrl = GetLyricUrlWithoutApiKey(artist, song, cancellationToken);
-            }
-
-            return !string.IsNullOrWhiteSpace(lyricUrl)
-                ? SearchLyric(new Uri(lyricUrl), cancellationToken)
-                : new SearchResult(Models.ExternalProviderType.Genius);
+            return SearchLyricAsync(artist, song, cancellationToken).GetAwaiter().GetResult();
         }
 
         #endregion
@@ -112,6 +96,8 @@ namespace LyricsScraperNET.Providers.Genius
         protected override async Task<SearchResult> SearchLyricAsync(Uri uri, CancellationToken cancellationToken)
         {
             var htmlPageBody = await WebClient.LoadAsync(uri, cancellationToken);
+
+            cancellationToken.ThrowIfCancellationRequested();
 
             var lyricResult = GetParsedLyricFromHtmlPageBody(htmlPageBody, out var instrumental);
 
@@ -130,12 +116,16 @@ namespace LyricsScraperNET.Providers.Genius
                 var searchQuery = GetApiSearchQuery(artist, song);
                 var searchGeniusResponse = await geniusClient.SearchClient.Search(searchQuery);
 
+                cancellationToken.ThrowIfCancellationRequested();
+
                 lyricUrl = GetLyricUrlFromSearchResponse(searchGeniusResponse, artist, song);
             }
             if (string.IsNullOrEmpty(lyricUrl))
             {
                 lyricUrl = GetLyricUrlWithoutApiKey(artist, song, cancellationToken);
             }
+
+            cancellationToken.ThrowIfCancellationRequested();
 
             return !string.IsNullOrWhiteSpace(lyricUrl)
                 ? await SearchLyricAsync(new Uri(lyricUrl), cancellationToken)
@@ -157,6 +147,8 @@ namespace LyricsScraperNET.Providers.Genius
                 return string.Empty;
 
             var parsedJsonResponse = JsonDocument.Parse(htmlPageBody);
+
+            cancellationToken.ThrowIfCancellationRequested();
 
             if (!parsedJsonResponse.RootElement.TryGetProperty("response", out var responseJsonElement))
                 return string.Empty;
