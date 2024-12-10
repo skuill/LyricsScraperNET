@@ -331,6 +331,20 @@ namespace LyricsScraperNET.UnitTest
             Assert.NotNull(result);
         }
 
+        [Fact]
+        public async Task SearchLyricAsync_Should_Not_Cancel_If_Token_Default()
+        {
+            // Arrange
+            var searchRequest = GetSearchRequestMock();
+            var client = GetLyricsScraperClientWithMockedProvider();
+
+            // Act
+            var result = await client.SearchLyricAsync(searchRequest);
+
+            // Assert
+            Assert.NotNull(result);
+        }
+
         private ExternalProviderType[] GetExternalProviderTypes()
         {
             return new[] { ExternalProviderType.AZLyrics, ExternalProviderType.SongLyrics };
