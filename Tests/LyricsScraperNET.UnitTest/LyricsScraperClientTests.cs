@@ -285,6 +285,52 @@ namespace LyricsScraperNET.UnitTest
             Assert.Null(lyricsScraperClient[externalProviderType]);
         }
 
+        [Fact]
+        public void SearchLyric_Should_Throw_OperationCanceledException_When_Cancellation_Is_Requested()
+        {
+            // Arrange
+            var cancellationTokenSource = new CancellationTokenSource();
+            cancellationTokenSource.Cancel();
+            var lyricsScraperClient = GetLyricsScraperClientWithMockedProvider();
+            var searchRequest = GetSearchRequestMock();
+
+            // Act
+            var exception = Assert.ThrowsAny<OperationCanceledException>(() =>
+                lyricsScraperClient.SearchLyric(searchRequest, cancellationTokenSource.Token));
+
+            // Assert
+            Assert.IsType<TaskCanceledException>(exception); // Check that this is TaskCanceledException
+        }
+
+        [Fact]
+        public async Task SearchLyricAsync_Should_Throw_OperationCanceledException_When_Cancellation_Is_Requested()
+        {
+            // Arrange
+            var searchRequest = GetSearchRequestMock();
+            var client = GetLyricsScraperClientWithMockedProvider();
+            var cancellationTokenSource = new CancellationTokenSource();
+            cancellationTokenSource.Cancel();
+
+            // Act & Assert
+            await Assert.ThrowsAsync<OperationCanceledException>(() =>
+                client.SearchLyricAsync(searchRequest, cancellationTokenSource.Token));
+        }
+
+        [Fact]
+        public async Task SearchLyricAsync_Should_Not_Cancel_If_Token_Not_Requested()
+        {
+            // Arrange
+            var searchRequest = GetSearchRequestMock();
+            var client = GetLyricsScraperClientWithMockedProvider();
+            var cancellationTokenSource = new CancellationTokenSource();
+
+            // Act
+            var result = await client.SearchLyricAsync(searchRequest, cancellationTokenSource.Token);
+
+            // Assert
+            Assert.NotNull(result);
+        }
+
         private ExternalProviderType[] GetExternalProviderTypes()
         {
             return new[] { ExternalProviderType.AZLyrics, ExternalProviderType.SongLyrics };
@@ -311,8 +357,19 @@ namespace LyricsScraperNET.UnitTest
             var externalProviderMock = A.Fake<IExternalProvider>();
 
             A.CallTo(() => externalProviderMock.IsEnabled).Returns(true);
-            A.CallTo(() => externalProviderMock.SearchLyric(A<SearchRequest>._, A<CancellationToken>._)).Returns(new SearchResult());
-            A.CallTo(() => externalProviderMock.SearchLyricAsync(A<SearchRequest>._, A<CancellationToken>._)).Returns(new SearchResult());
+            A.CallTo(() => externalProviderMock.SearchLyric(A<SearchRequest>._, A<CancellationToken>._))
+                .ReturnsLazily((SearchRequest _, CancellationToken token) =>
+                {
+                    token.ThrowIfCancellationRequested();
+                    return new SearchResult();
+                });
+            A.CallTo(() => externalProviderMock.SearchLyricAsync(A<SearchRequest>._, A<CancellationToken>._))
+                .ReturnsLazily(async (SearchRequest _, CancellationToken token) =>
+                {
+                    await Task.Delay(50, token); // Simulate some delay
+                    token.ThrowIfCancellationRequested();
+                    return new SearchResult();
+                });
             A.CallTo(() => externalProviderMock.Options.ExternalProviderType).Returns(externalProviderType);
 
             return externalProviderMock;

@@ -51,10 +51,22 @@ namespace LyricsScraperNET
         {
             _logger = logger;
         }
+
         public SearchResult SearchLyric(SearchRequest searchRequest, CancellationToken cancellationToken = default)
-            => SearchLyricInternal(searchRequest,
-                (provider, ct) => Task.FromResult(provider.SearchLyric(searchRequest, ct)),
-                cancellationToken).Result;
+        {
+            try
+            {
+                // Run async operation synchronously
+                return SearchLyricInternal(searchRequest,
+                    (provider, ct) => Task.FromResult(provider.SearchLyric(searchRequest, ct)),
+                    cancellationToken).Result;
+            }
+            catch (AggregateException ex) when (ex.InnerException is OperationCanceledException)
+            {
+                // Catch AggregateException and throw OperationCanceledException
+                throw ex.InnerException;
+            }
+        }
 
         public Task<SearchResult> SearchLyricAsync(SearchRequest searchRequest, CancellationToken cancellationToken = default)
             => SearchLyricInternal(searchRequest,
