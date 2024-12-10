@@ -10,33 +10,50 @@ namespace LyricsScraperNET.Network
     internal sealed class HtmlAgilityWebClient : IWebClient
     {
         private readonly ILogger<HtmlAgilityWebClient> _logger;
+        private readonly HtmlWeb _htmlWeb;
 
         public HtmlAgilityWebClient()
         {
+            _htmlWeb = new HtmlWeb();
+            _htmlWeb.UsingCache = false;
         }
 
-        public HtmlAgilityWebClient(ILogger<HtmlAgilityWebClient> logger)
+        public HtmlAgilityWebClient(ILogger<HtmlAgilityWebClient> logger) : this()
         {
             _logger = logger;
         }
 
         public string Load(Uri uri, CancellationToken cancellationToken)
         {
-            var htmlPage = new HtmlWeb();
-            var document = htmlPage.Load(uri, "GET");
+            HtmlDocument document;
+            try
+            {
+                document = _htmlWeb.Load(uri.ToString());
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError($"Error loading document for uri: {uri}. Exception: {ex}");
+                return string.Empty;
+            }
 
             CheckDocument(document, uri);
-
             return document?.ParsedText;
         }
 
         public async Task<string> LoadAsync(Uri uri, CancellationToken cancellationToken)
         {
-            var htmlPage = new HtmlWeb();
-            var document = await htmlPage.LoadFromWebAsync(uri.ToString(), cancellationToken);
+            HtmlDocument document;
+            try
+            {
+                document = await _htmlWeb.LoadFromWebAsync(uri.ToString(), cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError($"Error loading document for uri: {uri}. Exception: {ex}");
+                return string.Empty;
+            }
 
             CheckDocument(document, uri);
-
             return document?.ParsedText;
         }
 
@@ -45,6 +62,13 @@ namespace LyricsScraperNET.Network
             if (document == null)
             {
                 _logger?.LogWarning($"HtmlPage could not load document for uri: {uri}");
+                throw new InvalidOperationException($"Failed to load document for URI: {uri}");
+            }
+
+            if (string.IsNullOrWhiteSpace(document.ParsedText))
+            {
+                _logger?.LogWarning($"Document loaded for uri: {uri} but text is empty.");
+                throw new InvalidOperationException($"Document loaded for URI: {uri}, but the text is empty.");
             }
         }
     }
