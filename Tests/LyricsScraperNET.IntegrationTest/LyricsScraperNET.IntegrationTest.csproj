@@ -70,6 +70,9 @@
 		<None Update="Providers\SongLyrics\instrumental_test_data.json">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
+		<None Update="Providers\SongLyrics\Resources\Lyrics_Result_02.txt">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
 		<None Update="Providers\SongLyrics\Resources\Lyrics_Result_01.txt">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>

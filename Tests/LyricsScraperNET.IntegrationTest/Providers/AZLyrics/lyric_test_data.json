@@ -10,5 +10,11 @@
     "ArtistName": "Parkway Drive",
     "SongName": "Idols and Anchors",
     "SongUri": null
+  },
+  {
+    "LyricResultPath": "Providers/AZLyrics/Resources/Lyrics_Result_01.txt",
+    "ArtistName": null,
+    "SongName": null,
+    "SongUri": "https://www.azlyrics.com/lyrics/parkwaydrive/wishingwells.html"
   }
 ]
