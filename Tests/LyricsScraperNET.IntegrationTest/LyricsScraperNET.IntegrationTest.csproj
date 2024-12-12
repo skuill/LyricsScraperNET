@@ -71,7 +71,7 @@
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
 		<None Update="Providers\SongLyrics\Resources\Lyrics_Result_02.txt">
-		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
 		<None Update="Providers\SongLyrics\Resources\Lyrics_Result_01.txt">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
