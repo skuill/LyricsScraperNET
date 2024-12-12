@@ -37,6 +37,7 @@ namespace LyricsScraperNET.Providers.SongLyrics
         public SongLyricsProvider()
         {
             WebClient = new NetHttpClient();
+            Parser = new SongLyricsParser();
             Options = new SongLyricsOptions() { Enabled = true };
             _uriConverter = new SongLyricsUriConverter();
         }
@@ -146,7 +147,9 @@ namespace LyricsScraperNET.Providers.SongLyrics
                 || string.Equals(lyricsContainerNode.InnerText, $"[{InstrumentalLyricText}]", StringComparison.OrdinalIgnoreCase))
                 return new SearchResult(Models.ExternalProviderType.SongLyrics).AddInstrumental(true);
 
-            return new SearchResult(lyricsContainerNode.InnerText, Models.ExternalProviderType.SongLyrics);
+            var parsedLyric = Parser.Parse(lyricsContainerNode.InnerText);
+
+            return new SearchResult(parsedLyric, Models.ExternalProviderType.SongLyrics);
         }
     }
 }

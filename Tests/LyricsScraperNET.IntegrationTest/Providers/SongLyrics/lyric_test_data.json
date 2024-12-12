@@ -4,5 +4,19 @@
     "ArtistName": "Attack Attack!",
     "SongName": "I Swear I'll Change",
     "SongUri": null
+  },
+  {
+    "LyricResultPath": "Providers/SongLyrics/Resources/Lyrics_Result_02.txt",
+    "ArtistName": "Parkway Drive",
+    "SongName": "Home Is For The Heartless",
+    "SongUri": null
+  },
+  {
+    "LyricResultPath": "Providers/SongLyrics/Resources/Lyrics_Result_02.txt",
+    "ArtistName": null,
+    "SongName": null,
+    "SongUri": "https://www.songlyrics.com/parkway-drive/home-is-for-the-heartless-lyrics/"
   }
+
+
 ]
