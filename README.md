@@ -2,31 +2,39 @@
 
 [![CodeFactor](https://www.codefactor.io/repository/github/skuill/lyricsscrapernet/badge)](https://www.codefactor.io/repository/github/skuill/lyricsscrapernet)
 [![CI/CD LyricsScraperNET](https://github.com/skuill/LyricsScraperNET/actions/workflows/cicd.yaml/badge.svg)](https://github.com/skuill/LyricsScraperNET/actions/workflows/cicd.yaml)
-[![LirycsScraperNET](https://img.shields.io/nuget/vpre/LyricsScraperNET?label=LyricsScraperNET)](https://www.nuget.org/packages/LyricsScraperNET/)
+[![NuGet](https://img.shields.io/nuget/vpre/LyricsScraperNET?label=NuGet)](https://www.nuget.org/packages/LyricsScraperNET/)
 [![License](https://img.shields.io/github/license/skuill/LyricsScraperNET)](./LICENSE)
 
-LyricsScraperNET is a library for .NET that provides an API to search for lyrics of a song from the web. 
+**LyricsScraperNET** is a versatile .NET library that provides an API for searching song lyrics from various external providers. 
 
-## Features
+---
 
-* ✅ Supports multiple frameworks `.NET Standard 2.X`, `.NET 5`, `.NET 6`, `.NET 7`, `.NET 8`
-* ✅ Logging supported.
-* ✅ Modular structure, for easy testing.
-* ✅ Multiple ways how to configure.
-* ✅ Easily installed and used from the nuget repository.
+## 🌟 Features
 
-## Supported external lyrics providers
+- **Multi-framework support**: Compatible with `.NET Standard 2.x`, `.NET 5`, `.NET 6`, `.NET 7`, `.NET 8`.
+- **Integrated logging**: Effortless debugging and tracking.
+- **Modular architecture**: Highly testable and customizable.
+- **Flexible configuration**: Multiple ways to configure the library.
+- **NuGet support**: Easy installation from [NuGet](https://www.nuget.org/packages/LyricsScraperNET/).
+
+---
+
+## 🎤 Supported Lyrics Providers
+
+The library currently supports the following providers:
 
 - [AZLyrics](https://www.azlyrics.com/)
 - [Genius](https://genius.com/)
 - [MusixMatch](https://www.musixmatch.com/)
 - [SongLyrics](https://www.songlyrics.com/)
 - [LyricFind](https://www.lyricfind.com/)
-- [Lyrics](https://www.lyrics.com/) (**TODO**)
+- [Lyrics](https://www.lyrics.com/) (**Coming soon** 🚧)
 
-## Example
+---
 
-A simple way to initialize through a parameterless constructor with the addition of the all available lyric providers:
+## 📋 Getting Started
+
+Here’s a simple example to demonstrate how to initialize and use the library with all available providers:
 
 ```csharp
 using LyricsScraperNET;
@@ -36,34 +44,61 @@ class Program
 {
     static async Task Main()
     {
-        // Create instance of LyricScraperClient with different lyrics providers
-        ILyricsScraperClient lyricsScraperClient
-            = new LyricsScraperClient()
-                .WithAllProviders();
+        // Create an instance of LyricScraperClient with all providers
+        ILyricsScraperClient lyricsScraperClient = new LyricsScraperClient()
+            .WithAllProviders();
 
-        var searchRequest = new ArtistAndSongSearchRequest(artist: "Metallica", song: "Nothing Else Matters");
+        var searchRequest = new ArtistAndSongSearchRequest(
+            artist: "Metallica", 
+            song: "Nothing Else Matters"
+        );
 
         var searchResult = lyricsScraperClient.SearchLyric(searchRequest);
 
         if (!searchResult.IsEmpty())
+        {
             Console.WriteLine(searchResult.LyricText);
+        }
     }
 }
 ```
-There are also extension methods for setting up LyricScraperClient as IServiceCollection that stored in some IConfiguration.
 
-More examples can be found in example project: [LyricsScraperNET.Client](LyricsScraperNET.Client/Program.cs)
+For more advanced usage, you can set up the `LyricScraperClient` via dependency injection (`IServiceCollection`) with configurations stored in `IConfiguration`.
 
-## Contributing and Feedback
+Explore additional examples in the [LyricsScraperNET.Client](LyricsScraperNET.Client/Program.cs) project.
 
-Feel free to send me feedback on [Telegram](https://t.me/skuill).
+---
 
-You are more than welcome to contribute to this project. Fork and make a Pull Request, or [create an Issue](https://github.com/skuill/LyricScraperNET/issues/new) if you see any problem or want to propose a feature.
+## 🛠️ Installation
 
-## Support
-If you want to support this project or my work in general, you can donate via the link below. 
+Install the package from NuGet:
 
-This will always be optional! Thank you! 😉
+```sh
+dotnet add package LyricsScraperNET
+```
 
- * [!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/skuill)
- * [!["Tinkoff Donate Button"](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.tinkoff.ru/cf/3MNYeRds3s)
+---
+
+## 🖋️ Contributing and Feedback
+
+Contributions are welcome! 
+
+- Fork the repository and create a [Pull Request](https://github.com/skuill/LyricScraperNET/pulls).
+- Report issues or propose features via the [Issues](https://github.com/skuill/LyricScraperNET/issues/new) tab.
+
+For direct feedback, feel free to reach out on [Telegram](https://t.me/skuill).
+
+---
+
+## 💖 Support
+
+If you find this project helpful, consider supporting it:
+
+[![Buy Me A Coffee](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/skuill)  
+[![Tinkoff Donate](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.tinkoff.ru/cf/3MNYeRds3s)
+
+---
+
+## 📜 License
+
+This project is licensed under the [MIT License](./LICENSE).
