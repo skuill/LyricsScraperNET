@@ -51,7 +51,7 @@ namespace LyricsScraperNET.UnitTest.Extensions
             Assert.True(lyricsScraperClient.IsEnabled);
             Assert.NotNull(externalTypeProvider);
             Assert.True(externalTypeProvider.IsEnabled);
-            Assert.Equal(2, externalTypeProvider.SearchPriority);
+            Assert.Equal(0, externalTypeProvider.SearchPriority);
         }
 
         [Fact]
@@ -66,7 +66,7 @@ namespace LyricsScraperNET.UnitTest.Extensions
             Assert.True(lyricsScraperClient.IsEnabled);
             Assert.NotNull(externalTypeProvider);
             Assert.True(externalTypeProvider.IsEnabled);
-            Assert.Equal(0, externalTypeProvider.SearchPriority);
+            Assert.Equal(2, externalTypeProvider.SearchPriority);
         }
 
         [Fact]
@@ -81,7 +81,7 @@ namespace LyricsScraperNET.UnitTest.Extensions
             Assert.True(lyricsScraperClient.IsEnabled);
             Assert.NotNull(externalTypeProvider);
             Assert.True(externalTypeProvider.IsEnabled);
-            Assert.Equal(3, externalTypeProvider.SearchPriority);
+            Assert.Equal(1, externalTypeProvider.SearchPriority);
         }
 
         [Fact]
