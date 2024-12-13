@@ -9,7 +9,7 @@ namespace LyricsScraperNET.Providers.LyricFind
 
         public ExternalProviderType ExternalProviderType => ExternalProviderType.LyricFind;
 
-        public int SearchPriority { get; set; } = 3;
+        public int SearchPriority { get; set; } = 1;
 
         public const string ConfigurationSectionName = "LyricFindOptions";
 
