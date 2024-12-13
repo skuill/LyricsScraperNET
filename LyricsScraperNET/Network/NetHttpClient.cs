@@ -14,39 +14,26 @@ namespace LyricsScraperNET.Network
         {
         }
 
-        public NetHttpClient(ILogger<NetHttpClient> logger)
+        public NetHttpClient(ILogger<NetHttpClient> logger) : this()
         {
             _logger = logger;
         }
 
         public string Load(Uri uri)
         {
-            var httpClient = new HttpClient();
-            string htmlPageBody;
-
-            try
-            {
-                htmlPageBody = httpClient.GetStringAsync(uri).GetAwaiter().GetResult();
-            }
-            catch (HttpRequestException ex)
-            {
-                _logger?.LogWarning($"HttpClient GetStringAsync throw exception for uri: {uri}. Exception: {ex}");
-                return string.Empty;
-            }
-
-            CheckResult(htmlPageBody, uri);
-
-            return htmlPageBody;
+            return LoadAsync(uri).GetAwaiter().GetResult();
         }
 
         public async Task<string> LoadAsync(Uri uri)
         {
             var httpClient = new HttpClient();
-            string htmlPageBody;
+            var request = new HttpRequestMessage(HttpMethod.Get, uri);
 
+            HttpResponseMessage response;
             try
             {
-                htmlPageBody = await httpClient.GetStringAsync(uri);
+                response = await httpClient.SendAsync(request);
+                response.EnsureSuccessStatusCode();
             }
             catch (HttpRequestException ex)
             {
@@ -54,9 +41,11 @@ namespace LyricsScraperNET.Network
                 return string.Empty;
             }
 
-            CheckResult(htmlPageBody, uri);
+            var htmlContent = await response.Content.ReadAsStringAsync();
 
-            return htmlPageBody;
+            CheckResult(htmlContent, uri);
+
+            return htmlContent;
         }
 
         private void CheckResult(string? result, Uri uri)

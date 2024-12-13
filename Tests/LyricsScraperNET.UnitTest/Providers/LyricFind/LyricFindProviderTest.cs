@@ -54,5 +54,49 @@ namespace LyricsScraperNET.UnitTest.Providers.LyricFind
             Assert.Equal(ExternalProviderType.LyricFind, searchResult.ExternalProviderType);
             Assert.True(searchResult.Instrumental);
         }
+
+        [Theory]
+        [MemberData(nameof(GetTestData), parameters: "Providers\\LyricFind\\region_restricted_test_data.json")]
+        public void SearchLyric_UnitDynamicData_RegionRestricted(LyricsTestData testData)
+        {
+            // Arrange
+            var lyricsClient = new LyricFindProvider();
+            lyricsClient.ConfigureExternalProvider(testData);
+
+            SearchRequest searchRequest = CreateSearchRequest(testData);
+
+            // Act
+            var searchResult = lyricsClient.SearchLyric(searchRequest);
+
+            // Assert
+            Assert.NotNull(searchResult);
+            Assert.True(searchResult.IsEmpty());
+            Assert.Equal(ResponseStatusCode.RegionRestricted, searchResult.ResponseStatusCode);
+            Assert.Equal(ExternalProviderType.LyricFind, searchResult.ExternalProviderType);
+            Assert.True(string.IsNullOrEmpty(searchResult.ResponseMessage));
+            Assert.False(searchResult.Instrumental);
+        }
+
+        [Theory]
+        [MemberData(nameof(GetTestData), parameters: "Providers\\LyricFind\\not_found_test_data.json")]
+        public void SearchLyric_UnitDynamicData_NotFound(LyricsTestData testData)
+        {
+            // Arrange
+            var lyricsClient = new LyricFindProvider();
+            lyricsClient.ConfigureExternalProvider(testData);
+
+            SearchRequest searchRequest = CreateSearchRequest(testData);
+
+            // Act
+            var searchResult = lyricsClient.SearchLyric(searchRequest);
+
+            // Assert
+            Assert.NotNull(searchResult);
+            Assert.True(searchResult.IsEmpty());
+            Assert.Equal(ResponseStatusCode.NoDataFound, searchResult.ResponseStatusCode);
+            Assert.Equal(ExternalProviderType.LyricFind, searchResult.ExternalProviderType);
+            Assert.True(string.IsNullOrEmpty(searchResult.ResponseMessage));
+            Assert.False(searchResult.Instrumental);
+        }
     }
 }

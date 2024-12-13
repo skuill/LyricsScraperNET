@@ -20,6 +20,12 @@ namespace LyricsScraperNET.Models.Responses
             ExternalProviderType = externalProviderType;
         }
 
+        internal SearchResult(ExternalProviderType externalProviderType, ResponseStatusCode responseStatusCode)
+            : this(externalProviderType)
+        {
+            ResponseStatusCode = responseStatusCode;
+        }
+
         internal SearchResult(string lyricText, ExternalProviderType externalProviderType)
             : this(externalProviderType)
         {

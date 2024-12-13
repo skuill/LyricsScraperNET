@@ -34,13 +34,13 @@ namespace LyricsScraperNET.IntegrationTest.Providers.LyricFind
             Assert.False(searchResult.Instrumental);
         }
 
-        [Theory]
-        [MemberData(nameof(GetTestData), parameters: "Providers\\LyricFind\\instrumental_test_data.json")]
-        public void SearchLyric_IntegrationDynamicData_Instrumental(LyricsTestData testData)
+        [RegionalTestTheory(excludeRegions: new[] { "AM", "RU" })]
+        [InlineData("rush", "yyz")]
+        public void SearchLyric_Instrumental_ShouldReturnSuccess(string artist, string song)
         {
             // Arrange
             var lyricsClient = new LyricFindProvider();
-            SearchRequest searchRequest = CreateSearchRequest(testData);
+            var searchRequest = new ArtistAndSongSearchRequest(artist, song);
 
             // Act
             var searchResult = lyricsClient.SearchLyric(searchRequest);
@@ -52,6 +52,26 @@ namespace LyricsScraperNET.IntegrationTest.Providers.LyricFind
             Assert.True(string.IsNullOrEmpty(searchResult.ResponseMessage));
             Assert.Equal(ExternalProviderType.LyricFind, searchResult.ExternalProviderType);
             Assert.True(searchResult.Instrumental);
+        }
+
+        [RegionalTestTheory(includeRegions: new[] { "AM", "RU" })]
+        [InlineData("rush", "Tom Sawyer")]
+        public void SearchLyric_LyricAreNotAvailableInRegion_ShouldRegionRestrictedStatus(string artist, string song)
+        {
+            // Arrange
+            var lyricsClient = new LyricFindProvider();
+            var searchRequest = new ArtistAndSongSearchRequest(artist, song);
+
+            // Act
+            var searchResult = lyricsClient.SearchLyric(searchRequest);
+
+            // Assert
+            Assert.NotNull(searchResult);
+            Assert.True(searchResult.IsEmpty());
+            Assert.Equal(ResponseStatusCode.RegionRestricted, searchResult.ResponseStatusCode);
+            Assert.Equal(ExternalProviderType.LyricFind, searchResult.ExternalProviderType);
+            Assert.True(string.IsNullOrEmpty(searchResult.ResponseMessage));
+            Assert.False(searchResult.Instrumental);
         }
 
         [Theory]
@@ -99,13 +119,13 @@ namespace LyricsScraperNET.IntegrationTest.Providers.LyricFind
             Assert.False(searchResult.Instrumental);
         }
 
-        [Theory]
-        [MemberData(nameof(GetTestData), parameters: "Providers\\LyricFind\\instrumental_test_data.json")]
-        public async Task SearchLyricAsync_IntegrationDynamicData_Instrumental(LyricsTestData testData)
+        [RegionalTestTheory(excludeRegions: new[] { "AM", "RU" })]
+        [InlineData("rush", "yyz")]
+        public async Task SearchLyricAsync_Instrumental_ShouldReturnSuccess(string artist, string song)
         {
             // Arrange
             var lyricsClient = new LyricFindProvider();
-            SearchRequest searchRequest = CreateSearchRequest(testData);
+            var searchRequest = new ArtistAndSongSearchRequest(artist, song);
 
             // Act
             var searchResult = await lyricsClient.SearchLyricAsync(searchRequest);
@@ -117,6 +137,26 @@ namespace LyricsScraperNET.IntegrationTest.Providers.LyricFind
             Assert.True(string.IsNullOrEmpty(searchResult.ResponseMessage));
             Assert.Equal(ExternalProviderType.LyricFind, searchResult.ExternalProviderType);
             Assert.True(searchResult.Instrumental);
+        }
+
+        [RegionalTestTheory(includeRegions: new[] { "AM", "RU" })]
+        [InlineData("rush", "Tom Sawyer")]
+        public async Task SearchLyricAsync_LyricAreNotAvailableInRegion_ShouldRegionRestrictedStatus(string artist, string song)
+        {
+            // Arrange
+            var lyricsClient = new LyricFindProvider();
+            var searchRequest = new ArtistAndSongSearchRequest(artist, song);
+
+            // Act
+            var searchResult = await lyricsClient.SearchLyricAsync(searchRequest);
+
+            // Assert
+            Assert.NotNull(searchResult);
+            Assert.True(searchResult.IsEmpty());
+            Assert.Equal(ResponseStatusCode.RegionRestricted, searchResult.ResponseStatusCode);
+            Assert.Equal(ExternalProviderType.LyricFind, searchResult.ExternalProviderType);
+            Assert.True(string.IsNullOrEmpty(searchResult.ResponseMessage));
+            Assert.False(searchResult.Instrumental);
         }
 
         [Theory]

@@ -14,7 +14,7 @@ namespace LyricsScraperNET.Network
         {
         }
 
-        public HtmlAgilityWebClient(ILogger<HtmlAgilityWebClient> logger)
+        public HtmlAgilityWebClient(ILogger<HtmlAgilityWebClient> logger) : this()
         {
             _logger = logger;
         }

@@ -35,12 +35,12 @@ namespace LyricsScraperNET.IntegrationTest.Providers.SongLyrics
         }
 
         [Theory]
-        [MemberData(nameof(GetTestData), parameters: "Providers\\SongLyrics\\instrumental_test_data.json")]
-        public void SearchLyric_IntegrationDynamicData_Instrumental(LyricsTestData testData)
+        [InlineData("rush", "yyz")]
+        public void SearchLyric_Instrumental_ShouldReturnSuccess(string artist, string song)
         {
             // Arrange
             var lyricsClient = new SongLyricsProvider();
-            SearchRequest searchRequest = CreateSearchRequest(testData);
+            var searchRequest = new ArtistAndSongSearchRequest(artist, song);
 
             // Act
             var searchResult = lyricsClient.SearchLyric(searchRequest);
@@ -100,12 +100,12 @@ namespace LyricsScraperNET.IntegrationTest.Providers.SongLyrics
         }
 
         [Theory]
-        [MemberData(nameof(GetTestData), parameters: "Providers\\SongLyrics\\instrumental_test_data.json")]
-        public async Task SearchLyricAsync_IntegrationDynamicData_Instrumental(LyricsTestData testData)
+        [InlineData("rush", "yyz")]
+        public async Task SearchLyricAsync_Instrumental_ShouldReturnSuccess(string artist, string song)
         {
             // Arrange
             var lyricsClient = new SongLyricsProvider();
-            SearchRequest searchRequest = CreateSearchRequest(testData);
+            var searchRequest = new ArtistAndSongSearchRequest(artist, song);
 
             // Act
             var searchResult = await lyricsClient.SearchLyricAsync(searchRequest);
