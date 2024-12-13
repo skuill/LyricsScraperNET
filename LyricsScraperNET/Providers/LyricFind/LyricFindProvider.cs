@@ -30,7 +30,7 @@ namespace LyricsScraperNET.Providers.LyricFind
         public LyricFindProvider()
         {
             Parser = new LyricFindParser();
-            WebClient = new HtmlAgilityWebClient();
+            WebClient = new LyricFindWebBrowser();
             Options = new LyricFindOptions() { Enabled = true };
             _uriConverter = new LyricFindUriConverter();
         }

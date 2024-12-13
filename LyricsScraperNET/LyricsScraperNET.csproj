@@ -35,6 +35,7 @@
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="6.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.4" />
 		<PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="6.0.0" />
+		<PackageReference Include="Microsoft.Playwright" Version="1.49.0" />
 		<PackageReference Include="MusixmatchClientLib" Version="1.1.8" />
 		<PackageReference Include="Sigil" Version="5.0.0" />
 		<PackageReference Include="System.Text.Json" Version="6.0.11" />
