@@ -6,7 +6,6 @@ using LyricsScraperNET.Providers.Abstract;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
-using System.Reactive.Joins;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 

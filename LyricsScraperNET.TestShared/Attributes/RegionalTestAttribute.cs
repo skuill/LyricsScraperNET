@@ -17,7 +17,7 @@ public class RegionalTestTheoryAttribute : TheoryAttribute
     private static bool ShouldRunTest(string[] includeRegions, string[] excludeRegions)
     {
         var currentRegion = RegionInfo.CurrentRegion.Name;
-        
+
         // If regions are specified to be included, run only if the current region is in the list.
         if (includeRegions != null && includeRegions.Length > 0)
         {
