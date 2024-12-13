@@ -23,7 +23,7 @@ namespace LyricsScraperNET.Providers.Genius
         // Format: "artist song". Example: "Parkway Drive Carrion".
         private const string GeniusSearchQueryFormat = "{0} {1}";
 
-        private const string _referentFragmentNodesXPath = "//a[contains(@class, 'ReferentFragmentVariantdesktop') or contains(@class, 'ReferentFragmentdesktop')]";
+        private const string _referentFragmentNodesXPath = "//a[contains(@class, 'ReferentFragmentVariantdesktop') or contains(@class, 'ReferentFragmentdesktop') or contains(@class, 'ReferentFragment-desktop')]";
         private const string _lyricsContainerNodesXPath = "//div[@data-lyrics-container]";
 
         // In case of instrumental song without a lyric.

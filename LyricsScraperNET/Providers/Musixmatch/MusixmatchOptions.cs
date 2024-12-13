@@ -14,7 +14,7 @@ namespace LyricsScraperNET.Providers.Musixmatch
 
         public ExternalProviderType ExternalProviderType => ExternalProviderType.Musixmatch;
 
-        public int SearchPriority { get; set; } = 2;
+        public int SearchPriority { get; set; } = 0;
 
         public override bool Equals(object? obj)
         {
