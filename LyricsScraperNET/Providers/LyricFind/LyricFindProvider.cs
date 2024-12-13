@@ -6,6 +6,7 @@ using LyricsScraperNET.Providers.Abstract;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace LyricsScraperNET.Providers.LyricFind
@@ -24,6 +25,11 @@ namespace LyricsScraperNET.Providers.LyricFind
         private const string _instrumentalStart = "\"instrumental\"";
         // "songIsInstrumental":true
         private const string _songIsInstrumentalStart = "\"songIsInstrumental\"";
+
+        // "viewable":false
+        private const string _viewableStart = "\"viewable\"";
+        // "response":{"code":206,"description":"LYRIC NOT AVAILABLE: BLOCKED"}
+        private const string _lyricNotAvailablePattern = @"\{[^}]*(""response""\s*:\s*\{[^}]*(""code""\s*:\s*206)[^}]*(""description""\s*:\s*""LYRIC NOT AVAILABLE: BLOCKED"")[^}]*\})[^}]*\}|\{[^}]*(""response""\s*:\s*\{[^}]*(""description""\s*:\s*""LYRIC NOT AVAILABLE: BLOCKED"")[^}]*(""code""\s*:\s*206)[^}]*\})[^}]*\}";
 
         #region Constructors
 
@@ -124,6 +130,10 @@ namespace LyricsScraperNET.Providers.LyricFind
                 if (IsInstumentalLyric(text))
                     return new SearchResult(Models.ExternalProviderType.LyricFind).AddInstrumental(true);
 
+                // In case if lyrics existed, but "These lyrics are not available in your region currently."
+                if (IsRegionRestrictedLyric(text))
+                    return new SearchResult(Models.ExternalProviderType.LyricFind, ResponseStatusCode.RegionRestricted);
+
                 _logger?.LogWarning($"LyricFind. Can't find lyrics for Uri: [{uri}]");
                 return new SearchResult(Models.ExternalProviderType.LyricFind);
             }
@@ -152,6 +162,16 @@ namespace LyricsScraperNET.Providers.LyricFind
             return new SearchResult(result, Models.ExternalProviderType.LyricFind);
         }
 
+
+        /// <summary>
+        /// Check if lyric text contains region restricted information like viewable (false) and repsonse with code (206) and description.
+        /// </summary>
+        private bool IsRegionRestrictedLyric(string text)
+        {
+            return TryReturnBooleanFieldValue(text, _viewableStart, "false")
+                && Regex.IsMatch(text, _lyricNotAvailablePattern); ;
+        }
+
         /// <summary>
         /// Check if lyric text contains instrumental flag.
         /// </summary>
@@ -165,13 +185,13 @@ namespace LyricsScraperNET.Providers.LyricFind
         /// Try to find and return the fielad value as boolean. Pattern: [<paramref name="fieldName"/>:true(or false)].
         /// In case if fieldName is not found returns false.
         /// </summary>
-        private bool TryReturnBooleanFieldValue(string text, string fieldName)
+        private bool TryReturnBooleanFieldValue(string text, string fieldName, string booleanValue = "true")
         {
             var startIndex = text.IndexOf(fieldName);
             if (startIndex <= 0)
                 return false;
             var fieldValue = text.Substring(startIndex + fieldName.Length + 1, 5);
-            return fieldValue.IndexOf("true", StringComparison.OrdinalIgnoreCase) >= 0;
+            return fieldValue.IndexOf(booleanValue, StringComparison.OrdinalIgnoreCase) >= 0;
         }
     }
 }

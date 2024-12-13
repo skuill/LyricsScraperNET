@@ -28,6 +28,11 @@
         /// <summary>
         /// The search request is incorrect or contains malformed data.
         /// </summary>
-        BadRequest = 4
+        BadRequest = 4,
+
+        /// <summary>
+        /// Lyrics are unavailable due to regional restrictions.
+        /// </summary>
+        RegionRestricted = 5
     }
 }
