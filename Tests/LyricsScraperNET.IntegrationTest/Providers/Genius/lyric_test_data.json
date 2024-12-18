@@ -10,5 +10,11 @@
     "ArtistName": "Iron Maiden",
     "SongName": "The Number of the Beast",
     "SongUri": null
+  },
+  {
+    "LyricResultPath": "Providers/Genius/Resources/Lyrics_Result_01.txt",
+    "ArtistName": null,
+    "SongName": null,
+    "SongUri": "https://genius.com/Parkway-drive-idols-and-anchors-lyrics"
   }
 ]

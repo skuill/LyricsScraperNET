@@ -59,8 +59,20 @@
 		<None Update="Providers\AZLyrics\lyric_test_data.json">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
+		<None Update="Providers\LyricFind\not_found_test_data.json">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<None Update="Providers\LyricFind\region_restricted_test_data.json">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
 		<None Update="Providers\LyricFind\instrumental_test_data.json">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<None Update="Providers\LyricFind\Resources\NotFound_HtmlPage_01.txt">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<None Update="Providers\LyricFind\Resources\RegionRestricted_HtmlPage_01.txt">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
 		<None Update="Providers\LyricFind\Resources\Instrumental_HtmlPage_01.txt">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

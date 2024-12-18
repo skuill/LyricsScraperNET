@@ -30,8 +30,8 @@ class Program
         //// How to configure for ASP.NET applications:
         var result = ExampleWithHostConfiguration(artistToSearch, songToSearch);
 
-        //// How to configure for a certain external provider:
-        //var result = ExampleWithCertainProvider(artistToSearch, songToSearch);
+        //// How to configure for a certain external provider using explicit instantiation:
+        //var result = ExampleWithExplicitInstantiation(artistToSearch, songToSearch);
 
         //// Checking that something was found. The response can be empty in two cases:
         //// 1) A search error occurred. Detailed information can be found in the logs or in response fields like 'ResponseStatusCode' and 'ResponseMessage'.
@@ -116,7 +116,7 @@ class Program
     /// <param name="artistToSearch">artist name to search</param>
     /// <param name="songToSearch">song name to search</param>
     /// <returns>lyrics text</returns>
-    private static SearchResult ExampleWithCertainProvider(string artistToSearch, string songToSearch)
+    private static SearchResult ExampleWithExplicitInstantiation(string artistToSearch, string songToSearch)
     {
         //// Create instance of LyricScraperClient with all available lyrics providers
         ILyricsScraperClient lyricsScraperClient

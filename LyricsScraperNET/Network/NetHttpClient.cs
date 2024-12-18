@@ -37,16 +37,21 @@ namespace LyricsScraperNET.Network
         }
 
         public async Task<string> LoadAsync(Uri uri, CancellationToken cancellationToken)
-        {
+
             string htmlPageBody;
 
-            try
-            {
+        public async Task<string> LoadAsync(Uri uri)
+        {
 #if NETSTANDARD
                 htmlPageBody = await _httpClient.GetStringAsync(uri);
 #else
                 htmlPageBody = await _httpClient.GetStringAsync(uri, cancellationToken);
 #endif
+            string htmlPageBody;
+
+            try
+            {
+                htmlPageBody = await httpClient.GetStringAsync(uri);
             }
             catch (HttpRequestException ex)
             {
