@@ -21,10 +21,8 @@ namespace LyricsScraperNET.Network
             _logger = logger;
         }
 
-        public string Load(Uri uri, CancellationToken cancellationToken)
+        public string Load(Uri uri, CancellationToken cancellationToken = default)
         {
-            string htmlPageBody;
-
             try
             {
                 return LoadAsync(uri, cancellationToken).GetAwaiter().GetResult();
@@ -36,22 +34,17 @@ namespace LyricsScraperNET.Network
             }
         }
 
-        public async Task<string> LoadAsync(Uri uri, CancellationToken cancellationToken)
-
+        public async Task<string> LoadAsync(Uri uri, CancellationToken cancellationToken = default)
+        {
             string htmlPageBody;
 
-        public async Task<string> LoadAsync(Uri uri)
-        {
+            try
+            {
 #if NETSTANDARD
                 htmlPageBody = await _httpClient.GetStringAsync(uri);
 #else
                 htmlPageBody = await _httpClient.GetStringAsync(uri, cancellationToken);
 #endif
-            string htmlPageBody;
-
-            try
-            {
-                htmlPageBody = await httpClient.GetStringAsync(uri);
             }
             catch (HttpRequestException ex)
             {

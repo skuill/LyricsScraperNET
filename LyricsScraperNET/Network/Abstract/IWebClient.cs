@@ -6,8 +6,8 @@ namespace LyricsScraperNET.Network.Abstract
 {
     public interface IWebClient
     {
-        string Load(Uri uri, CancellationToken cancellationToken);
+        string Load(Uri uri, CancellationToken cancellationToken = default);
 
-        Task<string> LoadAsync(Uri uri, CancellationToken cancellationToken);
+        Task<string> LoadAsync(Uri uri, CancellationToken cancellationToken = default);
     }
 }

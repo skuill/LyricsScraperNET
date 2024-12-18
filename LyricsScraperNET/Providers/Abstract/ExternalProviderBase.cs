@@ -21,7 +21,7 @@ namespace LyricsScraperNET.Providers.Abstract
 
         #region Sync
 
-        public virtual SearchResult SearchLyric(SearchRequest searchRequest, CancellationToken cancellationToken)
+        public virtual SearchResult SearchLyric(SearchRequest searchRequest, CancellationToken cancellationToken = default)
         {
             if (!IsEnabled)
                 return new SearchResult();
@@ -37,17 +37,17 @@ namespace LyricsScraperNET.Providers.Abstract
             }
         }
 
-        protected virtual SearchResult SearchLyric(Uri uri, CancellationToken cancellationToken)
+        protected virtual SearchResult SearchLyric(Uri uri, CancellationToken cancellationToken = default)
             => throw new NotImplementedException();
 
-        protected virtual SearchResult SearchLyric(string artist, string song, CancellationToken cancellationToken)
+        protected virtual SearchResult SearchLyric(string artist, string song, CancellationToken cancellationToken = default)
             => throw new NotImplementedException();
 
         #endregion
 
         #region Async
 
-        public virtual async Task<SearchResult> SearchLyricAsync(SearchRequest searchRequest, CancellationToken cancellationToken)
+        public virtual async Task<SearchResult> SearchLyricAsync(SearchRequest searchRequest, CancellationToken cancellationToken = default)
         {
             if (!IsEnabled)
                 return new SearchResult();
@@ -63,10 +63,10 @@ namespace LyricsScraperNET.Providers.Abstract
             }
         }
 
-        protected virtual Task<SearchResult> SearchLyricAsync(Uri uri, CancellationToken cancellationToken)
+        protected virtual Task<SearchResult> SearchLyricAsync(Uri uri, CancellationToken cancellationToken = default)
             => throw new NotImplementedException();
 
-        protected virtual Task<SearchResult> SearchLyricAsync(string artist, string song, CancellationToken cancellationToken)
+        protected virtual Task<SearchResult> SearchLyricAsync(string artist, string song, CancellationToken cancellationToken = default)
             => throw new NotImplementedException();
 
         #endregion

@@ -62,12 +62,12 @@ namespace LyricsScraperNET.Providers.Musixmatch
         #region Sync
 
         // TODO: search by uri from the site. Example: https://www.musixmatch.com/lyrics/Parkway-Drive/Idols-and-Anchors
-        protected override SearchResult SearchLyric(Uri uri, CancellationToken cancellationToken)
+        protected override SearchResult SearchLyric(Uri uri, CancellationToken cancellationToken = default)
         {
             return new SearchResult(Models.ExternalProviderType.Musixmatch);
         }
 
-        protected override SearchResult SearchLyric(string artist, string song, CancellationToken cancellationToken)
+        protected override SearchResult SearchLyric(string artist, string song, CancellationToken cancellationToken = default)
         {
             bool regenerateToken = false;
             for (int i = 1; i <= _searchRetryAmount; i++)
@@ -91,12 +91,12 @@ namespace LyricsScraperNET.Providers.Musixmatch
         #region Async
 
         // TODO: search by uri from the site. Example: https://www.musixmatch.com/lyrics/Parkway-Drive/Idols-and-Anchors
-        protected override Task<SearchResult> SearchLyricAsync(Uri uri, CancellationToken cancellationToken)
+        protected override Task<SearchResult> SearchLyricAsync(Uri uri, CancellationToken cancellationToken = default)
         {
             return Task.FromResult<SearchResult>(new SearchResult(Models.ExternalProviderType.Musixmatch));
         }
 
-        protected override async Task<SearchResult> SearchLyricAsync(string artist, string song, CancellationToken cancellationToken)
+        protected override async Task<SearchResult> SearchLyricAsync(string artist, string song, CancellationToken cancellationToken = default)
         {
             bool regenerateToken = false;
             for (int i = 1; i <= _searchRetryAmount; i++)

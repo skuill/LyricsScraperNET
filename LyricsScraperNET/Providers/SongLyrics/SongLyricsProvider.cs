@@ -74,12 +74,12 @@ namespace LyricsScraperNET.Providers.SongLyrics
 
         #region Sync
 
-        protected override SearchResult SearchLyric(string artist, string song, CancellationToken cancellationToken)
+        protected override SearchResult SearchLyric(string artist, string song, CancellationToken cancellationToken = default)
         {
             return SearchLyric(_uriConverter.GetLyricUri(artist, song), cancellationToken);
         }
 
-        protected override SearchResult SearchLyric(Uri uri, CancellationToken cancellationToken)
+        protected override SearchResult SearchLyric(Uri uri, CancellationToken cancellationToken = default)
         {
             if (WebClient == null)
             {
@@ -94,12 +94,12 @@ namespace LyricsScraperNET.Providers.SongLyrics
 
         #region Async
 
-        protected override async Task<SearchResult> SearchLyricAsync(string artist, string song, CancellationToken cancellationToken)
+        protected override async Task<SearchResult> SearchLyricAsync(string artist, string song, CancellationToken cancellationToken = default)
         {
             return await SearchLyricAsync(_uriConverter.GetLyricUri(artist, song), cancellationToken);
         }
 
-        protected override async Task<SearchResult> SearchLyricAsync(Uri uri, CancellationToken cancellationToken)
+        protected override async Task<SearchResult> SearchLyricAsync(Uri uri, CancellationToken cancellationToken = default)
         {
             if (WebClient == null)
             {

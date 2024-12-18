@@ -76,7 +76,7 @@ namespace LyricsScraperNET
         private async Task<SearchResult> SearchLyricInternal(
             SearchRequest searchRequest,
             Func<IExternalProvider, CancellationToken, Task<SearchResult>> searchAction,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken = default)
         {
             if (!ValidSearchRequestAndConfig(searchRequest, out var searchResult))
                 return searchResult;

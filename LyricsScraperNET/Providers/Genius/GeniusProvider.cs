@@ -72,7 +72,7 @@ namespace LyricsScraperNET.Providers.Genius
 
         #region Sync
 
-        protected override SearchResult SearchLyric(Uri uri, CancellationToken cancellationToken)
+        protected override SearchResult SearchLyric(Uri uri, CancellationToken cancellationToken = default)
         {
             var htmlPageBody = WebClient.Load(uri, cancellationToken);
 
@@ -84,7 +84,7 @@ namespace LyricsScraperNET.Providers.Genius
                 .AddInstrumental(instrumental);
         }
 
-        protected override SearchResult SearchLyric(string artist, string song, CancellationToken cancellationToken)
+        protected override SearchResult SearchLyric(string artist, string song, CancellationToken cancellationToken = default)
         {
             return SearchLyricAsync(artist, song, cancellationToken).GetAwaiter().GetResult();
         }
@@ -93,7 +93,7 @@ namespace LyricsScraperNET.Providers.Genius
 
         #region Async
 
-        protected override async Task<SearchResult> SearchLyricAsync(Uri uri, CancellationToken cancellationToken)
+        protected override async Task<SearchResult> SearchLyricAsync(Uri uri, CancellationToken cancellationToken = default)
         {
             var htmlPageBody = await WebClient.LoadAsync(uri, cancellationToken);
 
@@ -105,7 +105,7 @@ namespace LyricsScraperNET.Providers.Genius
                 .AddInstrumental(instrumental);
         }
 
-        protected override async Task<SearchResult> SearchLyricAsync(string artist, string song, CancellationToken cancellationToken)
+        protected override async Task<SearchResult> SearchLyricAsync(string artist, string song, CancellationToken cancellationToken = default)
         {
             string lyricUrl = string.Empty;
 
@@ -139,7 +139,7 @@ namespace LyricsScraperNET.Providers.Genius
             _logger = loggerFactory.CreateLogger<GeniusProvider>();
         }
 
-        private string GetLyricUrlWithoutApiKey(string artist, string song, CancellationToken cancellationToken)
+        private string GetLyricUrlWithoutApiKey(string artist, string song, CancellationToken cancellationToken = default)
         {
             var htmlPageBody = WebClient.Load(_uriConverter.GetLyricUri(artist, song), cancellationToken);
 

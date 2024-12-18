@@ -18,9 +18,9 @@ namespace LyricsScraperNET.Providers.Abstract
         /// </summary>
         int SearchPriority { get; }
 
-        SearchResult SearchLyric(SearchRequest searchRequest, CancellationToken cancellationToken);
+        SearchResult SearchLyric(SearchRequest searchRequest, CancellationToken cancellationToken = default);
 
-        Task<SearchResult> SearchLyricAsync(SearchRequest searchRequest, CancellationToken cancellationToken);
+        Task<SearchResult> SearchLyricAsync(SearchRequest searchRequest, CancellationToken cancellationToken = default);
 
         void WithParser(IExternalProviderLyricParser parser);
 

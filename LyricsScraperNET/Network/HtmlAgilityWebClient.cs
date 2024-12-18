@@ -23,7 +23,7 @@ namespace LyricsScraperNET.Network
             _logger = logger;
         }
 
-        public string Load(Uri uri, CancellationToken cancellationToken)
+        public string Load(Uri uri, CancellationToken cancellationToken = default)
         {
             HtmlDocument document;
             try
@@ -40,7 +40,7 @@ namespace LyricsScraperNET.Network
             return document?.ParsedText;
         }
 
-        public async Task<string> LoadAsync(Uri uri, CancellationToken cancellationToken)
+        public async Task<string> LoadAsync(Uri uri, CancellationToken cancellationToken = default)
         {
             HtmlDocument document;
             try
