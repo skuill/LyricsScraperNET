@@ -10,7 +10,7 @@ namespace LyricsScraperNET.Providers.Musixmatch
         // Optional. Without using the API, a token with restrictions on the search for lyrics will be generated.
         public string ApiKey { get; set; }
 
-        public const string ConfigurationSectionName = "MusixmatchOptions";
+        public string ConfigurationSectionName { get; } = "MusixmatchOptions";
 
         public ExternalProviderType ExternalProviderType => ExternalProviderType.Musixmatch;
 

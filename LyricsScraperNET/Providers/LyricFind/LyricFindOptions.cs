@@ -11,7 +11,7 @@ namespace LyricsScraperNET.Providers.LyricFind
 
         public int SearchPriority { get; set; } = 1;
 
-        public const string ConfigurationSectionName = "LyricFindOptions";
+        public string ConfigurationSectionName { get; } = "LyricFindOptions";
 
         public override bool Equals(object? obj)
         {

@@ -5,6 +5,7 @@ using LyricsScraperNET.Providers.Models;
 using LyricsScraperNET.TestShared.Providers;
 using LyricsScraperNET.UnitTest.TestModel;
 using System.Threading.Tasks;
+using System.Threading;
 using Xunit;
 
 namespace LyricsScraperNET.IntegrationTest.Providers.AZLyrics
@@ -20,9 +21,10 @@ namespace LyricsScraperNET.IntegrationTest.Providers.AZLyrics
             // Arrange
             var lyricsClient = new AZLyricsProvider();
             SearchRequest searchRequest = CreateSearchRequest(testData);
+            CancellationToken cancellationToken = CancellationToken.None;
 
             // Act
-            var searchResult = lyricsClient.SearchLyric(searchRequest);
+            var searchResult = lyricsClient.SearchLyric(searchRequest, cancellationToken);
 
             // Assert
             Assert.NotNull(searchResult);
@@ -40,9 +42,10 @@ namespace LyricsScraperNET.IntegrationTest.Providers.AZLyrics
             // Arrange
             var lyricsClient = new AZLyricsProvider();
             var searchRequest = new ArtistAndSongSearchRequest(artist, song);
+            CancellationToken cancellationToken = CancellationToken.None;
 
             // Act
-            var searchResult = lyricsClient.SearchLyric(searchRequest);
+            var searchResult = lyricsClient.SearchLyric(searchRequest, cancellationToken);
 
             // Assert
             Assert.NotNull(searchResult);
@@ -64,9 +67,10 @@ namespace LyricsScraperNET.IntegrationTest.Providers.AZLyrics
             // Arrange
             var lyricsClient = new AZLyricsProvider();
             SearchRequest searchRequest = CreateSearchRequest(testData);
+            CancellationToken cancellationToken = CancellationToken.None;
 
             // Act
-            var searchResult = await lyricsClient.SearchLyricAsync(searchRequest);
+            var searchResult = await lyricsClient.SearchLyricAsync(searchRequest, cancellationToken);
 
             // Assert
             Assert.NotNull(searchResult);
@@ -84,9 +88,10 @@ namespace LyricsScraperNET.IntegrationTest.Providers.AZLyrics
             // Arrange
             var lyricsClient = new AZLyricsProvider();
             var searchRequest = new ArtistAndSongSearchRequest(artist, song);
+            CancellationToken cancellationToken = CancellationToken.None;
 
             // Act
-            var searchResult = await lyricsClient.SearchLyricAsync(searchRequest);
+            var searchResult = await lyricsClient.SearchLyricAsync(searchRequest, cancellationToken);
 
             // Assert
             Assert.NotNull(searchResult);

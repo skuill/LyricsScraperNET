@@ -5,6 +5,7 @@ using LyricsScraperNET.Providers.SongLyrics;
 using LyricsScraperNET.TestShared.Extensions;
 using LyricsScraperNET.TestShared.Providers;
 using LyricsScraperNET.UnitTest.TestModel;
+using System.Threading;
 using Xunit;
 
 namespace LyricsScraperNET.UnitTest.Providers.SongLyrics
@@ -20,9 +21,10 @@ namespace LyricsScraperNET.UnitTest.Providers.SongLyrics
             lyricsClient.ConfigureExternalProvider(testData);
 
             SearchRequest searchRequest = CreateSearchRequest(testData);
+            CancellationToken cancellationToken = CancellationToken.None;
 
             // Act
-            var searchResult = lyricsClient.SearchLyric(searchRequest);
+            var searchResult = lyricsClient.SearchLyric(searchRequest, cancellationToken);
 
             // Assert
             Assert.NotNull(searchResult);
@@ -42,9 +44,10 @@ namespace LyricsScraperNET.UnitTest.Providers.SongLyrics
             lyricsClient.ConfigureExternalProvider(testData);
 
             SearchRequest searchRequest = CreateSearchRequest(testData);
+            CancellationToken cancellationToken = CancellationToken.None;
 
             // Act
-            var searchResult = lyricsClient.SearchLyric(searchRequest);
+            var searchResult = lyricsClient.SearchLyric(searchRequest, cancellationToken);
 
             // Assert
             Assert.NotNull(searchResult);
