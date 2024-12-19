@@ -170,7 +170,7 @@ namespace LyricsScraperNET.Providers.LyricFind
         private bool IsRegionRestrictedLyric(string text)
         {
             return TryReturnBooleanFieldValue(text, _viewableStart, "false")
-                && Regex.IsMatch(text, _lyricNotAvailablePattern); ;
+                && Regex.IsMatch(text, _lyricNotAvailablePattern);
         }
 
         /// <summary>
