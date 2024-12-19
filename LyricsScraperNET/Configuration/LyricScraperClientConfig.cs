@@ -4,11 +4,13 @@ using LyricsScraperNET.Providers.Genius;
 using LyricsScraperNET.Providers.LyricFind;
 using LyricsScraperNET.Providers.Musixmatch;
 using LyricsScraperNET.Providers.SongLyrics;
+using System.Text.Json.Serialization;
 
 namespace LyricsScraperNET.Configuration
 {
     public sealed class LyricScraperClientConfig : ILyricScraperClientConfig
     {
+        [JsonIgnore]
         public const string ConfigurationSectionName = "LyricScraperClient";
 
         public IExternalProviderOptions AZLyricsOptions { get; set; } = new AZLyricsOptions();

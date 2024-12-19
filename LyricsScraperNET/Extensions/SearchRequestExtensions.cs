@@ -5,7 +5,7 @@ namespace LyricsScraperNET.Extensions
 {
     internal static class SearchRequestExtensions
     {
-        public static ExternalProviderType GetProviderTypeFromRequest(this SearchRequest searchRequest)
+        public static ExternalProviderType GetProviderType(this SearchRequest searchRequest)
         {
             switch (searchRequest)
             {
