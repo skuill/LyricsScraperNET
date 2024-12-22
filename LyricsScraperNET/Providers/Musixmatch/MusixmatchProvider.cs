@@ -6,6 +6,7 @@ using Microsoft.Extensions.Options;
 using MusixmatchClientLib.API.Model.Exceptions;
 using MusixmatchClientLib.API.Model.Types;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace LyricsScraperNET.Providers.Musixmatch
@@ -28,6 +29,7 @@ namespace LyricsScraperNET.Providers.Musixmatch
         }
 
         public MusixmatchProvider(ILogger<MusixmatchProvider> logger, MusixmatchOptions options, IMusixmatchClientWrapper clientWrapper)
+            : this()
         {
             _logger = logger;
             Ensure.ArgumentNotNull(options, nameof(options));
@@ -61,28 +63,14 @@ namespace LyricsScraperNET.Providers.Musixmatch
         #region Sync
 
         // TODO: search by uri from the site. Example: https://www.musixmatch.com/lyrics/Parkway-Drive/Idols-and-Anchors
-        protected override SearchResult SearchLyric(Uri uri)
+        protected override SearchResult SearchLyric(Uri uri, CancellationToken cancellationToken = default)
         {
-            return new SearchResult(Models.ExternalProviderType.Musixmatch);
+            return SearchLyricAsync(uri, cancellationToken).GetAwaiter().GetResult();
         }
 
-        protected override SearchResult SearchLyric(string artist, string song)
+        protected override SearchResult SearchLyric(string artist, string song, CancellationToken cancellationToken = default)
         {
-            bool regenerateToken = false;
-            for (int i = 1; i <= _searchRetryAmount; i++)
-            {
-                try
-                {
-                    var result = _clientWrapper.SearchLyric(artist, song, regenerateToken);
-                    return result;
-                }
-                catch (MusixmatchRequestException requestException) when (requestException.StatusCode == StatusCode.AuthFailed)
-                {
-                    _logger?.LogWarning($"Musixmatch. Authentication failed. Error: {requestException.Message}.");
-                    regenerateToken = true;
-                }
-            }
-            return new SearchResult(Models.ExternalProviderType.Musixmatch);
+            return SearchLyricAsync(artist, song, cancellationToken).GetAwaiter().GetResult();
         }
 
         #endregion
@@ -90,19 +78,19 @@ namespace LyricsScraperNET.Providers.Musixmatch
         #region Async
 
         // TODO: search by uri from the site. Example: https://www.musixmatch.com/lyrics/Parkway-Drive/Idols-and-Anchors
-        protected override Task<SearchResult> SearchLyricAsync(Uri uri)
+        protected override Task<SearchResult> SearchLyricAsync(Uri uri, CancellationToken cancellationToken = default)
         {
             return Task.FromResult<SearchResult>(new SearchResult(Models.ExternalProviderType.Musixmatch));
         }
 
-        protected override async Task<SearchResult> SearchLyricAsync(string artist, string song)
+        protected override async Task<SearchResult> SearchLyricAsync(string artist, string song, CancellationToken cancellationToken = default)
         {
             bool regenerateToken = false;
             for (int i = 1; i <= _searchRetryAmount; i++)
             {
                 try
                 {
-                    var result = await _clientWrapper.SearchLyricAsync(artist, song, regenerateToken);
+                    var result = await _clientWrapper.SearchLyricAsync(artist, song, cancellationToken, regenerateToken);
                     return result;
                 }
                 catch (MusixmatchRequestException requestException) when (requestException.StatusCode == StatusCode.AuthFailed)

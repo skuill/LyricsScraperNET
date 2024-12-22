@@ -4,12 +4,14 @@ using LyricsScraperNET.Extensions;
 using LyricsScraperNET.Helpers;
 using LyricsScraperNET.Models.Requests;
 using LyricsScraperNET.Models.Responses;
+using LyricsScraperNET.Providers;
 using LyricsScraperNET.Providers.Abstract;
 using LyricsScraperNET.Providers.Models;
+using LyricsScraperNET.Validations;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace LyricsScraperNET
@@ -19,28 +21,37 @@ namespace LyricsScraperNET
         private ILoggerFactory _loggerFactory;
         private ILogger<LyricsScraperClient> _logger;
 
-        private List<IExternalProvider> _externalProviders;
+        private IProviderService _providerService;
+        private IRequestValidator _requestValidator;
         private readonly ILyricScraperClientConfig _lyricScraperClientConfig;
 
-        public bool IsEnabled => _externalProviders != null && _externalProviders.Any(x => x.IsEnabled);
+        /// <inheritdoc />
+        public bool IsEnabled => _providerService.AnyEnabled();
 
+        /// <inheritdoc />
         public IExternalProvider this[ExternalProviderType providerType]
         {
-            get => IsProviderAvailable(providerType)
-                ? _externalProviders.First(p => p.Options.ExternalProviderType == providerType)
-                : null;
+            get => _providerService[providerType];
         }
 
-        public LyricsScraperClient() { }
+        public LyricsScraperClient()
+        {
+            _providerService = new ProviderService();
+            _requestValidator = new RequestValidator();
+        }
 
         public LyricsScraperClient(ILyricScraperClientConfig lyricScraperClientConfig,
             IEnumerable<IExternalProvider> externalProviders)
+            : this()
         {
             Ensure.ArgumentNotNull(lyricScraperClientConfig, nameof(lyricScraperClientConfig));
             _lyricScraperClientConfig = lyricScraperClientConfig;
 
             Ensure.ArgumentNotNullOrEmptyList(externalProviders, nameof(externalProviders));
-            _externalProviders = externalProviders.ToList();
+            foreach (var externalProvider in externalProviders)
+            {
+                _providerService.AddProvider(externalProvider);
+            }
         }
 
         public LyricsScraperClient(ILogger<LyricsScraperClient> logger,
@@ -51,79 +62,86 @@ namespace LyricsScraperNET
             _logger = logger;
         }
 
-        public SearchResult SearchLyric(SearchRequest searchRequest)
+        /// <inheritdoc />
+        public SearchResult SearchLyric(SearchRequest searchRequest, CancellationToken cancellationToken = default)
         {
-            if (!ValidSearchRequestAndConfig(searchRequest, out var searchResult))
+            try
             {
-                return searchResult;
+                // Run async operation synchronously
+                return SearchLyricInternal(searchRequest,
+                    (provider, ct) => Task.FromResult(provider.SearchLyric(searchRequest, ct)),
+                    cancellationToken).Result;
             }
-
-            foreach (var externalProvider in GetAvailableProvidersForSearchRequest(searchRequest))
+            catch (AggregateException ex) when (ex.InnerException is OperationCanceledException)
             {
-                var providerSearchResult = externalProvider.SearchLyric(searchRequest);
-                if (!providerSearchResult.IsEmpty() || providerSearchResult.Instrumental)
-                {
-                    return providerSearchResult;
-                }
-                _logger?.LogWarning($"Can't find lyric by provider: [{externalProvider.Options?.ExternalProviderType}].");
+                // Catch AggregateException and throw OperationCanceledException
+                throw ex.InnerException;
             }
-
-            searchResult.AddNoDataFoundMessage(Constants.ResponseMessages.NotFoundLyric);
-            _logger?.LogError($"Can't find lyrics for searchRequest: [{searchRequest}].");
-
-            return searchResult;
         }
 
-        public async Task<SearchResult> SearchLyricAsync(SearchRequest searchRequest)
+        /// <inheritdoc />
+        public Task<SearchResult> SearchLyricAsync(SearchRequest searchRequest, CancellationToken cancellationToken = default)
+            => SearchLyricInternal(searchRequest,
+                (provider, ct) => provider.SearchLyricAsync(searchRequest, ct),
+                cancellationToken);
+
+        private async Task<SearchResult> SearchLyricInternal(
+            SearchRequest searchRequest,
+            Func<IExternalProvider, CancellationToken, Task<SearchResult>> searchAction,
+            CancellationToken cancellationToken = default)
         {
             if (!ValidSearchRequestAndConfig(searchRequest, out var searchResult))
-            {
                 return searchResult;
-            }
 
-            foreach (var externalProvider in GetAvailableProvidersForSearchRequest(searchRequest))
+            // Create a linked cancellation token to propagate cancellation
+            using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+
+            foreach (var provider in _providerService.GetAvailableProviders(searchRequest))
             {
-                var providerSearchResult = await externalProvider.SearchLyricAsync(searchRequest);
-                if (!providerSearchResult.IsEmpty() || providerSearchResult.Instrumental)
+                // Check for cancellation before each external provider call
+                cancellationToken.ThrowIfCancellationRequested();
+
+                try
                 {
-                    return providerSearchResult;
+                    // Await the asynchronous search method with the linked cancellation token
+                    var result = await searchAction(provider, linkedCts.Token);
+                    if (!result.IsEmpty() || result.Instrumental)
+                        return result; // Return the result if it is valid
                 }
-                _logger?.LogWarning($"Can't find lyric by provider: [{externalProvider.Options?.ExternalProviderType}].");
+                catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+                {
+                    // Log the cancellation and rethrow the exception
+                    _logger?.LogInformation("Search operation was canceled.");
+                    throw;
+                }
+                catch (Exception ex)
+                {
+                    // Log any unexpected errors to prevent the method from crashing
+                    _logger?.LogError(ex, "Error during provider search.");
+                }
             }
 
+            // No providers found valid results, log the failure and add a message
             searchResult.AddNoDataFoundMessage(Constants.ResponseMessages.NotFoundLyric);
-            _logger?.LogError($"Can't find lyrics for searchRequest: [{searchRequest}].");
-
             return searchResult;
-        }
-
-        private IEnumerable<IExternalProvider> GetAvailableProvidersForSearchRequest(SearchRequest searchRequest)
-        {
-            var searchRequestExternalProvider = searchRequest.GetProviderTypeFromRequest();
-
-            if (searchRequestExternalProvider.IsNoneProviderType())
-                return _externalProviders.Where(p => p.IsEnabled).OrderByDescending(p => p.SearchPriority);
-
-            var availableProviders = _externalProviders.Where(p => p.IsEnabled && p.Options.ExternalProviderType == searchRequestExternalProvider);
-
-            if (availableProviders.Any())
-                return availableProviders.OrderByDescending(p => p.SearchPriority);
-
-            return Array.Empty<IExternalProvider>();
         }
 
         private bool ValidSearchRequestAndConfig(SearchRequest searchRequest, out SearchResult searchResult)
         {
             searchResult = new SearchResult();
+            LogLevel logLevel;
+            string errorMessage;
 
-            if (!ValidSearchRequest(searchRequest, out var badRequestErrorMessage))
+            if (!_requestValidator.IsValidSearchRequest(_providerService, searchRequest, out errorMessage, out logLevel))
             {
-                searchResult.AddBadRequestMessage(badRequestErrorMessage);
+                _logger?.Log(logLevel, errorMessage);
+                searchResult.AddBadRequestMessage(errorMessage);
                 return false;
             }
 
-            if (!ValidClientConfiguration(out var errorMessage))
+            if (!_requestValidator.IsValidClientConfiguration(_providerService, out errorMessage, out logLevel))
             {
+                _logger?.Log(logLevel, errorMessage);
                 searchResult.AddNoDataFoundMessage(errorMessage);
                 return false;
             }
@@ -131,123 +149,34 @@ namespace LyricsScraperNET
             return true;
         }
 
-        private bool ValidClientConfiguration(out string errorMessage)
-        {
-            errorMessage = string.Empty;
-            LogLevel logLevel = LogLevel.Error;
-
-            if (IsEmptyProvidersList())
-            {
-                errorMessage = Constants.ResponseMessages.ExternalProvidersListIsEmpty;
-            }
-            else if (!IsEnabled)
-            {
-                errorMessage = Constants.ResponseMessages.ExternalProvidersAreDisabled;
-                logLevel = LogLevel.Debug;
-            }
-
-            if (!string.IsNullOrWhiteSpace(errorMessage))
-            {
-                _logger?.Log(logLevel, errorMessage);
-                return false;
-            }
-            return true;
-        }
-
-        private bool ValidSearchRequest(SearchRequest searchRequest, out string errorMessage)
-        {
-            LogLevel logLevel = LogLevel.Error;
-
-            if (searchRequest == null)
-            {
-                errorMessage = Constants.ResponseMessages.SearchRequestIsEmpty;
-                _logger?.Log(logLevel, errorMessage);
-                return false;
-            }
-
-            var isSearchRequestValid = searchRequest.IsValid(out errorMessage);
-            if (!isSearchRequestValid)
-            {
-                _logger?.Log(logLevel, errorMessage);
-                return false;
-            }
-
-            var searchRequestExternalProvider = searchRequest.GetProviderTypeFromRequest();
-            if (!searchRequestExternalProvider.IsNoneProviderType() && !IsProviderEnabled(searchRequestExternalProvider))
-            {
-                errorMessage = Constants.ResponseMessages.ExternalProviderForRequestNotSpecified;
-            }
-            if (!string.IsNullOrWhiteSpace(errorMessage))
-            {
-                _logger?.Log(logLevel, errorMessage);
-                return false;
-            }
-
-            return true;
-        }
-
+        /// <inheritdoc />
         public void AddProvider(IExternalProvider provider)
         {
-            if (IsEmptyProvidersList())
-                _externalProviders = new List<IExternalProvider>();
-            if (!_externalProviders.Contains(provider))
+            if (provider == null)
             {
-                if (_loggerFactory != null)
-                    provider.WithLogger(_loggerFactory);
-                _externalProviders.Add(provider);
+                throw new ArgumentNullException(nameof(provider));
             }
-            else
-                _logger?.LogWarning($"External provider {provider} already added");
+            if (_loggerFactory != null)
+                provider.WithLogger(_loggerFactory);
+            _providerService.AddProvider(provider);
         }
 
+        /// <inheritdoc />
         public void RemoveProvider(ExternalProviderType providerType)
         {
-            if (providerType.IsNoneProviderType() || IsEmptyProvidersList())
+            if (providerType.IsNoneProviderType())
                 return;
 
-            _externalProviders.RemoveAll(x => x.Options.ExternalProviderType == providerType);
+            _providerService.RemoveProvider(providerType);
         }
 
-        public void Enable()
-        {
-            if (IsEmptyProvidersList())
-                return;
+        /// <inheritdoc />
+        public void Enable() => _providerService.EnableAllProviders();
 
-            foreach (var provider in _externalProviders)
-                provider.Enable();
-        }
+        /// <inheritdoc />
+        public void Disable() => _providerService.DisableAllProviders();
 
-        public void Disable()
-        {
-            if (IsEmptyProvidersList())
-                return;
-
-            foreach (var provider in _externalProviders)
-                provider.Disable();
-        }
-
-        public void WithLogger(ILoggerFactory loggerFactory)
-        {
-            _loggerFactory = loggerFactory;
-            _logger = loggerFactory.CreateLogger<LyricsScraperClient>();
-
-            if (IsEmptyProvidersList())
-                return;
-
-            foreach (var provider in _externalProviders)
-                provider.WithLogger(loggerFactory);
-        }
-
-        private bool IsEmptyProvidersList() => _externalProviders == null || !_externalProviders.Any();
-
-        private bool IsProviderAvailable(ExternalProviderType providerType)
-            => !providerType.IsNoneProviderType()
-                && !IsEmptyProvidersList()
-                && _externalProviders.Any(p => p.Options.ExternalProviderType == providerType);
-
-        private bool IsProviderEnabled(ExternalProviderType providerType)
-            => !providerType.IsNoneProviderType()
-                && IsProviderAvailable(providerType)
-                && this[providerType].IsEnabled;
+        /// <inheritdoc />
+        public void WithLogger(ILoggerFactory loggerFactory) => _providerService.WithLogger(loggerFactory);
     }
 }

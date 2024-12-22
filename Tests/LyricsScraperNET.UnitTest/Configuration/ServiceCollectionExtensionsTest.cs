@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using Xunit;
 
 namespace LyricsScraperNET.UnitTest.Configuration
@@ -29,6 +30,7 @@ namespace LyricsScraperNET.UnitTest.Configuration
             // Arrange
             var serviceCollection = new ServiceCollection();
             var configuration = BuildConfigurationFromFile();
+            CancellationToken cancellationToken = CancellationToken.None;
 
             // Act
             serviceCollection.AddLyricScraperClientService(configuration);
@@ -40,7 +42,7 @@ namespace LyricsScraperNET.UnitTest.Configuration
                     ValidateScopes = true
                 }).CreateScope().ServiceProvider;
             var service = serviceProvider.GetService<ILyricsScraperClient>();
-            var searchResult = service.SearchLyric(new ArtistAndSongSearchRequest(null, null));
+            var searchResult = service.SearchLyric(new ArtistAndSongSearchRequest(null, null), cancellationToken);
 
             // Assert
             Assert.NotNull(service);

@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace LyricsScraperNET.Providers.LyricFind
@@ -41,7 +42,8 @@ namespace LyricsScraperNET.Providers.LyricFind
             _uriConverter = new LyricFindUriConverter();
         }
 
-        public LyricFindProvider(ILogger<LyricFindProvider> logger, LyricFindOptions options) : this()
+        public LyricFindProvider(ILogger<LyricFindProvider> logger, LyricFindOptions options)
+            : this()
         {
             _logger = logger;
             Ensure.ArgumentNotNull(options, nameof(options));
@@ -72,39 +74,33 @@ namespace LyricsScraperNET.Providers.LyricFind
 
         #region Sync
 
-        protected override SearchResult SearchLyric(string artist, string song)
+        protected override SearchResult SearchLyric(string artist, string song, CancellationToken cancellationToken = default)
         {
-            return SearchLyric(_uriConverter.GetLyricUri(artist, song));
+            return SearchLyric(_uriConverter.GetLyricUri(artist, song), cancellationToken);
         }
 
-        protected override SearchResult SearchLyric(Uri uri)
+        protected override SearchResult SearchLyric(Uri uri, CancellationToken cancellationToken = default)
         {
-            if (WebClient == null || Parser == null)
-            {
-                _logger?.LogWarning($"LyricFind. Please set up WebClient and Parser first");
-                return new SearchResult(Models.ExternalProviderType.LyricFind);
-            }
-            var text = WebClient.Load(uri);
-            return PostProcessLyric(uri, text);
+            return SearchLyricAsync(uri, cancellationToken).GetAwaiter().GetResult();
         }
 
         #endregion
 
         #region Async
 
-        protected override async Task<SearchResult> SearchLyricAsync(string artist, string song)
+        protected override async Task<SearchResult> SearchLyricAsync(string artist, string song, CancellationToken cancellationToken = default)
         {
-            return await SearchLyricAsync(_uriConverter.GetLyricUri(artist, song));
+            return await SearchLyricAsync(_uriConverter.GetLyricUri(artist, song), cancellationToken);
         }
 
-        protected override async Task<SearchResult> SearchLyricAsync(Uri uri)
+        protected override async Task<SearchResult> SearchLyricAsync(Uri uri, CancellationToken cancellationToken = default)
         {
             if (WebClient == null || Parser == null)
             {
                 _logger?.LogWarning($"LyricFind. Please set up WebClient and Parser first");
                 return new SearchResult(Models.ExternalProviderType.LyricFind);
             }
-            var text = await WebClient.LoadAsync(uri);
+            var text = await WebClient.LoadAsync(uri, cancellationToken);
             return PostProcessLyric(uri, text);
         }
 
@@ -169,7 +165,7 @@ namespace LyricsScraperNET.Providers.LyricFind
         private bool IsRegionRestrictedLyric(string text)
         {
             return TryReturnBooleanFieldValue(text, _viewableStart, "false")
-                && Regex.IsMatch(text, _lyricNotAvailablePattern); ;
+                && Regex.IsMatch(text, _lyricNotAvailablePattern);
         }
 
         /// <summary>
