@@ -25,19 +25,7 @@ namespace LyricsScraperNET.Network
 
         public string Load(Uri uri, CancellationToken cancellationToken = default)
         {
-            HtmlDocument document;
-            try
-            {
-                document = _htmlWeb.Load(uri.ToString());
-            }
-            catch (Exception ex)
-            {
-                _logger?.LogError($"Error loading document for uri: {uri}. Exception: {ex}");
-                return string.Empty;
-            }
-
-            CheckDocument(document, uri);
-            return document?.ParsedText;
+            return LoadAsync(uri, cancellationToken).GetAwaiter().GetResult();
         }
 
         public async Task<string> LoadAsync(Uri uri, CancellationToken cancellationToken = default)
