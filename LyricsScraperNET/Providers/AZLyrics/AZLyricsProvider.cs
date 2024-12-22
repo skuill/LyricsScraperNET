@@ -28,7 +28,8 @@ namespace LyricsScraperNET.Providers.AZLyrics
             _uriConverter = new AZLyricsUriConverter();
         }
 
-        public AZLyricsProvider(ILogger<AZLyricsProvider> logger, AZLyricsOptions options) : this()
+        public AZLyricsProvider(ILogger<AZLyricsProvider> logger, AZLyricsOptions options) 
+            : this()
         {
             _logger = logger;
             Ensure.ArgumentNotNull(options, nameof(options));
@@ -61,25 +62,12 @@ namespace LyricsScraperNET.Providers.AZLyrics
 
         protected override SearchResult SearchLyric(string artist, string song, CancellationToken cancellationToken = default)
         {
-            cancellationToken.ThrowIfCancellationRequested(); // Ensure cancellation is handled early
-            return SearchLyric(_uriConverter.GetLyricUri(artist, song), cancellationToken);
+            return SearchLyricAsync(artist, song, cancellationToken).GetAwaiter().GetResult();
         }
 
         protected override SearchResult SearchLyric(Uri uri, CancellationToken cancellationToken = default)
         {
-            if (WebClient == null || Parser == null)
-            {
-                _logger?.LogWarning($"AZLyrics. Please set up WebClient and Parser first");
-                return new SearchResult(Models.ExternalProviderType.AZLyrics);
-            }
-
-            cancellationToken.ThrowIfCancellationRequested();
-
-            var text = WebClient.Load(uri, cancellationToken);
-
-            cancellationToken.ThrowIfCancellationRequested();
-
-            return PostProcessLyric(uri, text);
+            return SearchLyricAsync(uri, cancellationToken).GetAwaiter().GetResult();
         }
 
         #endregion

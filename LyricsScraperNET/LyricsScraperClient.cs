@@ -25,8 +25,10 @@ namespace LyricsScraperNET
         private IRequestValidator _requestValidator;
         private readonly ILyricScraperClientConfig _lyricScraperClientConfig;
 
+        /// <inheritdoc />
         public bool IsEnabled => _providerService.AnyEnabled();
 
+        /// <inheritdoc />
         public IExternalProvider this[ExternalProviderType providerType]
         {
             get => _providerService[providerType];
@@ -39,7 +41,8 @@ namespace LyricsScraperNET
         }
 
         public LyricsScraperClient(ILyricScraperClientConfig lyricScraperClientConfig,
-            IEnumerable<IExternalProvider> externalProviders) : this()
+            IEnumerable<IExternalProvider> externalProviders)
+            : this()
         {
             Ensure.ArgumentNotNull(lyricScraperClientConfig, nameof(lyricScraperClientConfig));
             _lyricScraperClientConfig = lyricScraperClientConfig;
@@ -59,6 +62,7 @@ namespace LyricsScraperNET
             _logger = logger;
         }
 
+        /// <inheritdoc />
         public SearchResult SearchLyric(SearchRequest searchRequest, CancellationToken cancellationToken = default)
         {
             try
@@ -75,6 +79,7 @@ namespace LyricsScraperNET
             }
         }
 
+        /// <inheritdoc />
         public Task<SearchResult> SearchLyricAsync(SearchRequest searchRequest, CancellationToken cancellationToken = default)
             => SearchLyricInternal(searchRequest,
                 (provider, ct) => provider.SearchLyricAsync(searchRequest, ct),
@@ -144,6 +149,7 @@ namespace LyricsScraperNET
             return true;
         }
 
+        /// <inheritdoc />
         public void AddProvider(IExternalProvider provider)
         {
             if (provider == null)
@@ -155,6 +161,7 @@ namespace LyricsScraperNET
             _providerService.AddProvider(provider);
         }
 
+        /// <inheritdoc />
         public void RemoveProvider(ExternalProviderType providerType)
         {
             if (providerType.IsNoneProviderType())
@@ -163,10 +170,13 @@ namespace LyricsScraperNET
             _providerService.RemoveProvider(providerType);
         }
 
+        /// <inheritdoc />
         public void Enable() => _providerService.EnableAllProviders();
 
+        /// <inheritdoc />
         public void Disable() => _providerService.DisableAllProviders();
 
+        /// <inheritdoc />
         public void WithLogger(ILoggerFactory loggerFactory) => _providerService.WithLogger(loggerFactory);
     }
 }

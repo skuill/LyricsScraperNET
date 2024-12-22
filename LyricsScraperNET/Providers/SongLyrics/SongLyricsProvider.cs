@@ -43,7 +43,8 @@ namespace LyricsScraperNET.Providers.SongLyrics
             _uriConverter = new SongLyricsUriConverter();
         }
 
-        public SongLyricsProvider(ILogger<SongLyricsProvider> logger, SongLyricsOptions options) : this()
+        public SongLyricsProvider(ILogger<SongLyricsProvider> logger, SongLyricsOptions options)
+            : this()
         {
             _logger = logger;
             Ensure.ArgumentNotNull(options, nameof(options));
@@ -81,13 +82,7 @@ namespace LyricsScraperNET.Providers.SongLyrics
 
         protected override SearchResult SearchLyric(Uri uri, CancellationToken cancellationToken = default)
         {
-            if (WebClient == null)
-            {
-                _logger?.LogWarning($"SongLyrics. Please set up WebClient first");
-                return new SearchResult(Models.ExternalProviderType.SongLyrics);
-            }
-            var htmlPageBody = WebClient.Load(uri, cancellationToken);
-            return GetParsedLyricFromHtmlPageBody(uri, htmlPageBody);
+            return SearchLyricAsync(uri, cancellationToken).GetAwaiter().GetResult();
         }
 
         #endregion

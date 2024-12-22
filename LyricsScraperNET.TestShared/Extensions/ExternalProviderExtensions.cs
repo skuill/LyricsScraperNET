@@ -13,6 +13,7 @@ namespace LyricsScraperNET.TestShared.Extensions
         {
             var mockWebClient = A.Fake<IWebClient>();
             A.CallTo(() => mockWebClient.Load(A<Uri>._, A<CancellationToken>._)).Returns(testData.LyricPageData);
+            A.CallTo(() => mockWebClient.LoadAsync(A<Uri>._, A<CancellationToken>._)).Returns(testData.LyricPageData);
 
             externalProvider.WithWebClient(mockWebClient);
             return externalProvider;

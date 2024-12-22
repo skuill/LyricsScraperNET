@@ -41,7 +41,8 @@ namespace LyricsScraperNET.Providers.Genius
             _uriConverter = new GeniusUriConverter();
         }
 
-        public GeniusProvider(ILogger<GeniusProvider> logger, GeniusOptions options) : this()
+        public GeniusProvider(ILogger<GeniusProvider> logger, GeniusOptions options) 
+            : this()
         {
             _logger = logger;
             Ensure.ArgumentNotNull(options, nameof(options));
@@ -74,14 +75,7 @@ namespace LyricsScraperNET.Providers.Genius
 
         protected override SearchResult SearchLyric(Uri uri, CancellationToken cancellationToken = default)
         {
-            var htmlPageBody = WebClient.Load(uri, cancellationToken);
-
-            cancellationToken.ThrowIfCancellationRequested();
-
-            var lyricResult = GetParsedLyricFromHtmlPageBody(htmlPageBody, out var instrumental);
-
-            return new SearchResult(lyricResult, Models.ExternalProviderType.Genius)
-                .AddInstrumental(instrumental);
+            return SearchLyricAsync(uri, cancellationToken).GetAwaiter().GetResult();
         }
 
         protected override SearchResult SearchLyric(string artist, string song, CancellationToken cancellationToken = default)

@@ -42,7 +42,8 @@ namespace LyricsScraperNET.Providers.LyricFind
             _uriConverter = new LyricFindUriConverter();
         }
 
-        public LyricFindProvider(ILogger<LyricFindProvider> logger, LyricFindOptions options) : this()
+        public LyricFindProvider(ILogger<LyricFindProvider> logger, LyricFindOptions options) 
+            : this()
         {
             _logger = logger;
             Ensure.ArgumentNotNull(options, nameof(options));
@@ -80,13 +81,7 @@ namespace LyricsScraperNET.Providers.LyricFind
 
         protected override SearchResult SearchLyric(Uri uri, CancellationToken cancellationToken = default)
         {
-            if (WebClient == null || Parser == null)
-            {
-                _logger?.LogWarning($"LyricFind. Please set up WebClient and Parser first");
-                return new SearchResult(Models.ExternalProviderType.LyricFind);
-            }
-            var text = WebClient.Load(uri, cancellationToken);
-            return PostProcessLyric(uri, text);
+            return SearchLyricAsync(uri, cancellationToken).GetAwaiter().GetResult();
         }
 
         #endregion

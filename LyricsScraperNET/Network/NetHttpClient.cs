@@ -36,15 +36,18 @@ namespace LyricsScraperNET.Network
 
         public async Task<string> LoadAsync(Uri uri, CancellationToken cancellationToken = default)
         {
-            string htmlPageBody;
+            var request = new HttpRequestMessage(HttpMethod.Get, uri);
+            HttpResponseMessage response;
 
             try
             {
-#if NETSTANDARD
-                htmlPageBody = await _httpClient.GetStringAsync(uri);
-#else
-                htmlPageBody = await _httpClient.GetStringAsync(uri, cancellationToken);
-#endif
+                response = await _httpClient.SendAsync(request, cancellationToken);
+                response.EnsureSuccessStatusCode();
+                //#if NETSTANDARD
+                //                htmlPageBody = await _httpClient.GetStringAsync(uri);
+                //#else
+                //                htmlPageBody = await _httpClient.GetStringAsync(uri, cancellationToken);
+                //#endif
             }
             catch (HttpRequestException ex)
             {
@@ -62,9 +65,10 @@ namespace LyricsScraperNET.Network
                 return string.Empty;
             }
 
-            CheckResult(htmlPageBody, uri);
+            var htmlContent = await response.Content.ReadAsStringAsync();
+            CheckResult(htmlContent, uri);
 
-            return htmlPageBody;
+            return htmlContent;
         }
 
         private void CheckResult(string? result, Uri uri)

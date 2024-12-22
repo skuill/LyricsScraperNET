@@ -17,6 +17,7 @@ namespace LyricsScraperNET.Providers.Abstract
 
         public virtual bool IsEnabled => Options != null && Options.Enabled;
 
+        /// <inheritdoc />
         public int SearchPriority => Options != null ? Options.SearchPriority : 0;
 
         #region Sync

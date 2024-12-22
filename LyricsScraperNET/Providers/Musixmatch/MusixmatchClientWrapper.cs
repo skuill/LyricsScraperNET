@@ -19,7 +19,7 @@ namespace LyricsScraperNET.Providers.Musixmatch
         {
         }
 
-        public MusixmatchClientWrapper(IMusixmatchTokenCache tokenCache)
+        public MusixmatchClientWrapper(IMusixmatchTokenCache tokenCache) : this()
         {
             _tokenCache = tokenCache;
         }
@@ -32,27 +32,7 @@ namespace LyricsScraperNET.Providers.Musixmatch
 
         public SearchResult SearchLyric(string artist, string song, CancellationToken cancellationToken = default, bool regenerateToken = false)
         {
-            var client = GetMusixmatchClient(regenerateToken);
-            var trackSearchParameters = GetTrackSearchParameters(artist, song);
-
-            var trackId = client.SongSearch(trackSearchParameters)?.FirstOrDefault()?.TrackId;
-            if (trackId != null)
-            {
-                Lyrics lyrics = client.GetTrackLyrics(trackId.Value);
-
-                // lyrics.LyricsBody is null when the track is instrumental
-                if (lyrics.Instrumental != 1)
-                    return new SearchResult(lyrics.LyricsBody, Models.ExternalProviderType.Musixmatch);
-
-                // Instrumental music without lyric
-                return new SearchResult(Models.ExternalProviderType.Musixmatch)
-                    .AddInstrumental(true);
-            }
-            else
-            {
-                _logger?.LogWarning($"Musixmatch. Can't find any information about artist {artist} and song {song}");
-                return new SearchResult(Models.ExternalProviderType.Musixmatch);
-            }
+            return SearchLyricAsync(artist, song, cancellationToken).GetAwaiter().GetResult();
         }
 
         public async Task<SearchResult> SearchLyricAsync(string artist, string song, CancellationToken cancellationToken = default, bool regenerateToken = false)
