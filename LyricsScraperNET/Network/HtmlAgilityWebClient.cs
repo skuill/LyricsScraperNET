@@ -7,6 +7,11 @@ using System.Threading.Tasks;
 
 namespace LyricsScraperNET.Network
 {
+    /// <summary>
+    /// Provides an implementation of the <see cref="IWebClient"/> interface using HtmlAgilityPack 
+    /// to load and parse HTML documents from the web. 
+    /// Includes logging for errors and validation of loaded documents.
+    /// </summary>
     internal sealed class HtmlAgilityWebClient : IWebClient
     {
         private readonly ILogger<HtmlAgilityWebClient> _logger;
@@ -23,11 +28,13 @@ namespace LyricsScraperNET.Network
             _logger = logger;
         }
 
+        /// <inheritdoc />
         public string Load(Uri uri, CancellationToken cancellationToken = default)
         {
             return LoadAsync(uri, cancellationToken).GetAwaiter().GetResult();
         }
 
+        /// <inheritdoc />
         public async Task<string> LoadAsync(Uri uri, CancellationToken cancellationToken = default)
         {
             HtmlDocument document;

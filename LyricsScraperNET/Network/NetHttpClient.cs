@@ -7,9 +7,20 @@ using System.Threading.Tasks;
 
 namespace LyricsScraperNET.Network
 {
+    /// <summary>
+    /// Provides an implementation of the <see cref="IWebClient"/> interface using <see cref="HttpClient"/> 
+    /// to perform HTTP requests for loading web resources.
+    /// This class is designed to handle network operations with proper cancellation support and logging.
+    /// </summary>
     internal sealed class NetHttpClient : IWebClient
     {
         private readonly ILogger<NetHttpClient> _logger;
+
+        // HttpClient is declared as static to prevent frequent creation and disposal of instances, 
+        // which can lead to socket exhaustion due to delays in releasing resources.
+        // Using a single instance ensures efficient connection management 
+        // and minimizes overhead for establishing new HTTP connections.
+        // More details: https://learn.microsoft.com/en-us/dotnet/fundamentals/networking/http/httpclient-guidelines#static-or-instance
         private static HttpClient _httpClient = new HttpClient();
 
         public NetHttpClient()
@@ -21,6 +32,7 @@ namespace LyricsScraperNET.Network
             _logger = logger;
         }
 
+        /// <inheritdoc />
         public string Load(Uri uri, CancellationToken cancellationToken = default)
         {
             try
@@ -34,6 +46,7 @@ namespace LyricsScraperNET.Network
             }
         }
 
+        /// <inheritdoc />
         public async Task<string> LoadAsync(Uri uri, CancellationToken cancellationToken = default)
         {
             var request = new HttpRequestMessage(HttpMethod.Get, uri);
