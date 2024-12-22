@@ -28,7 +28,7 @@ namespace LyricsScraperNET.Providers.AZLyrics
             _uriConverter = new AZLyricsUriConverter();
         }
 
-        public AZLyricsProvider(ILogger<AZLyricsProvider> logger, AZLyricsOptions options) 
+        public AZLyricsProvider(ILogger<AZLyricsProvider> logger, AZLyricsOptions options)
             : this()
         {
             _logger = logger;

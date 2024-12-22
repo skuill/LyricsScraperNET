@@ -42,7 +42,7 @@ namespace LyricsScraperNET.Providers.LyricFind
             _uriConverter = new LyricFindUriConverter();
         }
 
-        public LyricFindProvider(ILogger<LyricFindProvider> logger, LyricFindOptions options) 
+        public LyricFindProvider(ILogger<LyricFindProvider> logger, LyricFindOptions options)
             : this()
         {
             _logger = logger;

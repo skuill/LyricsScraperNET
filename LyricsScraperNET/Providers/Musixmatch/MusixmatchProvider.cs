@@ -29,7 +29,7 @@ namespace LyricsScraperNET.Providers.Musixmatch
         }
 
         public MusixmatchProvider(ILogger<MusixmatchProvider> logger, MusixmatchOptions options, IMusixmatchClientWrapper clientWrapper)
-            :this()
+            : this()
         {
             _logger = logger;
             Ensure.ArgumentNotNull(options, nameof(options));

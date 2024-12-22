@@ -41,7 +41,7 @@ namespace LyricsScraperNET.Providers.Genius
             _uriConverter = new GeniusUriConverter();
         }
 
-        public GeniusProvider(ILogger<GeniusProvider> logger, GeniusOptions options) 
+        public GeniusProvider(ILogger<GeniusProvider> logger, GeniusOptions options)
             : this()
         {
             _logger = logger;
