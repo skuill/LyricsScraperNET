@@ -16,6 +16,14 @@ namespace LyricsScraperNET
         /// </summary>
         bool IsEnabled { get; }
 
+        /// <summary>
+        /// Determines whether to use parallel search instead of sequential search. 
+        /// If explicitly set, the value from the local variable is used. 
+        /// Otherwise, it falls back to the configuration setting. 
+        /// By default, sequential search is used if not specified.
+        /// </summary>
+        bool UseParallelSearch { get; set; }
+
         IExternalProvider this[ExternalProviderType providerType] { get; }
 
         /// <summary>

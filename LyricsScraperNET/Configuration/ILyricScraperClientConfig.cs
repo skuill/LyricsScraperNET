@@ -9,6 +9,12 @@ namespace LyricsScraperNET.Configuration
         /// </summary>
         bool IsEnabled { get; }
 
+        /// <summary>
+        /// Enable parallel search instead of sequential, 
+        /// searching across all available external providers.
+        /// </summary>
+        bool UseParallelSearch { get; }
+
         IExternalProviderOptions AZLyricsOptions { get; }
 
         IExternalProviderOptions GeniusOptions { get; }

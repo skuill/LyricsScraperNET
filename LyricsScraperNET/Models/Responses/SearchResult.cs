@@ -62,5 +62,14 @@ namespace LyricsScraperNET.Models.Responses
         /// Returns true if the field <seealso cref="LyricText"/> is empty.
         /// </summary>
         public bool IsEmpty() => string.IsNullOrWhiteSpace(LyricText);
+
+        /// <summary>
+        /// Represents an empty search result.
+        /// </summary>
+        public static SearchResult Empty { get; } = new SearchResult
+        {
+            ResponseStatusCode = ResponseStatusCode.NoDataFound,
+            Instrumental = false
+        };
     }
 }

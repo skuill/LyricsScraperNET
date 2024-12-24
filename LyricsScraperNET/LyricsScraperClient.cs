@@ -25,6 +25,14 @@ namespace LyricsScraperNET
         private IRequestValidator _requestValidator;
         private readonly ILyricScraperClientConfig _lyricScraperClientConfig;
 
+        private bool? _useParallelSearch;
+        /// <inheritdoc />
+        public bool UseParallelSearch
+        {
+            get => _useParallelSearch ?? _lyricScraperClientConfig?.UseParallelSearch ?? false;
+            set => _useParallelSearch = value;
+        }
+
         /// <inheritdoc />
         public bool IsEnabled => _providerService.AnyEnabled();
 
@@ -93,31 +101,67 @@ namespace LyricsScraperNET
             if (!ValidSearchRequestAndConfig(searchRequest, out var searchResult))
                 return searchResult;
 
-            // Create a linked cancellation token to propagate cancellation
-            using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-
-            foreach (var provider in _providerService.GetAvailableProviders(searchRequest))
+            if (UseParallelSearch)
             {
-                // Check for cancellation before each external provider call
-                cancellationToken.ThrowIfCancellationRequested();
+                var tasks = new List<Task<SearchResult>>();
 
-                try
+                // Create a linked cancellation token to propagate cancellation
+                using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+
+                foreach (var provider in _providerService.GetAvailableProviders(searchRequest))
                 {
-                    // Await the asynchronous search method with the linked cancellation token
-                    var result = await searchAction(provider, linkedCts.Token);
+                    tasks.Add(Task.Run(async () =>
+                    {
+                        try
+                        {
+                            // Await the asynchronous search method with the linked cancellation token
+                            return await searchAction(provider, linkedCts.Token);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger?.LogError(ex, $"Error in provider {provider.GetType().Name}");
+                            return SearchResult.Empty;
+                        }
+                    }, linkedCts.Token));
+                }
+
+                while (tasks.Count > 0)
+                {
+                    var completedTask = await Task.WhenAny(tasks);
+                    tasks.Remove(completedTask);
+
+                    var result = await completedTask;
                     if (!result.IsEmpty() || result.Instrumental)
-                        return result; // Return the result if it is valid
+                    {
+                        linkedCts.Cancel(); // Stop other search tasks
+                        return result;
+                    }
                 }
-                catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            }
+            else
+            {
+                foreach (var provider in _providerService.GetAvailableProviders(searchRequest))
                 {
-                    // Log the cancellation and rethrow the exception
-                    _logger?.LogInformation("Search operation was canceled.");
-                    throw;
-                }
-                catch (Exception ex)
-                {
-                    // Log any unexpected errors to prevent the method from crashing
-                    _logger?.LogError(ex, "Error during provider search.");
+                    // Check for cancellation before each external provider call
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    try
+                    {
+                        var result = await searchAction(provider, cancellationToken);
+                        if (!result.IsEmpty() || result.Instrumental)
+                            return result; // Return the result if it is valid
+                    }
+                    catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+                    {
+                        // Log the cancellation and rethrow the exception
+                        _logger?.LogInformation("Search operation was canceled.");
+                        throw;
+                    }
+                    catch (Exception ex)
+                    {
+                        // Log any unexpected errors to prevent the method from crashing
+                        _logger?.LogError(ex, "Error during provider search.");
+                    }
                 }
             }
 
