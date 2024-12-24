@@ -29,6 +29,11 @@ The library currently supports the following providers:
 - [MusixMatch](https://www.musixmatch.com/)
 - [SongLyrics](https://www.songlyrics.com/)
 - [LyricFind](https://www.lyricfind.com/)
+- [LyricsFreak](https://www.lyricsfreak.com/) (**Coming soon** 🚧)
+- [kpoplyrics](https://www.kpoplyrics.net/) (**Coming soon** 🚧)
+- [Letras.mus.br](https://www.letras.mus.br/) (**Coming soon** 🚧)
+- [darklyrics](http://www.darklyrics.com/) (**Coming soon** 🚧)
+- [vagalume](https://www.vagalume.com.br/tina-turner/the-best-traducao.html) (**Coming soon** 🚧)
 - [Lyrics](https://www.lyrics.com/) (**Coming soon** 🚧)
 
 ---
