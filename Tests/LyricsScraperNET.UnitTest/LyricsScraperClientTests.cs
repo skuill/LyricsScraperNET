@@ -1,10 +1,12 @@
 ﻿using FakeItEasy;
 using LyricsScraperNET.Common;
+using LyricsScraperNET.Configuration;
 using LyricsScraperNET.Models.Requests;
 using LyricsScraperNET.Models.Responses;
 using LyricsScraperNET.Providers.Abstract;
 using LyricsScraperNET.Providers.Models;
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -345,6 +347,320 @@ namespace LyricsScraperNET.UnitTest
             Assert.NotNull(result);
         }
 
+        #region UseParallelSearch
+
+        [Fact]
+        public void UseParallelSearchEnabled_ShouldUseValueFromConfig()
+        {
+            // Arrange
+            var configuration = new LyricScraperClientConfig { UseParallelSearch = true };
+            var mockedProviders = new[] { GetExternalProviderMock(ExternalProviderType.None) };
+            var client = new LyricsScraperClient(configuration, mockedProviders);
+
+            // Act
+            var result = client.UseParallelSearch;
+
+            // Arrange
+            Assert.True(result);
+        }
+
+        [Theory]
+        [InlineData(true, true, true)]
+        [InlineData(true, false, false)]
+        [InlineData(false, true, true)]
+        [InlineData(false, false, false)]
+        public void UseParallelSearchEnabled_ShouldUseLocalVariable_WhenExplicitlySet(
+            bool configValue,
+            bool variableValue,
+            bool expectedResult)
+        {
+            // Arrange
+            var configuration = new LyricScraperClientConfig { UseParallelSearch = configValue };
+            var mockedProviders = new[] { GetExternalProviderMock(ExternalProviderType.None) };
+            var client = new LyricsScraperClient(configuration, mockedProviders);
+            client.UseParallelSearch = variableValue;
+
+            // Act
+            var actualResult = client.UseParallelSearch;
+
+            // Arrange
+            Assert.Equal(expectedResult, actualResult);
+        }
+
+        [Fact]
+        public async Task SearchLyricAsync_WithUseParallelSearchEnabled_ShouldReturnFirstResultAndCancelOthersInParallelMode()
+        {
+            // Arrange
+            var searchRequest = new ArtistAndSongSearchRequest("some artist", "some song");
+
+            // Create a fast provider that will return a result immediately.
+            var fastResult = new SearchResult("Fast result", ExternalProviderType.None);
+
+            var fastProvider = A.Fake<IExternalProvider>();
+            A.CallTo(() => fastProvider.SearchLyricAsync(A<SearchRequest>._, A<CancellationToken>._))
+                .Returns(fastResult);
+            A.CallTo(() => fastProvider.IsEnabled).Returns(true);
+
+            // Create slow providers that simulate delayed response.
+            var slowProvider1 = A.Fake<IExternalProvider>();
+            A.CallTo(() => slowProvider1.SearchLyricAsync(A<SearchRequest>._, A<CancellationToken>._))
+                .ReturnsLazily(async (SearchRequest r, CancellationToken ct) =>
+                {
+                    await Task.Delay(10000, ct); // Simulate a long delay.
+                    return SearchResult.Empty;
+                });
+            A.CallTo(() => slowProvider1.IsEnabled).Returns(true);
+
+            var slowProvider2 = A.Fake<IExternalProvider>();
+            A.CallTo(() => slowProvider2.SearchLyricAsync(A<SearchRequest>._, A<CancellationToken>._))
+                .ReturnsLazily(async (SearchRequest r, CancellationToken ct) =>
+                {
+                    await Task.Delay(10000, ct); // Simulate a long delay.
+                    return SearchResult.Empty;
+                });
+            A.CallTo(() => slowProvider2.IsEnabled).Returns(true);
+
+            // Add all providers to a list.
+            var providers = new List<IExternalProvider> { slowProvider1, slowProvider2, fastProvider };
+
+            // Mock the configuration to enable parallel search.
+            var config = A.Fake<ILyricScraperClientConfig>();
+            A.CallTo(() => config.UseParallelSearch).Returns(true);
+
+            // Create the client with the mocked dependencies.
+            var client = new LyricsScraperClient(config, providers);
+
+            // Act
+            var result = await client.SearchLyricAsync(searchRequest);
+
+            // Assert
+            // Verify the result matches the fast provider's response.
+            Assert.Equal("Fast result", result.LyricText);
+
+            // Ensure all providers were called exactly once.
+            A.CallTo(() => fastProvider.SearchLyricAsync(A<SearchRequest>._, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
+            A.CallTo(() => slowProvider1.SearchLyricAsync(A<SearchRequest>._, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
+            A.CallTo(() => slowProvider2.SearchLyricAsync(A<SearchRequest>._, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
+
+            // Ensure cancellation for slow providers (via cancellation token).
+            A.CallTo(() => slowProvider1.SearchLyricAsync(A<SearchRequest>._, A<CancellationToken>.That.Matches(ct => ct.IsCancellationRequested)))
+                .MustHaveHappened();
+            A.CallTo(() => slowProvider2.SearchLyricAsync(A<SearchRequest>._, A<CancellationToken>.That.Matches(ct => ct.IsCancellationRequested)))
+                .MustHaveHappened();
+
+            // Verify that slow providers are not called again after cancellation
+            A.CallTo(() => slowProvider1.SearchLyricAsync(A<SearchRequest>._, A<CancellationToken>._))
+                .MustHaveHappenedOnceExactly();
+
+            A.CallTo(() => slowProvider2.SearchLyricAsync(A<SearchRequest>._, A<CancellationToken>._))
+                .MustHaveHappenedOnceExactly();
+        }
+
+        [Fact]
+        public async Task SearchLyricAsync_WithUseParallelSearchEnabled_ShouldReturnResultFromSlowProvider_WhenFastProviderFails()
+        {
+            // Arrange
+            var searchRequest = new ArtistAndSongSearchRequest("some artist", "some song");
+
+            // Create a fast provider that will fail (return empty result).
+            var fastResult = SearchResult.Empty;
+            var fastProvider = A.Fake<IExternalProvider>();
+            A.CallTo(() => fastProvider.SearchLyricAsync(A<SearchRequest>._, A<CancellationToken>._))
+                .Returns(fastResult);
+            A.CallTo(() => fastProvider.IsEnabled).Returns(true);
+
+            // Create slow providers that simulate delayed response but return valid results.
+            var slowResult = new SearchResult("Slow result", ExternalProviderType.None);
+
+            var slowProvider1 = A.Fake<IExternalProvider>();
+            A.CallTo(() => slowProvider1.SearchLyricAsync(A<SearchRequest>._, A<CancellationToken>._))
+                .ReturnsLazily(async (SearchRequest r, CancellationToken ct) =>
+                {
+                    await Task.Delay(2000, ct); // Simulate a long delay.
+                    return slowResult;
+                });
+            A.CallTo(() => slowProvider1.IsEnabled).Returns(true);
+
+            // Add all providers to a list.
+            var providers = new List<IExternalProvider> { slowProvider1, fastProvider };
+
+            // Mock the configuration to enable parallel search.
+            var config = A.Fake<ILyricScraperClientConfig>();
+            A.CallTo(() => config.UseParallelSearch).Returns(true);
+
+            // Create the client with the mocked dependencies.
+            var client = new LyricsScraperClient(config, providers);
+
+            // Act
+            var result = await client.SearchLyricAsync(searchRequest);
+
+            // Assert
+            Assert.Equal("Slow result", result.LyricText);
+
+            // Ensure all providers were called exactly once.
+            A.CallTo(() => fastProvider.SearchLyricAsync(A<SearchRequest>._, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
+            A.CallTo(() => slowProvider1.SearchLyricAsync(A<SearchRequest>._, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
+
+            // Ensure cancellation for slow providers.
+            A.CallTo(() => slowProvider1.SearchLyricAsync(A<SearchRequest>._, A<CancellationToken>.That.Matches(ct => ct.IsCancellationRequested)))
+                .MustHaveHappened();
+        }
+
+        [Fact]
+        public async Task SearchLyricAsync_WithUseParallelSearchEnabled_ShouldUseOnlyChildCancellationToken_WhenFastSearchIsExecuted()
+        {
+            // Arrange
+            var searchRequest = new ArtistAndSongSearchRequest("some artist", "some song");
+
+            // Create a fast provider that will return a result immediately.
+            var fastResult = new SearchResult("Fast result", ExternalProviderType.None);
+            var fastProvider = A.Fake<IExternalProvider>();
+            A.CallTo(() => fastProvider.SearchLyricAsync(A<SearchRequest>._, A<CancellationToken>._))
+                .Returns(fastResult);
+            A.CallTo(() => fastProvider.IsEnabled).Returns(true);
+
+            // Create slow providers that simulate delayed response but are not used because fast provider wins.
+            var slowProvider1 = A.Fake<IExternalProvider>();
+            A.CallTo(() => slowProvider1.SearchLyricAsync(A<SearchRequest>._, A<CancellationToken>._))
+                .ReturnsLazily(async (SearchRequest r, CancellationToken ct) =>
+                {
+                    await Task.Delay(10000, ct); // Simulate a long delay.
+                    return SearchResult.Empty;
+                });
+            A.CallTo(() => slowProvider1.IsEnabled).Returns(true);
+
+            // Add all providers to a list.
+            var providers = new List<IExternalProvider> { slowProvider1, fastProvider };
+
+            // Mock the configuration to enable parallel search.
+            var config = A.Fake<ILyricScraperClientConfig>();
+            A.CallTo(() => config.UseParallelSearch).Returns(true);
+
+            // Create the client with the mocked dependencies.
+            var client = new LyricsScraperClient(config, providers);
+
+            // Create a parent cancellation token and a child token for the search.
+            var parentCancellationTokenSource = new CancellationTokenSource();
+            var childCancellationToken = parentCancellationTokenSource.Token;
+
+            // Act
+            var result = await client.SearchLyricAsync(searchRequest, childCancellationToken);
+
+            // Assert
+            Assert.Equal("Fast result", result.LyricText);
+
+            // Ensure no cancellation occurred in the parent token.
+            Assert.False(parentCancellationTokenSource.Token.IsCancellationRequested);
+
+            // Ensure the fast provider was called once and slow providers were cancelled.
+            A.CallTo(() => fastProvider.SearchLyricAsync(A<SearchRequest>._, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
+            A.CallTo(() => slowProvider1.SearchLyricAsync(A<SearchRequest>._, A<CancellationToken>.That.Matches(ct => ct.IsCancellationRequested)))
+                .MustHaveHappened();
+        }
+
+        [Fact]
+        public async Task SearchLyricAsync_WithUseParallelSearchEnabled_ShouldReturnResultFromSlowProvider_WhenFastProviderThrowsException()
+        {
+            // Arrange
+            var searchRequest = new ArtistAndSongSearchRequest("some artist", "some song");
+
+            // Create a fast provider that throws an exception.
+            var fastProvider = A.Fake<IExternalProvider>();
+            A.CallTo(() => fastProvider.SearchLyricAsync(A<SearchRequest>._, A<CancellationToken>._))
+                .ThrowsAsync(new Exception("Fast provider failed"));
+            A.CallTo(() => fastProvider.IsEnabled).Returns(true);
+
+            // Create slow providers that simulate delayed response but return valid results.
+            var slowResult = new SearchResult("Slow result", ExternalProviderType.None);
+
+            var slowProvider1 = A.Fake<IExternalProvider>();
+            A.CallTo(() => slowProvider1.SearchLyricAsync(A<SearchRequest>._, A<CancellationToken>._))
+                .ReturnsLazily(async (SearchRequest r, CancellationToken ct) =>
+                {
+                    await Task.Delay(2000, ct); // Simulate a long delay.
+                    return slowResult;
+                });
+            A.CallTo(() => slowProvider1.IsEnabled).Returns(true);
+
+            // Add all providers to a list.
+            var providers = new List<IExternalProvider> { slowProvider1, fastProvider };
+
+            // Mock the configuration to enable parallel search.
+            var config = A.Fake<ILyricScraperClientConfig>();
+            A.CallTo(() => config.UseParallelSearch).Returns(true);
+
+            // Create the client with the mocked dependencies.
+            var client = new LyricsScraperClient(config, providers);
+
+            // Act
+            var result = await client.SearchLyricAsync(searchRequest);
+
+            // Assert
+            // Verify that the result comes from the slow provider.
+            Assert.Equal("Slow result", result.LyricText);
+
+            // Ensure that the fast provider threw an exception.
+            A.CallTo(() => fastProvider.SearchLyricAsync(A<SearchRequest>._, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
+
+            // Ensure that the slow provider was called exactly once.
+            A.CallTo(() => slowProvider1.SearchLyricAsync(A<SearchRequest>._, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
+        }
+
+
+        [Fact]
+        public async Task SearchLyricAsync_WithUseParallelSearchDisabled_ShouldReturnResultFromFastProvider_WhenSlowProviderThrowsException()
+        {
+            // Arrange
+            var searchRequest = new ArtistAndSongSearchRequest("some artist", "some song");
+
+            // Create a fast provider that throws an exception.
+            var fastProvider = A.Fake<IExternalProvider>();
+            A.CallTo(() => fastProvider.SearchLyricAsync(A<SearchRequest>._, A<CancellationToken>._))
+                .ThrowsAsync(new Exception("Fast provider failed"));
+            A.CallTo(() => fastProvider.IsEnabled).Returns(true);
+            A.CallTo(() => fastProvider.SearchPriority).Returns(1000);
+
+            // Create slow providers that simulate delayed response but return valid results.
+            var slowResult = new SearchResult("Slow result", ExternalProviderType.None);
+
+            var slowProvider1 = A.Fake<IExternalProvider>();
+            A.CallTo(() => slowProvider1.SearchLyricAsync(A<SearchRequest>._, A<CancellationToken>._))
+                .ReturnsLazily(async (SearchRequest r, CancellationToken ct) =>
+                {
+                    await Task.Delay(2000, ct); // Simulate a long delay.
+                    return slowResult;
+                });
+            A.CallTo(() => slowProvider1.IsEnabled).Returns(true);
+            A.CallTo(() => fastProvider.SearchPriority).Returns(1);
+
+            // Add all providers to a list.
+            var providers = new List<IExternalProvider> { slowProvider1, fastProvider };
+
+            // Mock the configuration to enable parallel search.
+            var config = A.Fake<ILyricScraperClientConfig>();
+            A.CallTo(() => config.UseParallelSearch).Returns(false);
+
+            // Create the client with the mocked dependencies.
+            var client = new LyricsScraperClient(config, providers);
+
+            // Act
+            var result = await client.SearchLyricAsync(searchRequest);
+
+            // Assert
+            // Verify that the result comes from the slow provider.
+            Assert.Equal("Slow result", result.LyricText);
+
+            // Ensure that the fast provider threw an exception.
+            A.CallTo(() => fastProvider.SearchLyricAsync(A<SearchRequest>._, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
+
+            // Ensure that the slow provider was called exactly once.
+            A.CallTo(() => slowProvider1.SearchLyricAsync(A<SearchRequest>._, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
+        }
+
+        #endregion UseParallelSearch
+
+        #region helpers
+
         private ExternalProviderType[] GetExternalProviderTypes()
         {
             return new[] { ExternalProviderType.AZLyrics, ExternalProviderType.SongLyrics };
@@ -396,5 +712,7 @@ namespace LyricsScraperNET.UnitTest
             A.CallTo(() => searchRequestMock.IsValid(out error)).Returns(true);
             return searchRequestMock;
         }
+
+        #endregion helpers
     }
 }

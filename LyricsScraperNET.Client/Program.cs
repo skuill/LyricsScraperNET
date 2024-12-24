@@ -23,7 +23,7 @@ class Program
         string artistToSearch = "Parkway Drive";
         string songToSearch = "Idols And Anchors";
 
-        //// The case when a song contains only an instrumental, without vocals.
+        //// Uncomment this block to test for instrumental songs (without vocals):
         //string artistToSearch = "Rush";
         //string songToSearch = "YYZ";
 
@@ -131,6 +131,9 @@ class Program
         //         .WithMusixmatch()
         //         .WithSongLyrics()
         //         .WithLyricFind();
+
+        //// To perform parallel searches across multiple external providers, enable the following option:
+        // lyricsScraperClient.UseParallelSearch = true;
 
         // To enable library logging, the LoggerFactory must be configured and passed to the client.
         var loggerFactory = LoggerFactory.Create(builder =>

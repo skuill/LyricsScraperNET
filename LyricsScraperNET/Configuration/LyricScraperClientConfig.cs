@@ -24,7 +24,7 @@ namespace LyricsScraperNET.Configuration
         public IExternalProviderOptions LyricFindOptions { get; set; } = new LyricFindOptions();
 
         /// <inheritdoc />
-        public bool UseParallelSearch { get; } = false;
+        public bool UseParallelSearch { get; set; } = false;
 
         /// <inheritdoc />
         public bool IsEnabled => AZLyricsOptions.Enabled

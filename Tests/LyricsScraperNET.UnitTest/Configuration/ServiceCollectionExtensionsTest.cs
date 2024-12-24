@@ -89,6 +89,7 @@ namespace LyricsScraperNET.UnitTest.Configuration
             // Assert
             Assert.NotNull(service);
             Assert.True(service.IsEnabled);
+            Assert.True(service.UseParallelSearch);
 
             foreach (var providerType in externalProviderTypes)
             {

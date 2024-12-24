@@ -14,5 +14,15 @@ namespace LyricsScraperNET.UnitTest.Configuration
             // Assert
             Assert.False(lyricScraperClientConfig.IsEnabled);
         }
+
+        [Fact]
+        public void LyricScraperClientConfig_UseParallelSearch_ReturnsFalseByDefault()
+        {
+            // Act
+            var lyricScraperClientConfig = new LyricScraperClientConfig();
+
+            // Assert
+            Assert.False(lyricScraperClientConfig.UseParallelSearch);
+        }
     }
 }
