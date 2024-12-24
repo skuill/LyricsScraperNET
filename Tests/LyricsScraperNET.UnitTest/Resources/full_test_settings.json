@@ -1,5 +1,6 @@
 {
   "LyricScraperClient": {
+    "UseParallelSearch": true,
     "GeniusOptions": {
       "SearchPriority": 11,
       "Enabled": true,
