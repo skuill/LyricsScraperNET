@@ -9,7 +9,7 @@ namespace LyricsScraperNET.Providers
     public interface IProviderService
     {
         IEnumerable<IExternalProvider> GetAvailableProviders(SearchRequest searchRequest);
-        IExternalProvider this[ExternalProviderType providerType] { get; }
+        IExternalProvider? this[ExternalProviderType providerType] { get; }
         bool AnyEnabled();
         bool AnyAvailable();
         bool IsProviderAvailable(ExternalProviderType providerType);

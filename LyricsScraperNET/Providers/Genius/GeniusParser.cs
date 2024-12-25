@@ -13,7 +13,7 @@ namespace LyricsScraperNET.Providers.Genius
             lyric = CleanEnding(lyric);
             lyric = WebUtility.HtmlDecode(lyric);
 
-            return lyric?.Trim();
+            return lyric?.Trim() ?? string.Empty;
         }
 
         public static string StripTagsRegex(string source)

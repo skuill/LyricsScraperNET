@@ -9,7 +9,7 @@ namespace LyricsScraperNET.Providers.SongLyrics
         {
             lyric = WebUtility.HtmlDecode(lyric);
 
-            return lyric?.Trim();
+            return lyric?.Trim() ?? string.Empty;
         }
     }
 }

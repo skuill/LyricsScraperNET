@@ -15,6 +15,8 @@ using System;
 using Microsoft.Extensions.Logging;
 using System.Threading;
 
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+
 class Program
 {
     static async Task Main()
@@ -167,4 +169,6 @@ class Program
 
         return result;
     }
+
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
 }

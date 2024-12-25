@@ -7,6 +7,7 @@ using LyricsScraperNET.Models.Responses;
 using LyricsScraperNET.Network;
 using LyricsScraperNET.Providers.Abstract;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using System;
 using System.Linq;
@@ -18,7 +19,7 @@ namespace LyricsScraperNET.Providers.Genius
 {
     public sealed class GeniusProvider : ExternalProviderBase
     {
-        private ILogger<GeniusProvider> _logger;
+        private ILogger<GeniusProvider>? _logger;
         private readonly IExternalUriConverter _uriConverter;
 
         // Format: "artist song". Example: "Parkway Drive Carrion".
@@ -56,13 +57,13 @@ namespace LyricsScraperNET.Providers.Genius
         }
 
         public GeniusProvider(GeniusOptions options)
-            : this(null, options)
+            : this(NullLogger<GeniusProvider>.Instance, options)
         {
             Ensure.ArgumentNotNull(options, nameof(options));
         }
 
         public GeniusProvider(IOptionsSnapshot<GeniusOptions> options)
-            : this(null, options.Value)
+            : this(NullLogger<GeniusProvider>.Instance, options.Value)
         {
             Ensure.ArgumentNotNull(options, nameof(options));
         }
@@ -155,7 +156,7 @@ namespace LyricsScraperNET.Providers.Genius
                 if (hitJsonProperty.TryGetProperty("result", out var resultJsonElement))
                 {
                     if (resultJsonElement.TryGetProperty("url", out var lyricUrl))
-                        return lyricUrl.GetString();
+                        return lyricUrl.GetString() ?? string.Empty;
                 }
             }
 
@@ -192,7 +193,7 @@ namespace LyricsScraperNET.Providers.Genius
                 _logger?.LogWarning($"Genius. Can't parse lyric from the page.");
             }
 
-            return Parser.Parse(string.Join("", lyricNodes.Select(node => node.InnerHtml)));
+            return Parser.Parse(string.Join("", lyricNodes!.Select(node => node.InnerHtml)));
         }
 
         private string GetLyricUrlFromSearchResponse(SearchResponse searchResponse, string artist, string song)

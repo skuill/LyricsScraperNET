@@ -2,6 +2,7 @@
 using LyricsScraperNET.Models.Responses;
 using LyricsScraperNET.Providers.Abstract;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using MusixmatchClientLib.API.Model.Exceptions;
 using MusixmatchClientLib.API.Model.Types;
@@ -13,7 +14,7 @@ namespace LyricsScraperNET.Providers.Musixmatch
 {
     public sealed class MusixmatchProvider : ExternalProviderBase
     {
-        private ILogger<MusixmatchProvider> _logger;
+        private ILogger<MusixmatchProvider>? _logger;
         private IMusixmatchClientWrapper _clientWrapper;
 
         private readonly int _searchRetryAmount = 2;
@@ -45,13 +46,13 @@ namespace LyricsScraperNET.Providers.Musixmatch
         }
 
         public MusixmatchProvider(MusixmatchOptions options, IMusixmatchClientWrapper clientWrapper)
-            : this(null, options, clientWrapper)
+            : this(NullLogger<MusixmatchProvider>.Instance, options, clientWrapper)
         {
             Ensure.ArgumentNotNull(options, nameof(options));
         }
 
         public MusixmatchProvider(IOptionsSnapshot<MusixmatchOptions> options, IMusixmatchClientWrapper clientWrapper)
-            : this(null, options.Value, clientWrapper)
+            : this(NullLogger<MusixmatchProvider>.Instance, options.Value, clientWrapper)
         {
             Ensure.ArgumentNotNull(options, nameof(options));
         }

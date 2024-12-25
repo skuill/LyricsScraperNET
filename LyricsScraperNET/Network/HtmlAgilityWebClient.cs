@@ -14,7 +14,7 @@ namespace LyricsScraperNET.Network
     /// </summary>
     internal sealed class HtmlAgilityWebClient : IWebClient
     {
-        private readonly ILogger<HtmlAgilityWebClient> _logger;
+        private readonly ILogger<HtmlAgilityWebClient>? _logger;
         private readonly HtmlWeb _htmlWeb;
 
         public HtmlAgilityWebClient()
@@ -49,7 +49,7 @@ namespace LyricsScraperNET.Network
             }
 
             CheckDocument(document, uri);
-            return document?.ParsedText;
+            return document?.ParsedText ?? string.Empty;
         }
 
         private void CheckDocument(HtmlDocument document, Uri uri)

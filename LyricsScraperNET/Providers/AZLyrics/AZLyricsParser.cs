@@ -7,7 +7,7 @@ namespace LyricsScraperNET.Providers.AZLyrics
     {
         public string Parse(string lyric)
         {
-            return UnescapeString(RemoveAllHtmlTags(lyric))?.Trim();
+            return UnescapeString(RemoveAllHtmlTags(lyric))?.Trim() ?? string.Empty;
         }
 
         private string RemoveAllHtmlTags(string html)

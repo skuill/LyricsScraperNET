@@ -18,12 +18,12 @@ namespace LyricsScraperNET
 {
     public sealed class LyricsScraperClient : ILyricsScraperClient
     {
-        private ILoggerFactory _loggerFactory;
-        private ILogger<LyricsScraperClient> _logger;
+        private ILoggerFactory? _loggerFactory;
+        private ILogger<LyricsScraperClient>? _logger;
 
         private IProviderService _providerService;
         private IRequestValidator _requestValidator;
-        private readonly ILyricScraperClientConfig _lyricScraperClientConfig;
+        private readonly ILyricScraperClientConfig? _lyricScraperClientConfig;
 
         private bool? _useParallelSearch;
         /// <inheritdoc />
@@ -37,7 +37,7 @@ namespace LyricsScraperNET
         public bool IsEnabled => _providerService.AnyEnabled();
 
         /// <inheritdoc />
-        public IExternalProvider this[ExternalProviderType providerType]
+        public IExternalProvider? this[ExternalProviderType providerType]
         {
             get => _providerService[providerType];
         }
@@ -221,6 +221,10 @@ namespace LyricsScraperNET
         public void Disable() => _providerService.DisableAllProviders();
 
         /// <inheritdoc />
-        public void WithLogger(ILoggerFactory loggerFactory) => _providerService.WithLogger(loggerFactory);
+        public void WithLogger(ILoggerFactory loggerFactory) 
+        {
+            _loggerFactory = loggerFactory;
+            _providerService.WithLogger(loggerFactory);
+        }
     }
 }

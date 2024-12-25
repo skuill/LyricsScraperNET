@@ -7,7 +7,8 @@ namespace LyricsScraperNET.Providers.LyricFind
     {
         public string Parse(string lyric)
         {
-            return UnescapeString(RemoveAllHtmlTags(lyric))?.Trim()?.Replace("\\n", "\r\n");
+            return UnescapeString(RemoveAllHtmlTags(lyric))?.Trim()?.Replace("\\n", "\r\n") 
+                ?? string.Empty;
         }
 
         private string RemoveAllHtmlTags(string html)

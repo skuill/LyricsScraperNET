@@ -14,7 +14,7 @@ namespace LyricsScraperNET.Network
     /// </summary>
     internal sealed class NetHttpClient : IWebClient
     {
-        private readonly ILogger<NetHttpClient> _logger;
+        private readonly ILogger<NetHttpClient>? _logger;
 
         // HttpClient is declared as static to prevent frequent creation and disposal of instances, 
         // which can lead to socket exhaustion due to delays in releasing resources.

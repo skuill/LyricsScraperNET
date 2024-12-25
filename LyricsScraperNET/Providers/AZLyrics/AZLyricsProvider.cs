@@ -3,6 +3,7 @@ using LyricsScraperNET.Models.Responses;
 using LyricsScraperNET.Network;
 using LyricsScraperNET.Providers.Abstract;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using System;
 using System.Threading;
@@ -43,13 +44,13 @@ namespace LyricsScraperNET.Providers.AZLyrics
         }
 
         public AZLyricsProvider(AZLyricsOptions options)
-            : this(null, options)
+            : this(NullLogger<AZLyricsProvider>.Instance, options)
         {
             Ensure.ArgumentNotNull(options, nameof(options));
         }
 
         public AZLyricsProvider(IOptionsSnapshot<AZLyricsOptions> options)
-            : this(null, options.Value)
+            : this(NullLogger<AZLyricsProvider>.Instance, options.Value)
         {
             Ensure.ArgumentNotNull(options, nameof(options));
         }

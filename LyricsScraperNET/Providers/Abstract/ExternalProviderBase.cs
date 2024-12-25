@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace LyricsScraperNET.Providers.Abstract
 {
-    public class ExternalProviderBase : IExternalProvider
+    public abstract class ExternalProviderBase : IExternalProvider
     {
         internal IExternalProviderLyricParser Parser { get; set; }
         internal IWebClient WebClient { get; set; }

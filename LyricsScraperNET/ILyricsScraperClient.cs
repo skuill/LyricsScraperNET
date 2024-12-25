@@ -24,7 +24,7 @@ namespace LyricsScraperNET
         /// </summary>
         bool UseParallelSearch { get; set; }
 
-        IExternalProvider this[ExternalProviderType providerType] { get; }
+        IExternalProvider? this[ExternalProviderType providerType] { get; }
 
         /// <summary>
         /// Search lyric by different search requests:

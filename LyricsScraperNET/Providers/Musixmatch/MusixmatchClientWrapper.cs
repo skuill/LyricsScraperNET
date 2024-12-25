@@ -12,11 +12,12 @@ namespace LyricsScraperNET.Providers.Musixmatch
 {
     public sealed class MusixmatchClientWrapper : IMusixmatchClientWrapper
     {
-        private ILogger<MusixmatchClientWrapper> _logger;
+        private ILogger<MusixmatchClientWrapper>? _logger;
         private IMusixmatchTokenCache _tokenCache;
 
         public MusixmatchClientWrapper()
         {
+            _tokenCache = new MusixmatchTokenCache();
         }
 
         public MusixmatchClientWrapper(IMusixmatchTokenCache tokenCache) : this()

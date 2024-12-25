@@ -20,11 +20,11 @@ namespace LyricsScraperNET.Providers
                 : _providers.Where(p => p.IsEnabled && p.Options.ExternalProviderType == providerType).OrderByDescending(p => p.SearchPriority);
         }
 
-        public IExternalProvider this[ExternalProviderType providerType]
+        public IExternalProvider? this[ExternalProviderType providerType]
         {
             get => IsProviderAvailable(providerType)
-                ? _providers.First(p => p.Options.ExternalProviderType == providerType)
-                : null;
+                ? _providers.FirstOrDefault(p => p.Options.ExternalProviderType == providerType)
+                : default;
         }
 
         public void AddProvider(IExternalProvider provider)
@@ -55,6 +55,6 @@ namespace LyricsScraperNET.Providers
 
         public bool IsProviderEnabled(ExternalProviderType providerType)
             => IsProviderAvailable(providerType)
-                && this[providerType].IsEnabled;
+                && (this[providerType]?.IsEnabled ?? false);
     }
 }

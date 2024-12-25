@@ -4,6 +4,7 @@ using LyricsScraperNET.Models.Responses;
 using LyricsScraperNET.Network;
 using LyricsScraperNET.Providers.Abstract;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using System;
 using System.Text.RegularExpressions;
@@ -14,7 +15,7 @@ namespace LyricsScraperNET.Providers.LyricFind
 {
     public sealed class LyricFindProvider : ExternalProviderBase
     {
-        private ILogger<LyricFindProvider> _logger;
+        private ILogger<LyricFindProvider>? _logger;
         private readonly IExternalUriConverter _uriConverter;
 
         /// <summary>
@@ -57,13 +58,13 @@ namespace LyricsScraperNET.Providers.LyricFind
         }
 
         public LyricFindProvider(LyricFindOptions options)
-            : this(null, options)
+            : this(NullLogger<LyricFindProvider>.Instance, options)
         {
             Ensure.ArgumentNotNull(options, nameof(options));
         }
 
         public LyricFindProvider(IOptionsSnapshot<LyricFindOptions> options)
-            : this(null, options.Value)
+            : this(NullLogger<LyricFindProvider>.Instance, options.Value)
         {
             Ensure.ArgumentNotNull(options, nameof(options));
         }
