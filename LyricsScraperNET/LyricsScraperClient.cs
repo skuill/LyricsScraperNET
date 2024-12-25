@@ -221,7 +221,7 @@ namespace LyricsScraperNET
         public void Disable() => _providerService.DisableAllProviders();
 
         /// <inheritdoc />
-        public void WithLogger(ILoggerFactory loggerFactory) 
+        public void WithLogger(ILoggerFactory loggerFactory)
         {
             _loggerFactory = loggerFactory;
             _providerService.WithLogger(loggerFactory);
