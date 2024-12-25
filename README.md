@@ -29,12 +29,12 @@ The library currently supports the following providers:
 - [MusixMatch](https://www.musixmatch.com/)
 - [SongLyrics](https://www.songlyrics.com/)
 - [LyricFind](https://www.lyricfind.com/)
-- [LyricsFreak](https://www.lyricsfreak.com/) (**Coming soon** 🚧)
-- [kpoplyrics](https://www.kpoplyrics.net/) (**Coming soon** 🚧)
-- [Letras.mus.br](https://www.letras.mus.br/) (**Coming soon** 🚧)
-- [darklyrics](http://www.darklyrics.com/) (**Coming soon** 🚧)
-- [vagalume](https://www.vagalume.com.br/tina-turner/the-best-traducao.html) (**Coming soon** 🚧)
-- [Lyrics](https://www.lyrics.com/) (**Coming soon** 🚧)
+- [LyricsFreak](https://www.lyricsfreak.com/) (**Coming soon** 🚧. [Issue #38](https://github.com/skuill/LyricsScraperNET/issues/38))
+- [kpoplyrics](https://www.kpoplyrics.net/) (**Coming soon** 🚧. [Issue #39](https://github.com/skuill/LyricsScraperNET/issues/39))
+- [Letras.mus.br](https://www.letras.mus.br/) (**Coming soon** 🚧. [Issue #40](https://github.com/skuill/LyricsScraperNET/issues/40))
+- [darklyrics](http://www.darklyrics.com/) (**Coming soon** 🚧. [Issue #41](https://github.com/skuill/LyricsScraperNET/issues/41))
+- [vagalume](https://www.vagalume.com.br/) (**Coming soon** 🚧. [Issue #42](https://github.com/skuill/LyricsScraperNET/issues/42))
+- [Lyrics](https://www.lyrics.com/) (**Coming soon** 🚧. [Issue #25](https://github.com/skuill/LyricsScraperNET/issues/25))
 
 ---
 
