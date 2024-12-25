@@ -100,8 +100,11 @@ For direct feedback, feel free to reach out on [Telegram](https://t.me/skuill).
 
 If you find this project helpful, consider supporting it:
 
-[![Buy Me A Coffee](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/skuill)  
-[![Tinkoff Donate](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.tinkoff.ru/cf/3MNYeRds3s)
+- Starring this repository on [GitHub](https://github.com/skuill/LyricsScraperNET/stargazers) ⭐.
+- [![Buy Me A Coffee](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/skuill)  
+- [![Tinkoff Donate](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.tinkoff.ru/cf/3MNYeRds3s)
+
+Your support helps keep this project alive and evolving!
 
 ---
 
