@@ -2,10 +2,11 @@
 using LyricsScraperNET.Models.Responses;
 using LyricsScraperNET.Providers.LyricFind;
 using LyricsScraperNET.Providers.Models;
+using LyricsScraperNET.TestShared.Attributes;
 using LyricsScraperNET.TestShared.Providers;
-using LyricsScraperNET.UnitTest.TestModel;
-using System.Threading.Tasks;
+using LyricsScraperNET.TestShared.TestModel;
 using System.Threading;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace LyricsScraperNET.IntegrationTest.Providers.LyricFind

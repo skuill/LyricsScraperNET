@@ -4,7 +4,7 @@ using LyricsScraperNET.Providers.Models;
 using LyricsScraperNET.Providers.SongLyrics;
 using LyricsScraperNET.TestShared.Extensions;
 using LyricsScraperNET.TestShared.Providers;
-using LyricsScraperNET.UnitTest.TestModel;
+using LyricsScraperNET.TestShared.TestModel;
 using System.Threading;
 using Xunit;
 

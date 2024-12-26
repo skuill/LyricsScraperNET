@@ -3,7 +3,7 @@ using LyricsScraperNET.Models.Responses;
 using LyricsScraperNET.Providers.Genius;
 using LyricsScraperNET.Providers.Models;
 using LyricsScraperNET.TestShared.Providers;
-using LyricsScraperNET.UnitTest.TestModel;
+using LyricsScraperNET.TestShared.TestModel;
 using System.Threading.Tasks;
 using System.Threading;
 using Xunit;

@@ -1,7 +1,7 @@
 ﻿using FakeItEasy;
 using LyricsScraperNET.Network.Abstract;
 using LyricsScraperNET.Providers.Abstract;
-using LyricsScraperNET.UnitTest.TestModel;
+using LyricsScraperNET.TestShared.TestModel;
 using System;
 using System.Threading;
 

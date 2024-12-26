@@ -1,6 +1,6 @@
 ﻿using LyricsScraperNET.Models.Requests;
 using LyricsScraperNET.TestShared.Utils;
-using LyricsScraperNET.UnitTest.TestModel;
+using LyricsScraperNET.TestShared.TestModel;
 using System;
 using System.Collections.Generic;
 
