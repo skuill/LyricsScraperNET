@@ -25,13 +25,13 @@
 		<PackageReference Include="xunit.MSTest" Version="1.0.3" />
 	</ItemGroup>
 	<ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.1' Or '$(TargetFramework)' == 'net5.0'">
-		<PackageReference Include="xunit.runner.visualstudio" Version="2.4.5" >
+		<PackageReference Include="xunit.runner.visualstudio" Version="2.4.5">
 		<PrivateAssets>all</PrivateAssets>
 		<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
 	</ItemGroup>
 	<ItemGroup Condition="'$(TargetFramework)' == 'net6.0' Or '$(TargetFramework)' == 'net7.0' Or '$(TargetFramework)' == 'net8.0'">
-		<PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" >
+		<PackageReference Include="xunit.runner.visualstudio" Version="2.8.2">
 		<PrivateAssets>all</PrivateAssets>
 		<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
