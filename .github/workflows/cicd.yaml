@@ -35,13 +35,13 @@ jobs:
         run: dotnet build --configuration Release --verbosity minimal
       - name: Test (Unit) with Coverage
         run: |
-          dotnet test Tests/LyricsScraperNET.UnitTest --configuration Release --collect:"XPlat Code Coverage" --results-directory ./TestResults
+          dotnet test Tests/LyricsScraperNET.UnitTest \
+            --configuration Release \
+            --collect:"XPlat Code Coverage" \
+            --results-directory ./TestResults
         env:
           COVERLET_OUTPUT_FORMAT: cobertura
-      - name: List Coverage Files
-        run: |
-          echo "Checking TestResults directory..."
-          ls -R ./TestResults
+          COVERLET_EXCLUDE: "[LyricsScraperNET.TestShared*]*,[LyricsScraperNET.Client*]*"
       - name: Upload Coverage to Codecov
         uses: codecov/codecov-action@v5
         with:
