@@ -38,6 +38,8 @@ jobs:
           dotnet test Tests/LyricsScraperNET.UnitTest --configuration Release --collect:"XPlat Code Coverage" --results-directory ./TestResults
         env:
           COVERLET_OUTPUT_FORMAT: cobertura
+      - name: Debug Test Results
+        run: ls -R ./TestResults
       - name: Upload Coverage to Codecov
         uses: codecov/codecov-action@v3
         with:
