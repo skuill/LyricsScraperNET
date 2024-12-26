@@ -4,6 +4,7 @@
 [![CI/CD LyricsScraperNET](https://github.com/skuill/LyricsScraperNET/actions/workflows/cicd.yaml/badge.svg)](https://github.com/skuill/LyricsScraperNET/actions/workflows/cicd.yaml)
 [![NuGet](https://img.shields.io/nuget/vpre/LyricsScraperNET?label=NuGet)](https://www.nuget.org/packages/LyricsScraperNET/)
 [![NuGet Downloads](https://img.shields.io/nuget/dt/LyricsScraperNET?label=Downloads)](https://www.nuget.org/packages/LyricsScraperNET/)
+[![codecov](https://codecov.io/github/skuill/LyricsScraperNET/graph/badge.svg?token=4WVKKT969S)](https://codecov.io/github/skuill/LyricsScraperNET)
 [![License](https://img.shields.io/github/license/skuill/LyricsScraperNET)](./LICENSE)
 
 **LyricsScraperNET** is a versatile .NET library that provides an API for searching song lyrics from various external providers. 

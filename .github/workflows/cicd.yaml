@@ -33,8 +33,21 @@ jobs:
         run: dotnet format --verify-no-changes --exclude *\xunit*\*
       - name: Build
         run: dotnet build --configuration Release --verbosity minimal
-      - name: Test (Unit)
-        run: dotnet test Tests/LyricsScraperNET.UnitTest
+      - name: Test (Unit) with Coverage
+        run: |
+          dotnet test Tests/LyricsScraperNET.UnitTest \
+            --configuration Release \
+            --collect:"XPlat Code Coverage" \
+            --results-directory ./TestResults
+        env:
+          COVERLET_OUTPUT_FORMAT: cobertura
+          COVERLET_EXCLUDE: "[LyricsScraperNET.TestShared*]*,[LyricsScraperNET.Client*]*"
+      - name: Upload Coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          files: ./TestResults/**/*.cobertura.xml
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: true
       # Temporarily switched off. There are errors during CI.
       # - name: Test (Integration)
         # run: dotnet test Tests/LyricsScraperNET.IntegrationTest

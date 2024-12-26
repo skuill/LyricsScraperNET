@@ -17,158 +17,161 @@ using System.Threading;
 
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
 
-class Program
+namespace LyricsScraperNET.Client
 {
-    static async Task Main()
+    class Program
     {
-        //// Input parameters to search:
-        string artistToSearch = "Parkway Drive";
-        string songToSearch = "Idols And Anchors";
-
-        //// Uncomment this block to test for instrumental songs (without vocals):
-        //string artistToSearch = "Rush";
-        //string songToSearch = "YYZ";
-
-        //// How to configure for ASP.NET applications:
-        var result = ExampleWithHostConfiguration(artistToSearch, songToSearch);
-
-        //// How to configure for a certain external provider using explicit instantiation:
-        //var result = ExampleWithExplicitInstantiation(artistToSearch, songToSearch);
-
-        //// Checking that something was found. The response can be empty in two cases:
-        //// 1) A search error occurred. Detailed information can be found in the logs or in response fields like 'ResponseStatusCode' and 'ResponseMessage'.
-        //// 2) The requested song contains only the instrumental, no lyrics. In this case the flag 'Instrumental' will be true.
-        if (result.IsEmpty())
+        static async Task Main()
         {
-            ConsoleExtensions.WriteLineDelimeter();
-            if (result.Instrumental)
+            //// Input parameters to search:
+            string artistToSearch = "Parkway Drive";
+            string songToSearch = "Idols And Anchors";
+
+            //// Uncomment this block to test for instrumental songs (without vocals):
+            //string artistToSearch = "Rush";
+            //string songToSearch = "YYZ";
+
+            //// How to configure for ASP.NET applications:
+            var result = ExampleWithHostConfiguration(artistToSearch, songToSearch);
+
+            //// How to configure for a certain external provider using explicit instantiation:
+            //var result = ExampleWithExplicitInstantiation(artistToSearch, songToSearch);
+
+            //// Checking that something was found. The response can be empty in two cases:
+            //// 1) A search error occurred. Detailed information can be found in the logs or in response fields like 'ResponseStatusCode' and 'ResponseMessage'.
+            //// 2) The requested song contains only the instrumental, no lyrics. In this case the flag 'Instrumental' will be true.
+            if (result.IsEmpty())
             {
-                $"This song [{artistToSearch} - {songToSearch}] is instrumental.\r\nIt does not contain any lyrics"
-                    .WriteLineColored(ConsoleColor.Gray);
+                ConsoleExtensions.WriteLineDelimeter();
+                if (result.Instrumental)
+                {
+                    $"This song [{artistToSearch} - {songToSearch}] is instrumental.\r\nIt does not contain any lyrics"
+                        .WriteLineColored(ConsoleColor.Gray);
+                }
+                else
+                {
+                    ($"Can't find lyrics for: [{artistToSearch} - {songToSearch}]. " +
+                        $"Status code: [{result.ResponseStatusCode}]. " +
+                        $"Response message: [{result.ResponseMessage}].").WriteLineColored(ConsoleColor.Red);
+                }
+                ConsoleExtensions.WriteLineDelimeter();
+
+                "Press any key to exit..".WriteLineColored(ConsoleColor.DarkGray);
+                Console.ReadLine();
+                return;
             }
-            else
-            {
-                ($"Can't find lyrics for: [{artistToSearch} - {songToSearch}]. " +
-                    $"Status code: [{result.ResponseStatusCode}]. " +
-                    $"Response message: [{result.ResponseMessage}].").WriteLineColored(ConsoleColor.Red);
-            }
+
+            //// Output result to console
+            //// Artist and song information
+            $"[{artistToSearch} - {songToSearch}]".WriteLineColored(ConsoleColor.Yellow);
+
             ConsoleExtensions.WriteLineDelimeter();
+            //// Lyric text
+            result.LyricText.WriteLineColored();
+            ConsoleExtensions.WriteLineDelimeter();
+
+            //// Lyrics provider information
+            $"This lyric was found by [{result.ExternalProviderType}]\r\n".WriteLineColored(ConsoleColor.Magenta);
 
             "Press any key to exit..".WriteLineColored(ConsoleColor.DarkGray);
             Console.ReadLine();
             return;
         }
 
-        //// Output result to console
-        //// Artist and song information
-        $"[{artistToSearch} - {songToSearch}]".WriteLineColored(ConsoleColor.Yellow);
-
-        ConsoleExtensions.WriteLineDelimeter();
-        //// Lyric text
-        result.LyricText.WriteLineColored();
-        ConsoleExtensions.WriteLineDelimeter();
-
-        //// Lyrics provider information
-        $"This lyric was found by [{result.ExternalProviderType}]\r\n".WriteLineColored(ConsoleColor.Magenta);
-
-        "Press any key to exit..".WriteLineColored(ConsoleColor.DarkGray);
-        Console.ReadLine();
-        return;
-    }
-
-    /// <summary>
-    /// How to configure LyricScraperClient and search lyrics for ASP.NET applications:
-    /// </summary>
-    /// <param name="artistToSearch">artist name to search</param>
-    /// <param name="songToSearch">song name to search</param>
-    /// <returns>lyrics text</returns>
-    private static SearchResult ExampleWithHostConfiguration(string artistToSearch, string songToSearch)
-    {
-        //// Application Configuration section. 
-        //// LyricScraperClient configuration could be found in appsettings.json file in section with related name.
-        IConfiguration configuration = new ConfigurationBuilder()
-            .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-            .AddEnvironmentVariables()
-            .Build();
-
-        //// Host creation with LyricScraperClient service configuration
-        using IHost host = Host.CreateDefaultBuilder()
-            .ConfigureServices(services =>
-            {
-                // Setting up LyricScraperClient from configuration that stored in appsettings.json.
-                // Only supported output type as string at the moment.
-                services.AddLyricScraperClientService(configuration: configuration);
-            })
-            .Build();
-
-        //// Get instance of LyricScraperClient service 
-        var lyricsScraperClient = host.Services.GetRequiredService<ILyricsScraperClient>();
-
-        //// Create request and search 
-        var searchRequest = new ArtistAndSongSearchRequest(artistToSearch, songToSearch);
-        CancellationToken cancellationToken = new CancellationToken();
-        var result = lyricsScraperClient.SearchLyric(searchRequest, cancellationToken);
-
-        return result;
-    }
-
-    /// <summary>
-    /// How to configure LyricScraperClient and search lyrics for a certain external provider:
-    /// </summary>
-    /// <param name="artistToSearch">artist name to search</param>
-    /// <param name="songToSearch">song name to search</param>
-    /// <returns>lyrics text</returns>
-    private static SearchResult ExampleWithExplicitInstantiation(string artistToSearch, string songToSearch)
-    {
-        //// Create instance of LyricScraperClient with all available lyrics providers
-        ILyricsScraperClient lyricsScraperClient
-            = new LyricsScraperClient()
-                .WithAllProviders();
-
-        //// To configure a specific provider, use a method like With[ProviderName]()
-        // ILyricsScraperClient lyricsScraperClient
-        //     = new LyricsScraperClient()
-        //         .WithGenius()
-        //         .WithAZLyrics()
-        //         .WithMusixmatch()
-        //         .WithSongLyrics()
-        //         .WithLyricFind();
-
-        //// To perform parallel searches across multiple external providers, enable the following option:
-        // lyricsScraperClient.UseParallelSearch = true;
-
-        // To enable library logging, the LoggerFactory must be configured and passed to the client.
-        var loggerFactory = LoggerFactory.Create(builder =>
+        /// <summary>
+        /// How to configure LyricScraperClient and search lyrics for ASP.NET applications:
+        /// </summary>
+        /// <param name="artistToSearch">artist name to search</param>
+        /// <param name="songToSearch">song name to search</param>
+        /// <returns>lyrics text</returns>
+        private static SearchResult ExampleWithHostConfiguration(string artistToSearch, string songToSearch)
         {
-            builder.AddFilter("Microsoft", LogLevel.Warning)
-                   .AddFilter("System", LogLevel.Warning)
-                   .AddFilter("LyricsScraperNET", LogLevel.Trace)
-                   .AddConsole();
-        });
-        lyricsScraperClient.WithLogger(loggerFactory);
+            //// Application Configuration section. 
+            //// LyricScraperClient configuration could be found in appsettings.json file in section with related name.
+            IConfiguration configuration = new ConfigurationBuilder()
+                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                .AddEnvironmentVariables()
+                .Build();
 
-        //// Another way to configure:
-        //// 1. First create instance of LyricScraperClient.
-        // ILyricsScraperClient lyricsScraperClient = new LyricsScraperClient();
-        //// 2. Create some external provider instanse with default settings. For example Genius:
-        // IExternalProvider externalProvider = new GeniusProvider();
-        //// 2. Or create provider with custom settings like:
-        // GeniusOptions geniusOptions = new GeniusOptions()
-        // {
-        //     Enabled = true,
-        //     SearchPriority = 1 // If there are multiple external providers, then the search will start from the provider with the highest priority.
-        // };
-        // IExternalProvider externalProvider = new GeniusProvider(geniusOptions);
-        //// 3. Add external provider to client:
-        // lyricsScraperClient.AddProvider(externalProvider);
+            //// Host creation with LyricScraperClient service configuration
+            using IHost host = Host.CreateDefaultBuilder()
+                .ConfigureServices(services =>
+                {
+                    // Setting up LyricScraperClient from configuration that stored in appsettings.json.
+                    // Only supported output type as string at the moment.
+                    services.AddLyricScraperClientService(configuration: configuration);
+                })
+                .Build();
 
-        //// Create request and search 
-        var searchRequest = new ArtistAndSongSearchRequest(artistToSearch, songToSearch);
-        CancellationToken cancellationToken = new CancellationToken();
-        var result = lyricsScraperClient.SearchLyric(searchRequest, cancellationToken);
+            //// Get instance of LyricScraperClient service 
+            var lyricsScraperClient = host.Services.GetRequiredService<ILyricsScraperClient>();
 
-        return result;
+            //// Create request and search 
+            var searchRequest = new ArtistAndSongSearchRequest(artistToSearch, songToSearch);
+            CancellationToken cancellationToken = new CancellationToken();
+            var result = lyricsScraperClient.SearchLyric(searchRequest, cancellationToken);
+
+            return result;
+        }
+
+        /// <summary>
+        /// How to configure LyricScraperClient and search lyrics for a certain external provider:
+        /// </summary>
+        /// <param name="artistToSearch">artist name to search</param>
+        /// <param name="songToSearch">song name to search</param>
+        /// <returns>lyrics text</returns>
+        private static SearchResult ExampleWithExplicitInstantiation(string artistToSearch, string songToSearch)
+        {
+            //// Create instance of LyricScraperClient with all available lyrics providers
+            ILyricsScraperClient lyricsScraperClient
+                = new LyricsScraperClient()
+                    .WithAllProviders();
+
+            //// To configure a specific provider, use a method like With[ProviderName]()
+            // ILyricsScraperClient lyricsScraperClient
+            //     = new LyricsScraperClient()
+            //         .WithGenius()
+            //         .WithAZLyrics()
+            //         .WithMusixmatch()
+            //         .WithSongLyrics()
+            //         .WithLyricFind();
+
+            //// To perform parallel searches across multiple external providers, enable the following option:
+            // lyricsScraperClient.UseParallelSearch = true;
+
+            // To enable library logging, the LoggerFactory must be configured and passed to the client.
+            var loggerFactory = LoggerFactory.Create(builder =>
+            {
+                builder.AddFilter("Microsoft", LogLevel.Warning)
+                       .AddFilter("System", LogLevel.Warning)
+                       .AddFilter("LyricsScraperNET", LogLevel.Trace)
+                       .AddConsole();
+            });
+            lyricsScraperClient.WithLogger(loggerFactory);
+
+            //// Another way to configure:
+            //// 1. First create instance of LyricScraperClient.
+            // ILyricsScraperClient lyricsScraperClient = new LyricsScraperClient();
+            //// 2. Create some external provider instanse with default settings. For example Genius:
+            // IExternalProvider externalProvider = new GeniusProvider();
+            //// 2. Or create provider with custom settings like:
+            // GeniusOptions geniusOptions = new GeniusOptions()
+            // {
+            //     Enabled = true,
+            //     SearchPriority = 1 // If there are multiple external providers, then the search will start from the provider with the highest priority.
+            // };
+            // IExternalProvider externalProvider = new GeniusProvider(geniusOptions);
+            //// 3. Add external provider to client:
+            // lyricsScraperClient.AddProvider(externalProvider);
+
+            //// Create request and search 
+            var searchRequest = new ArtistAndSongSearchRequest(artistToSearch, songToSearch);
+            CancellationToken cancellationToken = new CancellationToken();
+            var result = lyricsScraperClient.SearchLyric(searchRequest, cancellationToken);
+
+            return result;
+        }
     }
+}
 
 #pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
-}

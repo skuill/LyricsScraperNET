@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace LyricsScraperNET
+namespace LyricsScraperNET.Client
 {
     public static class ConsoleExtensions
     {
