@@ -36,12 +36,11 @@ jobs:
       - name: Test (Unit) with Coverage
         run: |
           dotnet test Tests/LyricsScraperNET.UnitTest \
-            --configuration Release \
-            --collect:"XPlat Code Coverage" \
-            --results-directory ./TestResults
-        env:
-          COVERLET_OUTPUT_FORMAT: cobertura
-          COVERLET_EXCLUDE: "[LyricsScraperNET.TestShared*]*,[LyricsScraperNET.Client*]*"
+          --configuration Release \
+          --collect:"XPlat Code Coverage" \
+          --results-directory ./TestResults \
+          /p:Exclude="[LyricsScraperNET.TestShared*]*,[LyricsScraperNET.Client*]*" \
+          /p:CoverletOutputFormat=cobertura
       - name: Upload Coverage to Codecov
         uses: codecov/codecov-action@v5
         with:
