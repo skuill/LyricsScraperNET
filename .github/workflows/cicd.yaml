@@ -39,7 +39,7 @@ jobs:
             --configuration Release \
             --collect:"XPlat Code Coverage" \
             --results-directory ./TestResults \
-            "/p:Exclude=[LyricsScraperNET.TestShared*]*,[LyricsScraperNET.Client*]*" \
+            "/p:Exclude=\[LyricsScraperNET.TestShared\*\]\*,\[LyricsScraperNET.Client\*\]\*" \
             "/p:CoverletOutputFormat=cobertura"
       - name: Upload Coverage to Codecov
         uses: codecov/codecov-action@v5
