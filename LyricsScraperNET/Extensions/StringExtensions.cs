@@ -71,5 +71,19 @@ namespace LyricsScraperNET.Extensions
 
             return result;
         }
+        
+        public static string CreateCombinedUrlSlug(string artist, string songTitle)
+        {
+            artist = Regex.Replace(artist, "\\(.*?\\)", "").Trim();
+            songTitle = Regex.Replace(songTitle, "\\(.*?\\)", "").Trim();
+
+            var combined = $"{artist} {songTitle}";
+
+            var slug = Regex.Replace(combined.ToLower(), "[^a-z0-9]+", "-");
+
+            slug = slug.Trim('-');
+
+            return slug;
+        }
     }
 }

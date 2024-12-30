@@ -8,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using System;
+using LyricsScraperNET.Providers.KPopLyrics;
 
 namespace LyricsScraperNET.Configuration
 {
@@ -24,6 +25,7 @@ namespace LyricsScraperNET.Configuration
                 services.AddProvider<GeniusOptions, GeniusProvider>(lyricScraperClientConfig);
                 services.AddProvider<SongLyricsOptions, SongLyricsProvider>(lyricScraperClientConfig);
                 services.AddProvider<LyricFindOptions, LyricFindProvider>(lyricScraperClientConfig);
+                services.AddProvider<KPopLyricsOptions, KPopLyricsProvider>(lyricScraperClientConfig);
 
                 services.AddMusixmatchService(lyricScraperClientConfig);
 
