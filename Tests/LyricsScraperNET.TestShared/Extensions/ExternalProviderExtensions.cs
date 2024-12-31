@@ -18,5 +18,17 @@ namespace LyricsScraperNET.TestShared.Extensions
             externalProvider.WithWebClient(mockWebClient);
             return externalProvider;
         }
+
+        public static IExternalProvider ConfigureExternalProviderWithArtist(this IExternalProvider externalProvider, LyricsTestData testData)
+        {
+            var mockWebClient = A.Fake<IWebClient>();
+            A.CallTo(() => mockWebClient.Load(A<Uri>._, A<CancellationToken>._))
+            .ReturnsNextFromSequence(testData.ArtistPageData, testData.LyricPageData);
+            A.CallTo(() => mockWebClient.LoadAsync(A<Uri>._, A<CancellationToken>._))
+            .ReturnsNextFromSequence(testData.ArtistPageData, testData.LyricPageData);
+
+            externalProvider.WithWebClient(mockWebClient);
+            return externalProvider;
+        }
     }
 }

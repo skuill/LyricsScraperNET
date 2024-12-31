@@ -4,6 +4,7 @@ using LyricsScraperNET.Providers.Genius;
 using LyricsScraperNET.Providers.LyricFind;
 using LyricsScraperNET.Providers.Musixmatch;
 using LyricsScraperNET.Providers.SongLyrics;
+using LyricsScraperNET.Providers.LyricsFreak;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -20,6 +21,7 @@ namespace LyricsScraperNET.Configuration
             var lyricScraperClientConfig = configuration.GetSection(LyricScraperClientConfig.ConfigurationSectionName);
             if (lyricScraperClientConfig.Exists())
             {
+                services.AddProvider<LyricsFreakOptions, LyricsFreakProvider>(lyricScraperClientConfig);
                 services.AddProvider<AZLyricsOptions, AZLyricsProvider>(lyricScraperClientConfig);
                 services.AddProvider<GeniusOptions, GeniusProvider>(lyricScraperClientConfig);
                 services.AddProvider<SongLyricsOptions, SongLyricsProvider>(lyricScraperClientConfig);

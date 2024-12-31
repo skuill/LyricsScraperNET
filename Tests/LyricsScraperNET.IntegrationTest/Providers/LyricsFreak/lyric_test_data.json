@@ -1,0 +1,20 @@
+[
+  {
+    "LyricResultPath": "Providers/LyricsFreak/Resources/Lyrics_Result_01.txt",
+    "ArtistName": "Parkway Drive",
+    "SongName": "Idols And Anchors",
+    "SongUri": null
+  },
+  {
+    "LyricResultPath": "Providers/LyricsFreak/Resources/Lyrics_Result_02.txt",
+    "ArtistName": "Parkway Drive",
+    "SongName": "Wishing Wells",
+    "SongUri": null
+  },
+  {
+    "LyricResultPath": "Providers/LyricsFreak/Resources/Lyrics_Result_01.txt",
+    "ArtistName": null,
+    "SongName": null,
+    "SongUri": "http://www.lyricsfreak.com/p/parkway+drive/idols+and+anchors_20657144.html"
+  }
+]

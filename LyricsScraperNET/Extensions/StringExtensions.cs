@@ -71,5 +71,25 @@ namespace LyricsScraperNET.Extensions
 
             return result;
         }
+
+        public static string СonvertSpaceToPlusFormat(this string input,  bool removeProhibitedSymbols = false)
+        {
+            if (string.IsNullOrWhiteSpace(input))
+                return input;
+
+            var result = input.ToLowerInvariant().Trim();
+
+            if (removeProhibitedSymbols)
+                result = new string(result.Where(x => char.IsLetterOrDigit(x) || char.IsWhiteSpace(x) ).ToArray());
+
+            result = Regex.Replace(new string(result.Select(x =>
+            {
+                return (char.IsWhiteSpace(x))
+                    ? '+'
+                    : x;
+            }).ToArray()), "\\++", "+").Trim('+');
+
+            return result;
+        }
     }
 }
