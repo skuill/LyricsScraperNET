@@ -37,19 +37,16 @@ namespace LyricsScraperNET.Providers.LyricsFreak
             Ensure.ArgumentNotNull(options, nameof(options));
             Options = options;
         }
-
         public LyricsFreakProvider(ILogger<LyricsFreakProvider> logger, IOptionsSnapshot<LyricsFreakOptions> options)
             : this(logger, options.Value)
         {
             Ensure.ArgumentNotNull(options, nameof(options));
         }
-
         public LyricsFreakProvider(LyricsFreakOptions options)
             : this(NullLogger<LyricsFreakProvider>.Instance, options)
         {
             Ensure.ArgumentNotNull(options, nameof(options));
         }
-
         public LyricsFreakProvider(IOptionsSnapshot<LyricsFreakOptions> options)
             : this(NullLogger<LyricsFreakProvider>.Instance, options.Value)
         {
@@ -69,7 +66,6 @@ namespace LyricsScraperNET.Providers.LyricsFreak
         #region Async
         protected override async Task<SearchResult> SearchLyricAsync(string artist, string song, CancellationToken cancellationToken = default)
         {
-
             try
             {
                 var artistUri = _uriConverter.GetLyricUri(artist, song);
@@ -104,8 +100,6 @@ namespace LyricsScraperNET.Providers.LyricsFreak
                 _logger?.LogError(ex, $"LyricsFreak. Error searching for lyrics for artist: [{artist}], song: [{song}]");
                 return new SearchResult(Models.ExternalProviderType.LyricsFreak);
             }
-
- 
         }
         protected async override Task<SearchResult> SearchLyricAsync(Uri uri, CancellationToken cancellationToken = default)
         {
@@ -125,7 +119,6 @@ namespace LyricsScraperNET.Providers.LyricsFreak
         #region Private methods
         private string ParseForSongUri(string htmlBody, string song)
         {
-
             var linkNode = GetNode(htmlBody, string.Format(LyricsHrefXPath, song.ToLower()));
             if (linkNode == null)
             {
@@ -134,7 +127,6 @@ namespace LyricsScraperNET.Providers.LyricsFreak
 
             string hrefSong = linkNode.GetAttributeValue("href", string.Empty);
             return hrefSong;
-
         }
         private string ParseForSongLyrics(string htmlBody)
         {
@@ -147,14 +139,12 @@ namespace LyricsScraperNET.Providers.LyricsFreak
             string lyricsText = lyricsNode.InnerText.Trim();
             return lyricsText;
         }
-
         private HtmlNode? GetNode(string htmlBody, string xPath)
         {
             var htmlDoc = new HtmlDocument();
             htmlDoc.LoadHtml(htmlBody);
             return htmlDoc.DocumentNode.SelectSingleNode(xPath);
         }
-
         #endregion
     }
 }
