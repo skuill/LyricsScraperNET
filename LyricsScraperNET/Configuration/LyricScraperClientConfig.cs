@@ -2,6 +2,7 @@
 using LyricsScraperNET.Providers.AZLyrics;
 using LyricsScraperNET.Providers.Genius;
 using LyricsScraperNET.Providers.LyricFind;
+using LyricsScraperNET.Providers.LyricsFreak;
 using LyricsScraperNET.Providers.Musixmatch;
 using LyricsScraperNET.Providers.SongLyrics;
 using System.Text.Json.Serialization;
@@ -23,6 +24,8 @@ namespace LyricsScraperNET.Configuration
 
         public IExternalProviderOptions LyricFindOptions { get; set; } = new LyricFindOptions();
 
+        public IExternalProviderOptions LyricsFreakOptions { get; set; } = new LyricsFreakOptions();
+
         /// <inheritdoc />
         public bool UseParallelSearch { get; set; } = false;
 
@@ -31,6 +34,7 @@ namespace LyricsScraperNET.Configuration
             || GeniusOptions.Enabled
             || MusixmatchOptions.Enabled
             || SongLyricsOptions.Enabled
-            || LyricFindOptions.Enabled;
+            || LyricFindOptions.Enabled
+            || LyricsFreakOptions.Enabled;
     }
 }
