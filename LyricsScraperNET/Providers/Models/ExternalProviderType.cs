@@ -7,6 +7,7 @@
         Genius,
         Musixmatch,
         SongLyrics,
-        LyricFind
+        LyricFind,
+        KPopLyrics
     }
 }

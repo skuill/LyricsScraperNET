@@ -22,6 +22,10 @@
     "LyricFindOptions": {
       "SearchPriority": 55,
       "Enabled": true
+    },
+    "KPopLyricsOptions": {
+      "SearchPriority": 66,
+      "Enabled": true
     }
   }
 }
