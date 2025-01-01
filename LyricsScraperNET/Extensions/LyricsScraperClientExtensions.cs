@@ -45,7 +45,7 @@ namespace LyricsScraperNET
             lyricsScraperClient.AddProvider(new KPopLyricsProvider());
             return lyricsScraperClient;
         }
-        
+
         /// <summary>
         /// Configure LyricsScraperClient with all available providers in <seealso cref="ExternalProviderType"/>.
         /// Search lyrics enabled by default for all providers.

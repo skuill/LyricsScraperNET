@@ -71,7 +71,7 @@ namespace LyricsScraperNET.Extensions
 
             return result;
         }
-        
+
         public static string CreateCombinedUrlSlug(string artist, string songTitle)
         {
             artist = Regex.Replace(artist, "\\(.*?\\)", "").Trim();

@@ -10,10 +10,8 @@ namespace LyricsScraperNET.Providers.KPopLyrics
         {
             var htmlDoc = new HtmlDocument();
             htmlDoc.LoadHtml(lyric);
-            
-            // <p> -> \n\n
-            // <br> -> \n
-            var deEntitizedText = string.Join("\n\n", 
+
+            var deEntitizedText = string.Join("\n\n", // <p> -> \n\n
                 htmlDoc.DocumentNode.SelectNodes("//p")
                     .Select(node => HtmlEntity.DeEntitize(node.InnerHtml
                         .Replace("<br> ", "\n") // the trailing whitespace after <br> is necessary

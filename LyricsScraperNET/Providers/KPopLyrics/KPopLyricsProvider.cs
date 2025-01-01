@@ -87,7 +87,7 @@ namespace LyricsScraperNET.Providers.KPopLyrics
             if (WebClient == null || Parser == null)
             {
                 _logger?.LogWarning($"KPopLyrics. Please set up WebClient and Parser first");
-                return new SearchResult(Models.ExternalProviderType.KPopLyrics);
+                return new SearchResult(ExternalProviderType.KPopLyrics);
             }
 
             cancellationToken.ThrowIfCancellationRequested();
@@ -115,23 +115,23 @@ namespace LyricsScraperNET.Providers.KPopLyrics
 
             var htmlDoc = new HtmlDocument();
             htmlDoc.LoadHtml(text);
-            
+
             var mainNode = htmlDoc.DocumentNode.SelectNodes(LyricsContainerNodesXPath).FirstOrDefault();
 
             if (mainNode is null)
             {
                 return new SearchResult(ExternalProviderType.KPopLyrics, ResponseStatusCode.NoDataFound);
             }
-            
+
             var h2Node = htmlDoc.DocumentNode.SelectNodes("//h2").FirstOrDefault();
-            
+
             if (h2Node is null)
             {
                 return new SearchResult(ExternalProviderType.KPopLyrics, ResponseStatusCode.NoDataFound);
             }
 
             var rawHtmlLyrics = TakeParagraphsUntilHeader(h2Node);
-            
+
             if (string.IsNullOrEmpty(rawHtmlLyrics))
             {
                 return new SearchResult(ExternalProviderType.KPopLyrics, ResponseStatusCode.NoDataFound);
@@ -156,7 +156,7 @@ namespace LyricsScraperNET.Providers.KPopLyrics
         private string TakeParagraphsUntilHeader(HtmlNode h2)
         {
             var output = string.Empty;
-            
+
             var sibling = h2.NextSibling;
             while (sibling != null)
             {

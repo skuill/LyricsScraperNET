@@ -68,7 +68,7 @@ namespace LyricsScraperNET.UnitTest.Extensions
             Assert.True(externalTypeProvider.IsEnabled);
             Assert.Equal(5, externalTypeProvider.SearchPriority);
         }
-        
+
         [Fact]
         public void LyricsScraperClient_WithSongLyrics_ReturnsIsEnabled()
         {
