@@ -1,19 +1,13 @@
-﻿using LyricsScraperNET;
-using LyricsScraperNET.Configuration;
-using LyricsScraperNET.Providers.Abstract;
-using LyricsScraperNET.Providers.AZLyrics;
-using LyricsScraperNET.Providers.Genius;
-using LyricsScraperNET.Providers.SongLyrics;
-using LyricsScraperNET.Providers.LyricFind;
-using LyricsScraperNET.Models.Requests;
+﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
+using LyricsScraperNET.Configuration;
+using LyricsScraperNET.Models.Requests;
 using LyricsScraperNET.Models.Responses;
-using System.Threading.Tasks;
-using System;
-using Microsoft.Extensions.Logging;
-using System.Threading;
 
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
 

@@ -134,7 +134,8 @@ namespace LyricsScraperNET.Providers.KPopLyrics
             }
 
             // sometimes lyrics have eng translation but sometimes its only romanized version.
-            var h2Node = h2Nodes.FirstOrDefault(x => x.OuterHtml.Contains("Official English Translation")) ?? h2Nodes.FirstOrDefault(x => x.OuterHtml.Contains("Romanized"));
+            var h2Node = h2Nodes
+                .FirstOrDefault(x => x.OuterHtml.Contains("English")) ?? h2Nodes.FirstOrDefault(x => x.OuterHtml.Contains("Romanized"));
 
             if (h2Node is null)
             {
