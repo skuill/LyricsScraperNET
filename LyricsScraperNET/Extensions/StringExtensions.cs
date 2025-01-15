@@ -80,7 +80,7 @@ namespace LyricsScraperNET.Extensions
             var combined = $"{artist} {songTitle}";
 
             var slug = string.Empty;
-            
+
             foreach (var c in combined)
             {
                 switch (c)
