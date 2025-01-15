@@ -74,16 +74,35 @@ namespace LyricsScraperNET.Extensions
 
         public static string CreateCombinedUrlSlug(string artist, string songTitle)
         {
-            artist = Regex.Replace(artist, "\\(.*?\\)", "").Trim();
-            songTitle = Regex.Replace(songTitle, "\\(.*?\\)", "").Trim();
+            artist = Regex.Replace(artist, @"\([^a-zA-Z0-9\s]*\)", "").Trim();
+            songTitle = Regex.Replace(songTitle, @"\([^a-zA-Z0-9\s]*\)", "").Trim();
 
             var combined = $"{artist} {songTitle}";
 
-            var slug = Regex.Replace(combined.ToLower(), "[^a-z0-9]+", "-");
+            var slug = string.Empty;
+            
+            foreach (var c in combined)
+            {
+                switch (c)
+                {
+                    case ' ':
+                        slug += '-';
+                        break;
+                    case >= 'a' and <= 'z':
+                    case >= 'A' and <= 'Z':
+                    case >= '0' and <= '9':
+                        slug += c;
+                        break;
+                    case '-':
+                        slug += '-';
+                        break;
+                }
+            }
 
+            slug = Regex.Replace(slug, @"-+", "-");
             slug = slug.Trim('-');
 
-            return slug;
+            return slug.ToLower();
         }
     }
 }

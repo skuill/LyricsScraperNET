@@ -1,0 +1,20 @@
+﻿[
+  {
+    "LyricResultPath": "Providers/KPopLyrics/Resources/Lyrics_Result_01.txt",
+    "ArtistName": "NINE.i (나인아이)",
+    "SongName": "Back to Christmas (크리스마스처럼)",
+    "SongUri": null
+  },
+  {
+    "LyricResultPath": "Providers/KPopLyrics/Resources/Lyrics_Result_02.txt",
+    "ArtistName": "or& (오아랜)",
+    "SongName": "Invitation to me (나에게로의 초대)",
+    "SongUri": null
+  },
+  {
+    "LyricResultPath": "Providers/KPopLyrics/Resources/Lyrics_Result_01.txt",
+    "ArtistName": null,
+    "SongName": null,
+    "SongUri": "https://www.kpoplyrics.net/ninei-back-to-christmas.html"
+  }
+]

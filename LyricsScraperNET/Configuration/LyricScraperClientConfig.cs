@@ -23,6 +23,7 @@ namespace LyricsScraperNET.Configuration
         public IExternalProviderOptions SongLyricsOptions { get; set; } = new SongLyricsOptions();
 
         public IExternalProviderOptions LyricFindOptions { get; set; } = new LyricFindOptions();
+
         public IExternalProviderOptions KPopLyricsOptions { get; set; } = new KPopLyricsOptions();
 
         /// <inheritdoc />

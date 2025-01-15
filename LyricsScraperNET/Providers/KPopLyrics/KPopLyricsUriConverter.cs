@@ -10,7 +10,7 @@ namespace LyricsScraperNET.Providers.KPopLyrics
 
         public Uri GetLyricUri(string artist, string song)
         {
-            return new Uri(_baseUri, $"{StringExtensions.CreateCombinedUrlSlug(artist, song)}-lyrics-english-romanized.html");
+            return new Uri(_baseUri, $"{StringExtensions.CreateCombinedUrlSlug(artist, song)}.html");
         }
     }
 }

@@ -56,7 +56,8 @@ namespace LyricsScraperNET.UnitTest.Extensions
         [Theory]
         [InlineData("&some random", "test", "some-random-test")] // Removes `&`
         [InlineData("*some random", "test", "some-random-test")] // Removes `*`
-        [InlineData("(some) random", "test", "random-test")] // Strips content in parentheses
+        [InlineData("(some) random", "test", "some-random-test")] // DONT strip ASCII content in parentheses
+        [InlineData("(엔하이픈) random", "test", "random-test")] // strip NON-ASCII content in parentheses
         [InlineData("엔하이픈 random", "test", "random-test")] // Non-ASCII handling
         [InlineData("", "test", "test")] // Empty artist
         [InlineData("artist", "", "artist")] // Empty title

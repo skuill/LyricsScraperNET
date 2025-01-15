@@ -1,16 +1,17 @@
-﻿using LyricsScraperNET.Helpers;
-using LyricsScraperNET.Models.Responses;
-using LyricsScraperNET.Network;
-using LyricsScraperNET.Providers.Abstract;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.Options;
-using System;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using HtmlAgilityPack;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
+using LyricsScraperNET.Helpers;
+using LyricsScraperNET.Models.Responses;
+using LyricsScraperNET.Network;
+using LyricsScraperNET.Providers.Abstract;
 using LyricsScraperNET.Providers.Models;
+using HtmlAgilityPack;
 
 namespace LyricsScraperNET.Providers.KPopLyrics
 {
@@ -120,13 +121,24 @@ namespace LyricsScraperNET.Providers.KPopLyrics
 
             if (mainNode is null)
             {
+                _logger?.LogWarning($"KPopLyrics. Can't parse lyric from the page. Uri: {uri}");
                 return new SearchResult(ExternalProviderType.KPopLyrics, ResponseStatusCode.NoDataFound);
             }
 
-            var h2Node = htmlDoc.DocumentNode.SelectNodes("//h2").FirstOrDefault();
+            var h2Nodes = htmlDoc.DocumentNode.SelectNodes("//h2");
+
+            if (h2Nodes is null || !h2Nodes.Any())
+            {
+                _logger?.LogWarning($"KPopLyrics. Can't parse lyric from the page. Uri: {uri}");
+                return new SearchResult(ExternalProviderType.KPopLyrics, ResponseStatusCode.NoDataFound);
+            }
+
+            // sometimes lyrics have eng translation but sometimes its only romanized version.
+            var h2Node = h2Nodes.FirstOrDefault(x => x.OuterHtml.Contains("Official English Translation")) ?? h2Nodes.FirstOrDefault(x => x.OuterHtml.Contains("Romanized"));
 
             if (h2Node is null)
             {
+                _logger?.LogWarning($"KPopLyrics. Can't parse lyric from the page. Uri: {uri}");
                 return new SearchResult(ExternalProviderType.KPopLyrics, ResponseStatusCode.NoDataFound);
             }
 
@@ -134,6 +146,7 @@ namespace LyricsScraperNET.Providers.KPopLyrics
 
             if (string.IsNullOrEmpty(rawHtmlLyrics))
             {
+                _logger?.LogWarning($"KPopLyrics. Can't parse lyric from the page. Uri: {uri}");
                 return new SearchResult(ExternalProviderType.KPopLyrics, ResponseStatusCode.NoDataFound);
             }
 
@@ -142,22 +155,11 @@ namespace LyricsScraperNET.Providers.KPopLyrics
             return new SearchResult(result, ExternalProviderType.KPopLyrics);
         }
 
-        // Page lyrics looks like:
-        // h2 (Official English Translation)
-        // p
-        // p
-        // p
-        // h2 (Romanized)
-        // p
-        // p
-        // p
-        // p
-        // we only want the first lyrics
-        private string TakeParagraphsUntilHeader(HtmlNode h2)
+        private string TakeParagraphsUntilHeader(HtmlNode startNode)
         {
-            var output = string.Empty;
+            var paragraphs = new List<string>();
 
-            var sibling = h2.NextSibling;
+            var sibling = startNode.NextSibling;
             while (sibling != null)
             {
                 if (sibling.Name == "h2")
@@ -167,13 +169,18 @@ namespace LyricsScraperNET.Providers.KPopLyrics
 
                 if (sibling.Name == "p")
                 {
-                    output = string.Concat(output, sibling.OuterHtml);
+                    paragraphs.Add(sibling.OuterHtml);
+                }
+
+                if (sibling.Name != "h2" && sibling.Name != "p")
+                {
+                    break;
                 }
 
                 sibling = sibling.NextSibling;
             }
 
-            return output;
+            return string.Join("\n", paragraphs);
         }
     }
 }

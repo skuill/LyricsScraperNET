@@ -4,11 +4,11 @@ using LyricsScraperNET.Providers.Genius;
 using LyricsScraperNET.Providers.LyricFind;
 using LyricsScraperNET.Providers.Musixmatch;
 using LyricsScraperNET.Providers.SongLyrics;
+using LyricsScraperNET.Providers.KPopLyrics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using System;
-using LyricsScraperNET.Providers.KPopLyrics;
 
 namespace LyricsScraperNET.Configuration
 {
