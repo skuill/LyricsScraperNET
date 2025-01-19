@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using System.Text.RegularExpressions;
 using HtmlAgilityPack;
 using LyricsScraperNET.Providers.Abstract;
 
@@ -17,8 +18,9 @@ namespace LyricsScraperNET.Providers.KPopLyrics
                         .Replace("<br> ", "\n") // the trailing whitespace after <br> is necessary
                         .Trim()
                     )));
-
-            return deEntitizedText;
+            
+            // remove the tags that are left and trim the text
+            return Regex.Replace(deEntitizedText, "<.*?>", string.Empty).Trim();
         }
     }
 }

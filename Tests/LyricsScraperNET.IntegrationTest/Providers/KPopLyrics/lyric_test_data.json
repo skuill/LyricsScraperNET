@@ -16,5 +16,23 @@
     "ArtistName": null,
     "SongName": null,
     "SongUri": "https://www.kpoplyrics.net/ninei-back-to-christmas.html"
+  },
+  {
+    "LyricResultPath": "Providers/KPopLyrics/Resources/Lyrics_Result_03.txt",
+    "ArtistName": "JENNIE (제니)",
+    "SongName": "Mantra",
+    "SongUri": null
+  },
+  {
+    "LyricResultPath": "Providers/KPopLyrics/Resources/Lyrics_Result_04.txt",
+    "ArtistName": "OH MY GIRL (오마이걸)",
+    "SongName": "Classified",
+    "SongUri": null
+  },
+  {
+    "LyricResultPath": "Providers/KPopLyrics/Resources/Lyrics_Result_05.txt",
+    "ArtistName": "00s (빵빵즈)",
+    "SongName": "Psycho",
+    "SongUri": null
   }
 ]
