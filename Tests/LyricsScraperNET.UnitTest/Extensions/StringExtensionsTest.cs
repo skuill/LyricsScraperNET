@@ -52,5 +52,26 @@ namespace LyricsScraperNET.UnitTest.Extensions
             // Assert
             Assert.Equal(expected, actual);
         }
+
+        [Theory]
+        [InlineData("&some random", "test", "some-random-test")] // Removes `&`
+        [InlineData("*some random", "test", "some-random-test")] // Removes `*`
+        [InlineData("(some) random", "test", "some-random-test")] // DONT strip ASCII content in parentheses
+        [InlineData("(엔하이픈) random", "test", "random-test")] // strip NON-ASCII content in parentheses
+        [InlineData("엔하이픈 random", "test", "random-test")] // Non-ASCII handling
+        [InlineData("", "test", "test")] // Empty artist
+        [InlineData("artist", "", "artist")] // Empty title
+        [InlineData("", "", "")] // Both empty
+        [InlineData("   ", "test", "test")] // Artist with spaces only
+        [InlineData("artist", "   ", "artist")] // Title with spaces only
+        [InlineData("A Very Long Artist Name", "With CAPS", "a-very-long-artist-name-with-caps")] // Mixed case
+        [InlineData("artist---name", "title!!!", "artist-name-title")] // Multiple special characters
+        [InlineData("trailing-", "-leading", "trailing-leading")] // Ensure no trailing/leading dashes
+        public void GenerateCombinedUrlSlug_Tests(string artist, string title, string expected)
+        {
+            var slug = StringExtensions.CreateCombinedUrlSlug(artist, title);
+
+            Assert.Equal(expected, slug);
+        }
     }
 }

@@ -31,7 +31,7 @@ The library currently supports the following providers:
 - [SongLyrics](https://www.songlyrics.com/)
 - [LyricFind](https://www.lyricfind.com/)
 - [LyricsFreak](https://www.lyricsfreak.com/) (**Coming soon** 🚧. [Issue #38](https://github.com/skuill/LyricsScraperNET/issues/38))
-- [kpoplyrics](https://www.kpoplyrics.net/) (**Coming soon** 🚧. [Issue #39](https://github.com/skuill/LyricsScraperNET/issues/39))
+- [kpoplyrics](https://www.kpoplyrics.net/) (added by [@Lukeuke](https://github.com/Lukeuke))
 - [Letras.mus.br](https://www.letras.mus.br/) (**Coming soon** 🚧. [Issue #40](https://github.com/skuill/LyricsScraperNET/issues/40))
 - [darklyrics](http://www.darklyrics.com/) (**Coming soon** 🚧. [Issue #41](https://github.com/skuill/LyricsScraperNET/issues/41))
 - [vagalume](https://www.vagalume.com.br/) (**Coming soon** 🚧. [Issue #42](https://github.com/skuill/LyricsScraperNET/issues/42))

@@ -55,6 +55,21 @@ namespace LyricsScraperNET.UnitTest.Extensions
         }
 
         [Fact]
+        public void LyricsScraperClient_WithKPopLyrics_ReturnsIsEnabled()
+        {
+            // Act
+            var lyricsScraperClient = _lyricsScraperClient.WithKPopLyrics();
+            var externalTypeProvider = lyricsScraperClient[ExternalProviderType.KPopLyrics];
+
+            // Assert
+            Assert.NotNull(lyricsScraperClient);
+            Assert.True(lyricsScraperClient.IsEnabled);
+            Assert.NotNull(externalTypeProvider);
+            Assert.True(externalTypeProvider.IsEnabled);
+            Assert.Equal(5, externalTypeProvider.SearchPriority);
+        }
+
+        [Fact]
         public void LyricsScraperClient_WithSongLyrics_ReturnsIsEnabled()
         {
             // Act
