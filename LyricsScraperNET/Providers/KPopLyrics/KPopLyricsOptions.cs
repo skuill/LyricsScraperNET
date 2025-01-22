@@ -7,7 +7,7 @@ namespace LyricsScraperNET.Providers.KPopLyrics
     {
         public ExternalProviderType ExternalProviderType => ExternalProviderType.KPopLyrics;
         public bool Enabled { get; set; }
-        public int SearchPriority { get; set; } = 5;
+        public int SearchPriority { get; set; } = 3;
         public string ConfigurationSectionName => "KPopLyricsOptions";
 
         public override bool Equals(object? obj)

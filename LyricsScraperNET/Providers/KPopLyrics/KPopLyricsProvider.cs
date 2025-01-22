@@ -1,17 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.Options;
+﻿using HtmlAgilityPack;
 using LyricsScraperNET.Helpers;
 using LyricsScraperNET.Models.Responses;
 using LyricsScraperNET.Network;
 using LyricsScraperNET.Providers.Abstract;
 using LyricsScraperNET.Providers.Models;
-using HtmlAgilityPack;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace LyricsScraperNET.Providers.KPopLyrics
 {
@@ -21,6 +21,7 @@ namespace LyricsScraperNET.Providers.KPopLyrics
         private readonly IExternalUriConverter _uriConverter;
 
         private const string LyricsContainerNodesXPath = "//*[contains(@class, 'entry-content') and contains(@class, 'mh-clearfix')]";
+        
         #region Constructors
 
         public KPopLyricsProvider()

@@ -9,7 +9,7 @@ namespace LyricsScraperNET.Providers.AZLyrics
 
         public ExternalProviderType ExternalProviderType => ExternalProviderType.AZLyrics;
 
-        public int SearchPriority { get; set; } = 4;
+        public int SearchPriority { get; set; } = 5;
 
         public string ConfigurationSectionName { get; } = "AZLyricsOptions";
 

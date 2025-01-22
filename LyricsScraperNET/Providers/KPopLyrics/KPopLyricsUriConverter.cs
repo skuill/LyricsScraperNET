@@ -1,6 +1,6 @@
-﻿using System;
-using LyricsScraperNET.Extensions;
+﻿using LyricsScraperNET.Extensions;
 using LyricsScraperNET.Providers.Abstract;
+using System;
 
 namespace LyricsScraperNET.Providers.KPopLyrics
 {
