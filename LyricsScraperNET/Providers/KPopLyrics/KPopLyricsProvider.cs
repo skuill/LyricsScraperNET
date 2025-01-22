@@ -21,7 +21,7 @@ namespace LyricsScraperNET.Providers.KPopLyrics
         private readonly IExternalUriConverter _uriConverter;
 
         private const string LyricsContainerNodesXPath = "//*[contains(@class, 'entry-content') and contains(@class, 'mh-clearfix')]";
-        
+
         #region Constructors
 
         public KPopLyricsProvider()
@@ -107,6 +107,7 @@ namespace LyricsScraperNET.Providers.KPopLyrics
         {
             _logger = loggerFactory.CreateLogger<KPopLyricsProvider>();
         }
+
         private SearchResult PostProcessLyric(Uri uri, string text)
         {
             if (string.IsNullOrEmpty(text))
@@ -122,7 +123,13 @@ namespace LyricsScraperNET.Providers.KPopLyrics
 
             if (mainNode is null)
             {
-                _logger?.LogWarning($"KPopLyrics. Can't parse lyric from the page. Uri: {uri}");
+                _logger?.LogWarning($"KPopLyrics. Can't parse lyric from the page. Couldn't find lyrics container. Uri: {uri}");
+                return new SearchResult(ExternalProviderType.KPopLyrics, ResponseStatusCode.NoDataFound);
+            }
+
+            if (mainNode.OuterHtml.Contains("no-content-found"))
+            {
+                _logger?.LogInformation($"KPopLyrics. Page not found (404). Uri: {uri}");
                 return new SearchResult(ExternalProviderType.KPopLyrics, ResponseStatusCode.NoDataFound);
             }
 
@@ -130,18 +137,20 @@ namespace LyricsScraperNET.Providers.KPopLyrics
 
             if (h2Nodes is null || !h2Nodes.Any())
             {
-                _logger?.LogWarning($"KPopLyrics. Can't parse lyric from the page. Uri: {uri}");
+                _logger?.LogWarning($"KPopLyrics. Can't parse lyric from the page. Couldn't find header nodes. Uri: {uri}");
                 return new SearchResult(ExternalProviderType.KPopLyrics, ResponseStatusCode.NoDataFound);
             }
 
-            // sometimes lyrics have eng translation but sometimes its only romanized version.
+            // Sometimes lyrics have eng translation but sometimes its only romanized version.
             var h2Node = h2Nodes
-                            .FirstOrDefault(x => x.OuterHtml.Contains("Official English Translation") || x.OuterHtml.Contains("English Translation Lyrics"))
-                            ?? h2Nodes.FirstOrDefault(x => x.OuterHtml.Contains("Romanized"));
+                .FirstOrDefault(x => x.OuterHtml.Contains("Official English Translation")
+                                  || x.OuterHtml.Contains("English Translation Lyrics"))
+                ?? h2Nodes
+                    .FirstOrDefault(x => x.OuterHtml.Contains("Romanized"));
 
             if (h2Node is null)
             {
-                _logger?.LogWarning($"KPopLyrics. Can't parse lyric from the page. Uri: {uri}");
+                _logger?.LogWarning($"KPopLyrics. Can't parse lyric from the page. Couldn't find a valid lyrics header node. Uri: {uri}");
                 return new SearchResult(ExternalProviderType.KPopLyrics, ResponseStatusCode.NoDataFound);
             }
 
@@ -149,7 +158,7 @@ namespace LyricsScraperNET.Providers.KPopLyrics
 
             if (string.IsNullOrEmpty(rawHtmlLyrics))
             {
-                _logger?.LogWarning($"KPopLyrics. Can't parse lyric from the page. Uri: {uri}");
+                _logger?.LogWarning($"KPopLyrics. Can't parse lyric from the page. Couldn't extract lyrics content from paragraphs. Uri: {uri}");
                 return new SearchResult(ExternalProviderType.KPopLyrics, ResponseStatusCode.NoDataFound);
             }
 
@@ -166,19 +175,12 @@ namespace LyricsScraperNET.Providers.KPopLyrics
             while (sibling != null)
             {
                 if (sibling.Name == "h2")
-                {
                     break;
-                }
 
                 if (sibling.Name == "p")
-                {
                     paragraphs.Add(sibling.OuterHtml);
-                }
-
-                if (sibling.Name != "h2" && sibling.Name != "p")
-                {
+                else
                     break;
-                }
 
                 sibling = sibling.NextSibling;
             }
