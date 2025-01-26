@@ -1,5 +1,6 @@
 ﻿using LyricsScraperNET.Providers.AZLyrics;
 using LyricsScraperNET.Providers.Genius;
+using LyricsScraperNET.Providers.KPopLyrics;
 using LyricsScraperNET.Providers.LyricFind;
 using LyricsScraperNET.Providers.LyricsFreak;
 using LyricsScraperNET.Providers.Models;
@@ -40,6 +41,12 @@ namespace LyricsScraperNET
             return lyricsScraperClient;
         }
 
+        public static ILyricsScraperClient WithKPopLyrics(this ILyricsScraperClient lyricsScraperClient)
+        {
+            lyricsScraperClient.AddProvider(new KPopLyricsProvider());
+            return lyricsScraperClient;
+        }
+
         public static ILyricsScraperClient WithLyricsFreak(this ILyricsScraperClient lyricsScraperClient)
         {
             lyricsScraperClient.AddProvider(new LyricsFreakProvider());
@@ -58,6 +65,7 @@ namespace LyricsScraperNET
                 .WithMusixmatch()
                 .WithSongLyrics()
                 .WithLyricFind()
+                .WithKPopLyrics()
                 .WithLyricsFreak();
         }
     }

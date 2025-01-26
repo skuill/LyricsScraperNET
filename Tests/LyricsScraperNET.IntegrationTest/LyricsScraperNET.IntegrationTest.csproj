@@ -86,6 +86,24 @@
 		<None Update="Providers\SongLyrics\lyric_test_data.json">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
+		<None Update="Providers\KPopLyrics\lyric_test_data.json">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<None Update="Providers\KPopLyrics\Resources\Lyrics_Result_01.txt">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<None Update="Providers\KPopLyrics\Resources\Lyrics_Result_02.txt">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<None Update="Providers\KPopLyrics\Resources\Lyrics_Result_03.txt">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<None Update="Providers\KPopLyrics\Resources\Lyrics_Result_04.txt">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<None Update="Providers\KPopLyrics\Resources\Lyrics_Result_05.txt">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
 	</ItemGroup>
 
 </Project>

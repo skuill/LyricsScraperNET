@@ -10,6 +10,21 @@ namespace LyricsScraperNET.UnitTest.Extensions
         private ILyricsScraperClient _lyricsScraperClient => new LyricsScraperClient();
 
         [Fact]
+        public void LyricsScraperClient_WithLyricsFreak_ReturnsIsEnabled()
+        {
+            // Act
+            var lyricsScraperClient = _lyricsScraperClient.WithLyricsFreak();
+            var externalTypeProvider = lyricsScraperClient[ExternalProviderType.LyricsFreak];
+
+            // Assert
+            Assert.NotNull(lyricsScraperClient);
+            Assert.True(lyricsScraperClient.IsEnabled);
+            Assert.NotNull(externalTypeProvider);
+            Assert.True(externalTypeProvider.IsEnabled);
+            Assert.Equal(6, externalTypeProvider.SearchPriority);
+        }
+
+        [Fact]
         public void LyricsScraperClient_WithAZLyrics_ReturnsIsEnabled()
         {
             // Act
@@ -21,7 +36,7 @@ namespace LyricsScraperNET.UnitTest.Extensions
             Assert.True(lyricsScraperClient.IsEnabled);
             Assert.NotNull(externalTypeProvider);
             Assert.True(externalTypeProvider.IsEnabled);
-            Assert.Equal(4, externalTypeProvider.SearchPriority);
+            Assert.Equal(5, externalTypeProvider.SearchPriority);
         }
 
         [Fact]
@@ -36,7 +51,7 @@ namespace LyricsScraperNET.UnitTest.Extensions
             Assert.True(lyricsScraperClient.IsEnabled);
             Assert.NotNull(externalTypeProvider);
             Assert.True(externalTypeProvider.IsEnabled);
-            Assert.Equal(1, externalTypeProvider.SearchPriority);
+            Assert.Equal(4, externalTypeProvider.SearchPriority);
         }
 
         [Fact]
@@ -52,6 +67,21 @@ namespace LyricsScraperNET.UnitTest.Extensions
             Assert.NotNull(externalTypeProvider);
             Assert.True(externalTypeProvider.IsEnabled);
             Assert.Equal(0, externalTypeProvider.SearchPriority);
+        }
+
+        [Fact]
+        public void LyricsScraperClient_WithKPopLyrics_ReturnsIsEnabled()
+        {
+            // Act
+            var lyricsScraperClient = _lyricsScraperClient.WithKPopLyrics();
+            var externalTypeProvider = lyricsScraperClient[ExternalProviderType.KPopLyrics];
+
+            // Assert
+            Assert.NotNull(lyricsScraperClient);
+            Assert.True(lyricsScraperClient.IsEnabled);
+            Assert.NotNull(externalTypeProvider);
+            Assert.True(externalTypeProvider.IsEnabled);
+            Assert.Equal(3, externalTypeProvider.SearchPriority);
         }
 
         [Fact]

@@ -68,7 +68,8 @@ namespace LyricsScraperNET.UnitTest.Configuration
                 { ExternalProviderType.Musixmatch, 33},
                 { ExternalProviderType.SongLyrics, 44},
                 { ExternalProviderType.LyricFind, 55},
-                { ExternalProviderType.LyricsFreak, 66}
+                { ExternalProviderType.KPopLyrics, 66},
+                { ExternalProviderType.LyricsFreak, 77}
             };
 
             string settingsPath = "Resources\\full_test_settings.json";

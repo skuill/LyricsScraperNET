@@ -1,5 +1,4 @@
-﻿using Genius.Models.Song;
-using HtmlAgilityPack;
+﻿using HtmlAgilityPack;
 using LyricsScraperNET.Helpers;
 using LyricsScraperNET.Models.Responses;
 using LyricsScraperNET.Network;
@@ -17,7 +16,7 @@ namespace LyricsScraperNET.Providers.LyricsFreak
     {
         private ILogger<LyricsFreakProvider>? _logger;
         private readonly IExternalUriConverter _uriConverter;
-        private readonly string LyricsHrefXPath =  "//a[translate(@title, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz') = '{0} lyrics']";
+        private readonly string LyricsHrefXPath = "//a[translate(@title, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz') = '{0} lyrics']";
         private const string LyricsDivXPath = "//div[@data-container-id='lyrics']";
 
         public override IExternalProviderOptions Options { get; }
@@ -73,7 +72,7 @@ namespace LyricsScraperNET.Providers.LyricsFreak
 
                 if (WebClient == null || Parser == null)
                 {
-                    _logger?.LogWarning($"LyricFind. Please set up WebClient and Parser first");
+                    _logger?.LogWarning($"LyricsFreak. Please set up WebClient and Parser first");
                     return new SearchResult(Models.ExternalProviderType.LyricsFreak);
                 }
                 var htmlResponse = await WebClient.LoadAsync(artistUri, cancellationToken);
@@ -83,17 +82,17 @@ namespace LyricsScraperNET.Providers.LyricsFreak
 
                 if (string.IsNullOrEmpty(songUri))
                 {
-                    _logger?.LogWarning($"LyricFind. Can't find song Uri for song: [{song}]");
+                    _logger?.LogWarning($"LyricsFreak. Can't find song Uri for song: [{song}]");
                     return new SearchResult(Models.ExternalProviderType.LyricsFreak);
                 }
                 var songUriResult = await SearchLyricAsync(new Uri(LyricsFreakUriConverter.BaseUrl + songUri), cancellationToken);
                 cancellationToken.ThrowIfCancellationRequested();
-                if (string.IsNullOrEmpty(songUriResult?.LyricText))
+                if (songUriResult is null || string.IsNullOrEmpty(songUriResult?.LyricText))
                 {
-                    _logger?.LogWarning($"LyricFind. Can't find song lyrics for song : [{song}]");
-                    return new SearchResult(Models.ExternalProviderType.LyricFind);
+                    _logger?.LogWarning($"LyricsFreak. Can't find song lyrics for song : [{song}]");
+                    return new SearchResult(Models.ExternalProviderType.LyricsFreak);
                 }
-                return new SearchResult(songUriResult.LyricText, Models.ExternalProviderType.LyricsFreak);
+                return new SearchResult(songUriResult!.LyricText, Models.ExternalProviderType.LyricsFreak);
             }
             catch (Exception ex)
             {
@@ -109,8 +108,8 @@ namespace LyricsScraperNET.Providers.LyricsFreak
             var songHtmlLyrics = ParseForSongLyrics(text);
             if (string.IsNullOrEmpty(songHtmlLyrics))
             {
-                _logger?.LogWarning($"LyricFind. Can't find song lyrics for song uri: [{uri.AbsoluteUri}]");
-                return new SearchResult(Models.ExternalProviderType.LyricFind);
+                _logger?.LogWarning($"LyricsFreak. Can't find song lyrics for song uri: [{uri.AbsoluteUri}]");
+                return new SearchResult(Models.ExternalProviderType.LyricsFreak);
             }
             var lyricsText = Parser.Parse(songHtmlLyrics);
             return new SearchResult(lyricsText, Models.ExternalProviderType.LyricsFreak);
@@ -118,8 +117,9 @@ namespace LyricsScraperNET.Providers.LyricsFreak
         #endregion
         #region Private methods
         private string ParseForSongUri(string htmlBody, string song)
-        {
-            var linkNode = GetNode(htmlBody, string.Format(LyricsHrefXPath, song.ToLower()));
+        {        
+            string formattedXPath = string.Format(LyricsHrefXPath, EncodedSong(song));
+            var linkNode = GetNode(htmlBody, formattedXPath);
             if (linkNode == null)
             {
                 return string.Empty;
@@ -144,6 +144,12 @@ namespace LyricsScraperNET.Providers.LyricsFreak
             var htmlDoc = new HtmlDocument();
             htmlDoc.LoadHtml(htmlBody);
             return htmlDoc.DocumentNode.SelectSingleNode(xPath);
+        }
+        private string EncodedSong(string song)
+        {
+            string encodedSong = System.Net.WebUtility.HtmlEncode(song).ToLowerInvariant();
+            encodedSong = encodedSong.Replace("&#39;", "&#039;");
+            return encodedSong;
         }
         #endregion
     }

@@ -1,0 +1,38 @@
+﻿[
+  {
+    "LyricResultPath": "Providers/KPopLyrics/Resources/Lyrics_Result_01.txt",
+    "ArtistName": "NINE.i (나인아이)",
+    "SongName": "Back to Christmas (크리스마스처럼)",
+    "SongUri": null
+  },
+  {
+    "LyricResultPath": "Providers/KPopLyrics/Resources/Lyrics_Result_02.txt",
+    "ArtistName": "or& (오아랜)",
+    "SongName": "Invitation to me (나에게로의 초대)",
+    "SongUri": null
+  },
+  {
+    "LyricResultPath": "Providers/KPopLyrics/Resources/Lyrics_Result_01.txt",
+    "ArtistName": null,
+    "SongName": null,
+    "SongUri": "https://www.kpoplyrics.net/ninei-back-to-christmas.html"
+  },
+  {
+    "LyricResultPath": "Providers/KPopLyrics/Resources/Lyrics_Result_03.txt",
+    "ArtistName": "JENNIE (제니)",
+    "SongName": "Mantra",
+    "SongUri": null
+  },
+  {
+    "LyricResultPath": "Providers/KPopLyrics/Resources/Lyrics_Result_04.txt",
+    "ArtistName": "OH MY GIRL (오마이걸)",
+    "SongName": "Classified",
+    "SongUri": null
+  },
+  {
+    "LyricResultPath": "Providers/KPopLyrics/Resources/Lyrics_Result_05.txt",
+    "ArtistName": "00s (빵빵즈)",
+    "SongName": "Psycho",
+    "SongUri": null
+  }
+]

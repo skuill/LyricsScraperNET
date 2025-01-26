@@ -1,21 +1,18 @@
 ﻿using LyricsScraperNET.Providers.Abstract;
 using LyricsScraperNET.Providers.Models;
 
-namespace LyricsScraperNET.Providers.AZLyrics
+namespace LyricsScraperNET.Providers.KPopLyrics
 {
-    public sealed class AZLyricsOptions : IExternalProviderOptions
+    public class KPopLyricsOptions : IExternalProviderOptions
     {
+        public ExternalProviderType ExternalProviderType => ExternalProviderType.KPopLyrics;
         public bool Enabled { get; set; }
-
-        public ExternalProviderType ExternalProviderType => ExternalProviderType.AZLyrics;
-
-        public int SearchPriority { get; set; } = 5;
-
-        public string ConfigurationSectionName { get; } = "AZLyricsOptions";
+        public int SearchPriority { get; set; } = 3;
+        public string ConfigurationSectionName => "KPopLyricsOptions";
 
         public override bool Equals(object? obj)
         {
-            return obj is AZLyricsOptions options &&
+            return obj is KPopLyricsOptions options &&
                    ExternalProviderType == options.ExternalProviderType;
         }
 

@@ -72,6 +72,39 @@ namespace LyricsScraperNET.Extensions
             return result;
         }
 
+        public static string CreateCombinedUrlSlug(string artist, string songTitle)
+        {
+            artist = Regex.Replace(artist, @"\([^a-zA-Z0-9\s]*\)", "").Trim();
+            songTitle = Regex.Replace(songTitle, @"\([^a-zA-Z0-9\s]*\)", "").Trim();
+
+            var combined = $"{artist} {songTitle}";
+
+            var slug = string.Empty;
+
+            foreach (var c in combined)
+            {
+                switch (c)
+                {
+                    case ' ':
+                        slug += '-';
+                        break;
+                    case >= 'a' and <= 'z':
+                    case >= 'A' and <= 'Z':
+                    case >= '0' and <= '9':
+                        slug += c;
+                        break;
+                    case '-':
+                        slug += '-';
+                        break;
+                }
+            }
+
+            slug = Regex.Replace(slug, @"-+", "-");
+            slug = slug.Trim('-');
+
+            return slug.ToLower();
+        }
+
         public static string СonvertSpaceToPlusFormat(this string input,  bool removeProhibitedSymbols = false)
         {
             if (string.IsNullOrWhiteSpace(input))

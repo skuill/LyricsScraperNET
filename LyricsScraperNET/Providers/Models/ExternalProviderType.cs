@@ -8,6 +8,7 @@
         Musixmatch,
         SongLyrics,
         LyricFind,
+        KPopLyrics,
         LyricsFreak
     }
 }

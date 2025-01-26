@@ -8,7 +8,7 @@ namespace LyricsScraperNET.Providers.LyricsFreak
         public ExternalProviderType ExternalProviderType => ExternalProviderType.LyricsFreak;
 
         public bool Enabled { get; set; }
-        public int SearchPriority { get; set; } = 5;
+        public int SearchPriority { get; set; } = 6;
 
         public string ConfigurationSectionName { get; } = "LyricsFreakOptions";
 
