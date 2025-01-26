@@ -30,7 +30,7 @@ The library currently supports the following providers:
 - [MusixMatch](https://www.musixmatch.com/)
 - [SongLyrics](https://www.songlyrics.com/)
 - [LyricFind](https://www.lyricfind.com/)
-- [LyricsFreak](https://www.lyricsfreak.com/) (**Coming soon** 🚧. [Issue #38](https://github.com/skuill/LyricsScraperNET/issues/38))
+- [LyricsFreak](https://www.lyricsfreak.com/) (added by [@ajay201402](https://github.com/ajay201402))
 - [kpoplyrics](https://www.kpoplyrics.net/) (added by [@Lukeuke](https://github.com/Lukeuke))
 - [Letras.mus.br](https://www.letras.mus.br/) (**Coming soon** 🚧. [Issue #40](https://github.com/skuill/LyricsScraperNET/issues/40))
 - [darklyrics](http://www.darklyrics.com/) (**Coming soon** 🚧. [Issue #41](https://github.com/skuill/LyricsScraperNET/issues/41))
