@@ -56,6 +56,9 @@
 		<None Update="Providers\LyricsFreak\Resources\Lyrics_Result_01.txt">
 		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
+		<None Update="Providers\LyricsFreak\Resources\Lyrics_Result_03.txt">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
 		<None Update="Providers\LyricsFreak\Resources\Lyrics_Result_02.txt">
 		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>

@@ -17,7 +17,6 @@ namespace LyricsScraperNET.Providers.LyricsFreak
         {
             var artistFormatted = artist.ToLowerInvariant().СonvertToPlusFormat(removeProhibitedSymbols: true);
             return new Uri(string.Format(uriArtistPathFormat, artistFormatted.First(c => c != '+'), artistFormatted));
-
         }
 
         public Uri GetLyricUri(string artist, string song)

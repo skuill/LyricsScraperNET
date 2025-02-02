@@ -12,6 +12,12 @@
     "SongUri": null
   },
   {
+    "LyricResultPath": "Providers/LyricsFreak/Resources/Lyrics_Result_03.txt",
+    "ArtistName": "Zé Ramalho",
+    "SongName": "Batendo Na Porta Do Céu (Versão II)",
+    "SongUri": null
+  },
+  {
     "LyricResultPath": "Providers/LyricsFreak/Resources/Lyrics_Result_01.txt",
     "ArtistName": null,
     "SongName": null,

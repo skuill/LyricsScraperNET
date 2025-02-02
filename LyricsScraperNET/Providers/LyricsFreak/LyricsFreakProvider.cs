@@ -16,8 +16,11 @@ namespace LyricsScraperNET.Providers.LyricsFreak
     {
         private ILogger<LyricsFreakProvider>? _logger;
         private readonly IExternalUriConverter _uriConverter;
-        private readonly string LyricsHrefXPath = "//a[translate(@title, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz') = '{0} lyrics']";
+        
+        private const string LyricsHrefXPath = "//a[contains(translate(@title, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), '{0} lyrics')]";
         private const string LyricsDivXPath = "//div[@data-container-id='lyrics']";
+
+        private const string PageNotFoundText = "#404 - Page Not Found";
 
         public override IExternalProviderOptions Options { get; }
 
@@ -90,11 +93,17 @@ namespace LyricsScraperNET.Providers.LyricsFreak
 
             cancellationToken.ThrowIfCancellationRequested();
 
+            if (htmlResponse.Contains(PageNotFoundText))
+            {
+                _logger?.LogWarning($"LyricsFreak. Artist's page not found (404). [{artist}]. Song name: [{song}]");
+                return new SearchResult(Models.ExternalProviderType.LyricsFreak);
+            }
+
             // 2. Find song on the artist page and get link to the web page.
             var songHref = GetSongHrefFromHtmlBody(htmlResponse, song);
             if (string.IsNullOrEmpty(songHref))
             {
-                _logger?.LogWarning($"LyricsFreak. Can't find song Uri for song: [{song}]");
+                _logger?.LogWarning($"LyricsFreak. Can't find song Uri for artist: [{artist}]. Song name: [{song}]");
                 return new SearchResult(Models.ExternalProviderType.LyricsFreak);
             }
             var songUri = new Uri(LyricsFreakUriConverter.BaseUrl + songHref);
@@ -104,14 +113,14 @@ namespace LyricsScraperNET.Providers.LyricsFreak
 
         protected async override Task<SearchResult> SearchLyricAsync(Uri uri, CancellationToken cancellationToken = default)
         {
-            var text = await WebClient.LoadAsync(uri, cancellationToken);
+            var htmlBodyContent = await WebClient.LoadAsync(uri, cancellationToken);
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            var songLyrics = GetSongLyricsFromHtmlBody(text);
+            var songLyrics = GetSongLyricsFromHtmlBody(htmlBodyContent);
             if (string.IsNullOrEmpty(songLyrics))
             {
-                _logger?.LogWarning($"LyricsFreak. Can't find song lyrics for song uri: [{uri.AbsoluteUri}]");
+                _logger?.LogWarning($"LyricsFreak. Can't find lyrics for song's uri: [{uri}]");
                 return new SearchResult(Models.ExternalProviderType.LyricsFreak);
             }
 
@@ -126,12 +135,20 @@ namespace LyricsScraperNET.Providers.LyricsFreak
 
         private string GetSongHrefFromHtmlBody(string htmlBody, string song)
         {
+            // Encoded needed for songs like "Devil's Calling". Title in htmlBody will be: "Devil&#039;s Calling Lyrics"
             string formattedXPath = string.Format(LyricsHrefXPath, GetEncodedSong(song));
-            var linkNode = htmlBody.SelectSingleNodeByXPath(formattedXPath);
+
+            // In other cases tried lowercase search of the original song name. 
+            // Example. Artist: "Zé Ramalho". Song: "Batendo Na Porta Do Céu (Versão II)"
+            string originalXPath = string.Format(LyricsHrefXPath, song.ToLowerInvariant());
+
+            var linkNode = htmlBody.SelectSingleNodeByXPath(formattedXPath)
+                ?? (!song.Contains("'") 
+                    ? htmlBody.SelectSingleNodeByXPath(originalXPath) 
+                    : null);
+
             if (linkNode == null)
-            {
                 return string.Empty;
-            }
 
             string hrefSong = linkNode.GetAttributeValue("href", string.Empty);
             return hrefSong;
@@ -140,11 +157,10 @@ namespace LyricsScraperNET.Providers.LyricsFreak
         private string GetSongLyricsFromHtmlBody(string htmlBody)
         {
             var lyricsNode = htmlBody.SelectSingleNodeByXPath(LyricsDivXPath);
+
             if (lyricsNode == null)
-            {
                 return string.Empty;
 
-            }
             string lyricsText = lyricsNode.InnerText.Trim();
             return lyricsText;
         }
