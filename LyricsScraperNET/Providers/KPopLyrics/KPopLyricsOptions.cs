@@ -1,4 +1,5 @@
-﻿using LyricsScraperNET.Providers.Abstract;
+﻿using LyricsScraperNET.Common;
+using LyricsScraperNET.Providers.Abstract;
 using LyricsScraperNET.Providers.Models;
 
 namespace LyricsScraperNET.Providers.KPopLyrics
@@ -6,8 +7,11 @@ namespace LyricsScraperNET.Providers.KPopLyrics
     public class KPopLyricsOptions : IExternalProviderOptions
     {
         public ExternalProviderType ExternalProviderType => ExternalProviderType.KPopLyrics;
+
         public bool Enabled { get; set; }
-        public int SearchPriority { get; set; } = 3;
+
+        public int SearchPriority { get; set; } = Constants.ProvidersSearchPriorities[ExternalProviderType.KPopLyrics];
+
         public string ConfigurationSectionName => "KPopLyricsOptions";
 
         public override bool Equals(object? obj)

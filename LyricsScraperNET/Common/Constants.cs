@@ -1,7 +1,21 @@
-﻿namespace LyricsScraperNET.Common
+﻿using LyricsScraperNET.Providers.Models;
+using System.Collections.Generic;
+
+namespace LyricsScraperNET.Common
 {
     internal static class Constants
     {
+        public static Dictionary<ExternalProviderType, int> ProvidersSearchPriorities = new Dictionary<ExternalProviderType, int>()
+        {
+            { ExternalProviderType.AZLyrics, 6},
+            { ExternalProviderType.Genius, 5},
+            { ExternalProviderType.Musixmatch, 0},
+            { ExternalProviderType.SongLyrics, 4},
+            { ExternalProviderType.LyricFind, 1},
+            { ExternalProviderType.KPopLyrics, 2},
+            { ExternalProviderType.LyricsFreak, 3}
+        };
+
         internal static class ResponseMessages
         {
             internal static readonly string ExternalProvidersListIsEmpty = "Empty external providers list! Please set any external provider first";

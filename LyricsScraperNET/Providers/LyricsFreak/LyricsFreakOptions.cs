@@ -1,4 +1,5 @@
-﻿using LyricsScraperNET.Providers.Abstract;
+﻿using LyricsScraperNET.Common;
+using LyricsScraperNET.Providers.Abstract;
 using LyricsScraperNET.Providers.Models;
 
 namespace LyricsScraperNET.Providers.LyricsFreak
@@ -9,7 +10,7 @@ namespace LyricsScraperNET.Providers.LyricsFreak
 
         public bool Enabled { get; set; }
 
-        public int SearchPriority { get; set; } = 6;
+        public int SearchPriority { get; set; } = Constants.ProvidersSearchPriorities[ExternalProviderType.LyricsFreak];
 
         public string ConfigurationSectionName { get; } = "LyricsFreakOptions";
 

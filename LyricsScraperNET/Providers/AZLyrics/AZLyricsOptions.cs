@@ -1,4 +1,5 @@
-﻿using LyricsScraperNET.Providers.Abstract;
+﻿using LyricsScraperNET.Common;
+using LyricsScraperNET.Providers.Abstract;
 using LyricsScraperNET.Providers.Models;
 
 namespace LyricsScraperNET.Providers.AZLyrics
@@ -9,7 +10,7 @@ namespace LyricsScraperNET.Providers.AZLyrics
 
         public ExternalProviderType ExternalProviderType => ExternalProviderType.AZLyrics;
 
-        public int SearchPriority { get; set; } = 5;
+        public int SearchPriority { get; set; } = Constants.ProvidersSearchPriorities[ExternalProviderType.AZLyrics];
 
         public string ConfigurationSectionName { get; } = "AZLyricsOptions";
 

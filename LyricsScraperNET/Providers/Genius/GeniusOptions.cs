@@ -1,4 +1,5 @@
-﻿using LyricsScraperNET.Providers.Abstract;
+﻿using LyricsScraperNET.Common;
+using LyricsScraperNET.Providers.Abstract;
 using LyricsScraperNET.Providers.Models;
 
 namespace LyricsScraperNET.Providers.Genius
@@ -14,7 +15,7 @@ namespace LyricsScraperNET.Providers.Genius
 
         public ExternalProviderType ExternalProviderType => ExternalProviderType.Genius;
 
-        public int SearchPriority { get; set; } = 4;
+        public int SearchPriority { get; set; } = Constants.ProvidersSearchPriorities[ExternalProviderType.Genius];
 
         public override bool Equals(object? obj)
         {

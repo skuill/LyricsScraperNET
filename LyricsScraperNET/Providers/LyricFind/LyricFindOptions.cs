@@ -1,4 +1,5 @@
-﻿using LyricsScraperNET.Providers.Abstract;
+﻿using LyricsScraperNET.Common;
+using LyricsScraperNET.Providers.Abstract;
 using LyricsScraperNET.Providers.Models;
 
 namespace LyricsScraperNET.Providers.LyricFind
@@ -9,7 +10,7 @@ namespace LyricsScraperNET.Providers.LyricFind
 
         public ExternalProviderType ExternalProviderType => ExternalProviderType.LyricFind;
 
-        public int SearchPriority { get; set; } = 1;
+        public int SearchPriority { get; set; } = Constants.ProvidersSearchPriorities[ExternalProviderType.LyricFind];
 
         public string ConfigurationSectionName { get; } = "LyricFindOptions";
 

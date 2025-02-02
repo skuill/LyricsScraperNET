@@ -1,4 +1,5 @@
-﻿using LyricsScraperNET.Providers.Abstract;
+﻿using LyricsScraperNET.Common;
+using LyricsScraperNET.Providers.Abstract;
 using LyricsScraperNET.Providers.Models;
 
 namespace LyricsScraperNET.Providers.Musixmatch
@@ -14,7 +15,7 @@ namespace LyricsScraperNET.Providers.Musixmatch
 
         public ExternalProviderType ExternalProviderType => ExternalProviderType.Musixmatch;
 
-        public int SearchPriority { get; set; } = 0;
+        public int SearchPriority { get; set; } = Constants.ProvidersSearchPriorities[ExternalProviderType.Musixmatch];
 
         public override bool Equals(object? obj)
         {
