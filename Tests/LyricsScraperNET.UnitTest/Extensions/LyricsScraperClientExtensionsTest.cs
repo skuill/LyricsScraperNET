@@ -10,6 +10,21 @@ namespace LyricsScraperNET.UnitTest.Extensions
         private ILyricsScraperClient _lyricsScraperClient => new LyricsScraperClient();
 
         [Fact]
+        public void LyricsScraperClient_WithLyricsFreak_ReturnsIsEnabled()
+        {
+            // Act
+            var lyricsScraperClient = _lyricsScraperClient.WithLyricsFreak();
+            var externalTypeProvider = lyricsScraperClient[ExternalProviderType.LyricsFreak];
+
+            // Assert
+            Assert.NotNull(lyricsScraperClient);
+            Assert.True(lyricsScraperClient.IsEnabled);
+            Assert.NotNull(externalTypeProvider);
+            Assert.True(externalTypeProvider.IsEnabled);
+            Assert.Equal(6, externalTypeProvider.SearchPriority);
+        }
+
+        [Fact]
         public void LyricsScraperClient_WithAZLyrics_ReturnsIsEnabled()
         {
             // Act

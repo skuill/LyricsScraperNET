@@ -73,5 +73,21 @@ namespace LyricsScraperNET.UnitTest.Extensions
 
             Assert.Equal(expected, slug);
         }
+
+        [Theory]
+        [InlineData("Attack Attack!", "attack+attack")]
+        [InlineData("I Swear I'll Change", "i+swear+ill+change")]
+        [InlineData("Summer of '69", "summer+of+69")]
+        [InlineData(" Of Mice & Men ", "of+mice+men")]
+        [InlineData("", "")]
+        [InlineData(null, null)]
+        public void СonvertToPlusFormat_MultipleInputs_ShouldBeParse(string input, string expected)
+        {
+            // Act
+            var actual = StringExtensions.СonvertSpaceToPlusFormat(input, true);
+
+            // Assert
+            Assert.Equal(expected, actual);
+        }
     }
 }
