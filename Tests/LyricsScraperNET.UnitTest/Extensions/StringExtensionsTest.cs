@@ -84,7 +84,7 @@ namespace LyricsScraperNET.UnitTest.Extensions
         public void СonvertToPlusFormat_MultipleInputs_ShouldBeParse(string input, string expected)
         {
             // Act
-            var actual = StringExtensions.СonvertSpaceToPlusFormat(input, true);
+            var actual = StringExtensions.СonvertToPlusFormat(input, true);
 
             // Assert
             Assert.Equal(expected, actual);

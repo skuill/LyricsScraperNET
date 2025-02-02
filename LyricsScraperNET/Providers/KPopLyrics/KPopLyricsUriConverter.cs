@@ -8,6 +8,11 @@ namespace LyricsScraperNET.Providers.KPopLyrics
     {
         private Uri _baseUri => new Uri("https://www.kpoplyrics.net/");
 
+        public Uri GetArtistUri(string artist)
+        {
+            throw new NotImplementedException();
+        }
+
         public Uri GetLyricUri(string artist, string song)
         {
             return new Uri(_baseUri, $"{StringExtensions.CreateCombinedUrlSlug(artist, song)}.html");

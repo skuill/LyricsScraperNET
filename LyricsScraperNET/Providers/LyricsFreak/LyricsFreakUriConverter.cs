@@ -1,6 +1,7 @@
 ﻿using LyricsScraperNET.Extensions;
 using LyricsScraperNET.Providers.Abstract;
 using System;
+using System.Linq;
 
 namespace LyricsScraperNET.Providers.LyricsFreak
 {
@@ -8,20 +9,20 @@ namespace LyricsScraperNET.Providers.LyricsFreak
     {
         public const string BaseUrl = "https://www.lyricsfreak.com";
 
-        // 0 - artist, 1 - song
+        // 0 - artist subgroup (first latin letter in artist's name), 1 - artist name
         private const string uriArtistPathFormat = BaseUrl + "/{0}/{1}";
+
+        // Example for Artist parkway drive https://www.lyricsfreak.com/p/parkway+drive/
+        public Uri GetArtistUri(string artist)
+        {
+            var artistFormatted = artist.ToLowerInvariant().СonvertToPlusFormat(removeProhibitedSymbols: true);
+            return new Uri(string.Format(uriArtistPathFormat, artistFormatted.First(c => c != '+'), artistFormatted));
+
+        }
 
         public Uri GetLyricUri(string artist, string song)
         {
-            var artistFormatted = artist.ToLowerInvariant().СonvertSpaceToPlusFormat(removeProhibitedSymbols: true);
-            return GetArtistUri(artistFormatted);
-        }
-
-        // Example for Artist parkway drive https://www.lyricsfreak.com/p/parkway+drive/
-        private static Uri GetArtistUri(string artist)
-        {
-            return new Uri(string.Format(uriArtistPathFormat, artist.Length > 0 ? artist[0] : string.Empty, artist));
-
+            throw new NotImplementedException();
         }
     }
 }

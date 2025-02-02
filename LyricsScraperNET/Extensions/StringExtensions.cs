@@ -88,13 +88,12 @@ namespace LyricsScraperNET.Extensions
                     case ' ':
                         slug += '-';
                         break;
-                    case >= 'a' and <= 'z':
-                    case >= 'A' and <= 'Z':
-                    case >= '0' and <= '9':
-                        slug += c;
-                        break;
                     case '-':
                         slug += '-';
+                        break;
+                    default:
+                        if (IsLatinAlphabetOrDigit(c))
+                            slug += c;
                         break;
                 }
             }
@@ -105,7 +104,7 @@ namespace LyricsScraperNET.Extensions
             return slug.ToLower();
         }
 
-        public static string СonvertSpaceToPlusFormat(this string input,  bool removeProhibitedSymbols = false)
+        public static string СonvertToPlusFormat(this string input, bool removeProhibitedSymbols = false)
         {
             if (string.IsNullOrWhiteSpace(input))
                 return input;
@@ -113,16 +112,21 @@ namespace LyricsScraperNET.Extensions
             var result = input.ToLowerInvariant().Trim();
 
             if (removeProhibitedSymbols)
-                result = new string(result.Where(x => char.IsLetterOrDigit(x) || char.IsWhiteSpace(x) ).ToArray());
+                result = new string(result.Where(x => IsLatinAlphabetOrDigit(x) || char.IsWhiteSpace(x) || x == '-').ToArray());
 
             result = Regex.Replace(new string(result.Select(x =>
             {
-                return (char.IsWhiteSpace(x))
+                return (char.IsWhiteSpace(x) || x == '-')
                     ? '+'
                     : x;
-            }).ToArray()), "\\++", "+").Trim('+');
+            }).ToArray()), "\\++", "+");
 
             return result;
         }
+
+        private static bool IsLatinAlphabetOrDigit(char letter) =>
+            (letter >= 'a' && letter <= 'z')
+            || (letter >= 'A' && letter <= 'Z')
+            || (letter >= '0' && letter <= '9');
     }
 }

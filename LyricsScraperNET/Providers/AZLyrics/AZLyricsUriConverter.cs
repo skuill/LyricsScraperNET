@@ -8,6 +8,11 @@ namespace LyricsScraperNET.Providers.AZLyrics
     {
         private Uri _baseUri => new Uri("http://www.azlyrics.com/lyrics/");
 
+        public Uri GetArtistUri(string artist)
+        {
+            throw new NotImplementedException();
+        }
+
         public Uri GetLyricUri(string artist, string song)
         {
             // remove articles from artist on start. For example for band [The Devil Wears Prada]: https://www.azlyrics.com/d/devilwearsprada.html

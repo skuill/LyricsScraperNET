@@ -9,6 +9,11 @@ namespace LyricsScraperNET.Providers.LyricFind
         // 0 - artist, 1 - song
         private const string uriPathFormat = "https://lyrics.lyricfind.com/lyrics/{0}-{1}";
 
+        public Uri GetArtistUri(string artist)
+        {
+            throw new NotImplementedException();
+        }
+
         public Uri GetLyricUri(string artist, string song)
         {
             var artistFormatted = artist.ToLowerInvariant().СonvertToDashedFormat(useExceptionSymbols: false, removeProhibitedSymbols: true);

@@ -77,46 +77,29 @@ namespace LyricsScraperNET.Providers.LyricsFreak
 
         protected override async Task<SearchResult> SearchLyricAsync(string artist, string song, CancellationToken cancellationToken = default)
         {
-            try
+            if (WebClient == null || Parser == null)
             {
-                var artistUri = _uriConverter.GetLyricUri(artist, song);
-
-                if (WebClient == null || Parser == null)
-                {
-                    _logger?.LogWarning($"LyricsFreak. Please set up WebClient and Parser first");
-                    return new SearchResult(Models.ExternalProviderType.LyricsFreak);
-                }
-
-                var htmlResponse = await WebClient.LoadAsync(artistUri, cancellationToken);
-
-                cancellationToken.ThrowIfCancellationRequested();
-
-                var songHref = GetSongHrefFromHtmlBody(htmlResponse, song);
-                if (string.IsNullOrEmpty(songHref))
-                {
-                    _logger?.LogWarning($"LyricsFreak. Can't find song Uri for song: [{song}]");
-                    return new SearchResult(Models.ExternalProviderType.LyricsFreak);
-                }
-
-                var songUri = new Uri(LyricsFreakUriConverter.BaseUrl + songHref);
-
-                var songUriSearchResult = await SearchLyricAsync(songUri, cancellationToken);
-
-                cancellationToken.ThrowIfCancellationRequested();
-
-                if (songUriSearchResult is null || string.IsNullOrEmpty(songUriSearchResult?.LyricText))
-                {
-                    _logger?.LogWarning($"LyricsFreak. Can't find song lyrics for song : [{song}]");
-                    return new SearchResult(Models.ExternalProviderType.LyricsFreak);
-                }
-
-                return new SearchResult(songUriSearchResult!.LyricText, Models.ExternalProviderType.LyricsFreak);
-            }
-            catch (Exception ex)
-            {
-                _logger?.LogError(ex, $"LyricsFreak. Error searching for lyrics for artist: [{artist}], song: [{song}]");
+                _logger?.LogWarning($"LyricsFreak. Please set up WebClient and Parser first");
                 return new SearchResult(Models.ExternalProviderType.LyricsFreak);
             }
+
+            // 1. Open the artist's page.
+            var artistUri = _uriConverter.GetArtistUri(artist);
+
+            var htmlResponse = await WebClient.LoadAsync(artistUri, cancellationToken);
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            // 2. Find song on the artist page and get link to the web page.
+            var songHref = GetSongHrefFromHtmlBody(htmlResponse, song);
+            if (string.IsNullOrEmpty(songHref))
+            {
+                _logger?.LogWarning($"LyricsFreak. Can't find song Uri for song: [{song}]");
+                return new SearchResult(Models.ExternalProviderType.LyricsFreak);
+            }
+            var songUri = new Uri(LyricsFreakUriConverter.BaseUrl + songHref);
+
+            return await SearchLyricAsync(songUri, cancellationToken);
         }
 
         protected async override Task<SearchResult> SearchLyricAsync(Uri uri, CancellationToken cancellationToken = default)
