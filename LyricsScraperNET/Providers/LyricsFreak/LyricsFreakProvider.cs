@@ -16,7 +16,7 @@ namespace LyricsScraperNET.Providers.LyricsFreak
     {
         private ILogger<LyricsFreakProvider>? _logger;
         private readonly IExternalUriConverter _uriConverter;
-        
+
         private const string LyricsHrefXPath = "//a[contains(translate(@title, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), '{0} lyrics')]";
         private const string LyricsDivXPath = "//div[@data-container-id='lyrics']";
 
@@ -143,8 +143,8 @@ namespace LyricsScraperNET.Providers.LyricsFreak
             string originalXPath = string.Format(LyricsHrefXPath, song.ToLowerInvariant());
 
             var linkNode = htmlBody.SelectSingleNodeByXPath(formattedXPath)
-                ?? (!song.Contains("'") 
-                    ? htmlBody.SelectSingleNodeByXPath(originalXPath) 
+                ?? (!song.Contains("'")
+                    ? htmlBody.SelectSingleNodeByXPath(originalXPath)
                     : null);
 
             if (linkNode == null)
