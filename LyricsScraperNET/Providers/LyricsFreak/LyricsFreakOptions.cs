@@ -8,6 +8,7 @@ namespace LyricsScraperNET.Providers.LyricsFreak
         public ExternalProviderType ExternalProviderType => ExternalProviderType.LyricsFreak;
 
         public bool Enabled { get; set; }
+
         public int SearchPriority { get; set; } = 6;
 
         public string ConfigurationSectionName { get; } = "LyricsFreakOptions";
@@ -15,7 +16,7 @@ namespace LyricsScraperNET.Providers.LyricsFreak
         public override bool Equals(object? obj)
         {
             return obj is LyricsFreakOptions options &&
-                              ExternalProviderType == options.ExternalProviderType;
+                   ExternalProviderType == options.ExternalProviderType;
         }
 
         public override int GetHashCode()

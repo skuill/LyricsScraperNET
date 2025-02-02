@@ -1,5 +1,4 @@
-﻿using HtmlAgilityPack;
-using LyricsScraperNET.Extensions;
+﻿using LyricsScraperNET.Extensions;
 using LyricsScraperNET.Helpers;
 using LyricsScraperNET.Models.Responses;
 using LyricsScraperNET.Network;
@@ -121,10 +120,7 @@ namespace LyricsScraperNET.Providers.SongLyrics
                 return new SearchResult(Models.ExternalProviderType.SongLyrics);
             }
 
-            var htmlDocument = new HtmlDocument();
-            htmlDocument.LoadHtml(htmlPageBody);
-
-            var lyricsContainerNode = htmlDocument.DocumentNode.SelectSingleNode(LyricsContainerNodesXPath);
+            var lyricsContainerNode = htmlPageBody.SelectSingleNodeByXPath(LyricsContainerNodesXPath);
 
             if (lyricsContainerNode == null)
             {

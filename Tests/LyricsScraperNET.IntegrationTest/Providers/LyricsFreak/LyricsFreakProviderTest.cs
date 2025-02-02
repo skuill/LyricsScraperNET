@@ -2,7 +2,6 @@
 using LyricsScraperNET.Models.Responses;
 using LyricsScraperNET.Providers.LyricsFreak;
 using LyricsScraperNET.Providers.Models;
-using LyricsScraperNET.TestShared.Attributes;
 using LyricsScraperNET.TestShared.Providers;
 using LyricsScraperNET.TestShared.TestModel;
 using System.Threading;
@@ -15,6 +14,7 @@ namespace LyricsScraperNET.IntegrationTest.Providers.LyricsFreak
     public class LyricsFreakProviderTest : ProviderTestBase
     {
         #region Sync 
+
         [Theory]
         [MemberData(nameof(GetTestData), parameters: "Providers\\LyricsFreak\\lyric_test_data.json")]
         public void SearchLyric_IntegrationDynamicData_Success(LyricsTestData testData)
@@ -57,9 +57,11 @@ namespace LyricsScraperNET.IntegrationTest.Providers.LyricsFreak
             Assert.True(string.IsNullOrEmpty(searchResult.ResponseMessage));
             Assert.False(searchResult.Instrumental);
         }
+
         #endregion
 
         #region Async
+
         [Theory]
         [MemberData(nameof(GetTestData), parameters: "Providers\\LyricsFreak\\lyric_test_data.json")]
         public async Task SearchLyricAsync_IntegrationDynamicData_Success(LyricsTestData testData)
@@ -101,6 +103,7 @@ namespace LyricsScraperNET.IntegrationTest.Providers.LyricsFreak
             Assert.True(string.IsNullOrEmpty(searchResult.ResponseMessage));
             Assert.False(searchResult.Instrumental);
         }
+
         #endregion
     }
 }

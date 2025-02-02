@@ -1,12 +1,12 @@
 ﻿using LyricsScraperNET.Providers.Abstract;
 using LyricsScraperNET.Providers.AZLyrics;
 using LyricsScraperNET.Providers.Genius;
+using LyricsScraperNET.Providers.KPopLyrics;
 using LyricsScraperNET.Providers.LyricFind;
 using LyricsScraperNET.Providers.LyricsFreak;
 using LyricsScraperNET.Providers.Musixmatch;
 using LyricsScraperNET.Providers.SongLyrics;
 using System.Text.Json.Serialization;
-using LyricsScraperNET.Providers.KPopLyrics;
 
 namespace LyricsScraperNET.Configuration
 {

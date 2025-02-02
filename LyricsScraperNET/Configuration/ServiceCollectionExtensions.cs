@@ -1,11 +1,11 @@
 ﻿using LyricsScraperNET.Providers.Abstract;
 using LyricsScraperNET.Providers.AZLyrics;
 using LyricsScraperNET.Providers.Genius;
+using LyricsScraperNET.Providers.KPopLyrics;
 using LyricsScraperNET.Providers.LyricFind;
+using LyricsScraperNET.Providers.LyricsFreak;
 using LyricsScraperNET.Providers.Musixmatch;
 using LyricsScraperNET.Providers.SongLyrics;
-using LyricsScraperNET.Providers.KPopLyrics;
-using LyricsScraperNET.Providers.LyricsFreak;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
