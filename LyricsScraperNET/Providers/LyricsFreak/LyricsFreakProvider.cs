@@ -132,6 +132,11 @@ namespace LyricsScraperNET.Providers.LyricsFreak
 
         #endregion
 
+        public override void WithLogger(ILoggerFactory loggerFactory)
+        {
+            _logger = loggerFactory.CreateLogger<LyricsFreakProvider>();
+        }
+
         #region Private methods
 
         private string GetSongHrefFromHtmlBody(string htmlBody, string song)

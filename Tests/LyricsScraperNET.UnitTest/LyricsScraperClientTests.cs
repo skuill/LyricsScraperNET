@@ -5,6 +5,7 @@ using LyricsScraperNET.Models.Requests;
 using LyricsScraperNET.Models.Responses;
 using LyricsScraperNET.Providers.Abstract;
 using LyricsScraperNET.Providers.Models;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -71,6 +72,22 @@ namespace LyricsScraperNET.UnitTest
             Assert.Equal(ResponseStatusCode.NoDataFound, searchResultAsync.ResponseStatusCode);
             Assert.Equal(Constants.ResponseMessages.ExternalProvidersListIsEmpty, searchResultAsync.ResponseMessage);
             Assert.False(searchResultAsync.Instrumental);
+        }
+
+        // If there is NotImplementedException, then the WithLogger method needs to be implemented for the missing provider.
+        [Fact]
+        public async Task WithLogger_ClientWithAllProviders_ShouldNotThrowException()
+        {
+            // Arrange
+            var lyricsScraperClient = new LyricsScraperClient()
+                .WithAllProviders();
+            var mockedLoggerFactory = A.Fake<ILoggerFactory>();
+
+            // Act
+            var exception = Record.Exception(() => lyricsScraperClient.WithLogger(mockedLoggerFactory));
+
+            // Assert
+            Assert.Null(exception);
         }
 
         [Theory]
