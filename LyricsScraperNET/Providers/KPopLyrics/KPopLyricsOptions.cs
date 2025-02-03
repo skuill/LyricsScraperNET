@@ -4,7 +4,7 @@ using LyricsScraperNET.Providers.Models;
 
 namespace LyricsScraperNET.Providers.KPopLyrics
 {
-    public class KPopLyricsOptions : IExternalProviderOptions
+    public sealed class KPopLyricsOptions : IExternalProviderOptions
     {
         public ExternalProviderType ExternalProviderType => ExternalProviderType.KPopLyrics;
 

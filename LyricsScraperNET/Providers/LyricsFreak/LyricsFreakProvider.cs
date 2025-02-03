@@ -3,6 +3,7 @@ using LyricsScraperNET.Helpers;
 using LyricsScraperNET.Models.Responses;
 using LyricsScraperNET.Network;
 using LyricsScraperNET.Providers.Abstract;
+using LyricsScraperNET.Providers.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
@@ -12,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace LyricsScraperNET.Providers.LyricsFreak
 {
-    internal class LyricsFreakProvider : ExternalProviderBase
+    public sealed class LyricsFreakProvider : ExternalProviderBase
     {
         private ILogger<LyricsFreakProvider>? _logger;
         private readonly IExternalUriConverter _uriConverter;
@@ -83,7 +84,7 @@ namespace LyricsScraperNET.Providers.LyricsFreak
             if (WebClient == null || Parser == null)
             {
                 _logger?.LogWarning($"LyricsFreak. Please set up WebClient and Parser first");
-                return new SearchResult(Models.ExternalProviderType.LyricsFreak);
+                return new SearchResult(ExternalProviderType.LyricsFreak);
             }
 
             // 1. Open the artist's page.
@@ -96,7 +97,7 @@ namespace LyricsScraperNET.Providers.LyricsFreak
             if (htmlResponse.Contains(PageNotFoundText))
             {
                 _logger?.LogWarning($"LyricsFreak. Artist's page not found (404). [{artist}]. Song name: [{song}]");
-                return new SearchResult(Models.ExternalProviderType.LyricsFreak);
+                return new SearchResult(ExternalProviderType.LyricsFreak);
             }
 
             // 2. Find song on the artist page and get link to the web page.
@@ -104,7 +105,7 @@ namespace LyricsScraperNET.Providers.LyricsFreak
             if (string.IsNullOrEmpty(songHref))
             {
                 _logger?.LogWarning($"LyricsFreak. Can't find song Uri for artist: [{artist}]. Song name: [{song}]");
-                return new SearchResult(Models.ExternalProviderType.LyricsFreak);
+                return new SearchResult(ExternalProviderType.LyricsFreak);
             }
             var songUri = new Uri(LyricsFreakUriConverter.BaseUrl + songHref);
 
@@ -121,12 +122,12 @@ namespace LyricsScraperNET.Providers.LyricsFreak
             if (string.IsNullOrEmpty(songLyrics))
             {
                 _logger?.LogWarning($"LyricsFreak. Can't find lyrics for song's uri: [{uri}]");
-                return new SearchResult(Models.ExternalProviderType.LyricsFreak);
+                return new SearchResult(ExternalProviderType.LyricsFreak);
             }
 
             var lyricsText = Parser.Parse(songLyrics);
 
-            return new SearchResult(lyricsText, Models.ExternalProviderType.LyricsFreak);
+            return new SearchResult(lyricsText, ExternalProviderType.LyricsFreak);
         }
 
         #endregion

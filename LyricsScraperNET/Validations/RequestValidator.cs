@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 
 namespace LyricsScraperNET.Validations
 {
-    public class RequestValidator : IRequestValidator
+    public sealed class RequestValidator : IRequestValidator
     {
         public bool IsValidSearchRequest(
             IProviderService providerService,

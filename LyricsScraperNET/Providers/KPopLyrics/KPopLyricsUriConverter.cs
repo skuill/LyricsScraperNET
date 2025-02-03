@@ -4,7 +4,7 @@ using System;
 
 namespace LyricsScraperNET.Providers.KPopLyrics
 {
-    public class KPopLyricsUriConverter : IExternalUriConverter
+    internal sealed class KPopLyricsUriConverter : IExternalUriConverter
     {
         private Uri _baseUri => new Uri("https://www.kpoplyrics.net/");
 

@@ -5,7 +5,7 @@ using System.Text.RegularExpressions;
 
 namespace LyricsScraperNET.Providers.KPopLyrics
 {
-    public class KPopLyricsParser : IExternalProviderLyricParser
+    internal sealed class KPopLyricsParser : IExternalProviderLyricParser
     {
         public string Parse(string lyric)
         {
