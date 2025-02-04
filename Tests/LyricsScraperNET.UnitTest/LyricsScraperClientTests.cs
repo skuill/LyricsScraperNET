@@ -304,6 +304,34 @@ namespace LyricsScraperNET.UnitTest
             Assert.Null(lyricsScraperClient[externalProviderType]);
         }
 
+        [Theory]
+        [InlineData(ExternalProviderType.AZLyrics)]
+        [InlineData(ExternalProviderType.None)]
+        public void RemoveProvider_NotExisted_ShouldNotThrowException(ExternalProviderType externalProviderType)
+        {
+            // Arrange
+            var lyricsScraperClient = new LyricsScraperClient();
+
+            // Assert 0
+            Assert.Null(lyricsScraperClient[externalProviderType]);
+
+            // Act
+            var exception = Record.Exception(() => lyricsScraperClient.RemoveProvider(externalProviderType));
+
+            // Assert 1
+            Assert.Null(exception);
+        }
+
+        [Fact]
+        public void AddProvider_NullProvider_ShouldThrowException()
+        {
+            // Arrange
+            var lyricsScraperClient = new LyricsScraperClient();
+
+            // Act & Assert
+            Assert.Throws<ArgumentNullException>(() => lyricsScraperClient.AddProvider(null));
+        }
+
         [Fact]
         public void SearchLyric_Should_Throw_OperationCanceledException_When_Cancellation_Is_Requested()
         {
