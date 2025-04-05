@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -17,7 +18,7 @@ namespace LyricsScraperNET.Providers.AZLyrics
         private readonly IExternalUriConverter _uriConverter;
 
         private const string _lyricStart = "<!-- Usage of azlyrics.com content by any third-party lyrics provider is prohibited by our licensing agreement. Sorry about that. -->";
-        private const string _lyricEnd = "<!-- MxM banner -->";
+        private readonly string[] _lyricEnds = new[] { "<!-- MxM banner -->", "/* JamX - AZLyrics.com - Podcasts */" };
 
         #region Constructors
 
@@ -114,13 +115,18 @@ namespace LyricsScraperNET.Providers.AZLyrics
             }
 
             var startIndex = text.IndexOf(_lyricStart);
-            var endIndex = text.IndexOf(_lyricEnd);
-            if (startIndex <= 0 || endIndex <= 0)
+            if (startIndex <= 0)
             {
                 _logger?.LogWarning($"AZLyrics. Can't find lyrics for Uri: [{uri}]");
                 return new SearchResult(Models.ExternalProviderType.AZLyrics);
             }
-            string result = Parser.Parse(text.Substring(startIndex, endIndex - startIndex));
+            var endIndices = _lyricEnds.Select(i => text.IndexOf(i, startIndex)).Where(i => i > 0);
+            if (endIndices == null || !endIndices.Any())
+            {
+                _logger?.LogWarning($"AZLyrics. Can't find lyrics for Uri: [{uri}]");
+                return new SearchResult(Models.ExternalProviderType.AZLyrics);
+            }
+            string result = Parser.Parse(text.Substring(startIndex, endIndices.Min() - startIndex));
 
             return new SearchResult(result, Models.ExternalProviderType.AZLyrics);
         }
