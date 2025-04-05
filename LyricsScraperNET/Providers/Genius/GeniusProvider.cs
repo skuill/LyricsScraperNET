@@ -25,6 +25,9 @@ namespace LyricsScraperNET.Providers.Genius
         // Format: "artist song". Example: "Parkway Drive Carrion".
         private const string GeniusSearchQueryFormat = "{0} {1}";
 
+        // Lyrics header. Note: Should be skipped in result
+        private const string _lyricsHeaderNodesXPath = "//div[contains(@class, 'LyricsHeader')]";
+
         private const string _referentFragmentNodesXPath = "//a[contains(@class, 'ReferentFragmentVariantdesktop') or contains(@class, 'ReferentFragmentdesktop') or contains(@class, 'ReferentFragment-desktop')]";
         private const string _lyricsContainerNodesXPath = "//div[@data-lyrics-container]";
 
@@ -178,6 +181,12 @@ namespace LyricsScraperNET.Providers.Genius
             if (spanNodes != null)
                 foreach (HtmlNode spanNode in spanNodes)
                     spanNode.Remove();
+
+            // Lyric's header node with additional information should be skipped.
+            var lyricsHeaderNodes = htmlDocument.DocumentNode.SelectNodes(_lyricsHeaderNodesXPath);
+            if (lyricsHeaderNodes != null)
+                foreach (HtmlNode headerNode in lyricsHeaderNodes)
+                    headerNode.Remove();
 
             var lyricNodes = htmlDocument.DocumentNode.SelectNodes(_lyricsContainerNodesXPath);
             if (lyricNodes == null)
