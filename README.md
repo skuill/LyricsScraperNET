@@ -13,7 +13,7 @@
 
 ## 🌟 Features
 
-- **Multi-framework support**: Compatible with `.NET Standard 2.x`, `.NET 5`, `.NET 6`, `.NET 7`, `.NET 8`.
+- **Multi-framework support**: Compatible with `.NET 8`, `.NET 9`, `.NET 10`.
 - **Integrated logging**: Effortless debugging and tracking.
 - **Modular architecture**: Highly testable and customizable.
 - **Flexible configuration**: Multiple ways to configure the library.
