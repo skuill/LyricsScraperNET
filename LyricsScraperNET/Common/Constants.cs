@@ -13,8 +13,11 @@ namespace LyricsScraperNET.Common
             { ExternalProviderType.SongLyrics, 4},
             { ExternalProviderType.LyricFind, 1},
             { ExternalProviderType.KPopLyrics, 2},
-            { ExternalProviderType.LyricsFreak, 3}
+            { ExternalProviderType.LyricsFreak, 3},
+            { ExternalProviderType.Lrclib, 7}
         };
+
+        internal const string LibraryUserAgent = "LyricsScraperNET/1.0 (https://github.com/skuill/LyricsScraperNET)";
 
         internal static class ResponseMessages
         {

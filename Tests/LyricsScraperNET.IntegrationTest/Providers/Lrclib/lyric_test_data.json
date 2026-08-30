@@ -1,0 +1,14 @@
+[
+  {
+    "LyricResultPath": "Providers/Lrclib/Resources/Lyrics_Result_01.txt",
+    "ArtistName": "Parkway Drive",
+    "SongName": "Idols and Anchors",
+    "SongUri": null
+  },
+  {
+    "LyricResultPath": "Providers/Lrclib/Resources/Lyrics_Result_01.txt",
+    "ArtistName": null,
+    "SongName": null,
+    "SongUri": "https://lrclib.net/api/get?artist_name=Parkway+Drive&track_name=Idols+and+Anchors"
+  }
+]

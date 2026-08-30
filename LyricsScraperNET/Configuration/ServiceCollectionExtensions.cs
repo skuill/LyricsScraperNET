@@ -3,6 +3,7 @@ using LyricsScraperNET.Providers.AZLyrics;
 using LyricsScraperNET.Providers.Genius;
 using LyricsScraperNET.Providers.KPopLyrics;
 using LyricsScraperNET.Providers.LyricFind;
+using LyricsScraperNET.Providers.Lrclib;
 using LyricsScraperNET.Providers.LyricsFreak;
 using LyricsScraperNET.Providers.Musixmatch;
 using LyricsScraperNET.Providers.SongLyrics;
@@ -34,6 +35,7 @@ namespace LyricsScraperNET.Configuration
                 services.AddProvider<SongLyricsOptions, SongLyricsProvider>(lyricScraperClientConfig);
                 services.AddProvider<LyricFindOptions, LyricFindProvider>(lyricScraperClientConfig);
                 services.AddProvider<KPopLyricsOptions, KPopLyricsProvider>(lyricScraperClientConfig);
+                services.AddProvider<LrclibOptions, LrclibProvider>(lyricScraperClientConfig);
 
                 services.AddMusixmatchService(lyricScraperClientConfig);
 

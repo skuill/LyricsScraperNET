@@ -445,7 +445,11 @@ namespace LyricsScraperNET.UnitTest
 
             var fastProvider = A.Fake<IExternalProvider>();
             A.CallTo(() => fastProvider.SearchLyricAsync(A<SearchRequest>._, A<CancellationToken>._))
-                .Returns(fastResult);
+                .ReturnsLazily(async (SearchRequest r, CancellationToken ct) =>
+                {
+                    await Task.Delay(1000, ct); // Simulate a fast execution.
+                    return fastResult;
+                }); ;
             A.CallTo(() => fastProvider.IsEnabled).Returns(true);
 
             // Create slow providers that simulate delayed response.
