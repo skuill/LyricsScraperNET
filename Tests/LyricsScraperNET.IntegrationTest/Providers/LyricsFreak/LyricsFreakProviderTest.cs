@@ -16,7 +16,7 @@ namespace LyricsScraperNET.IntegrationTest.Providers.LyricsFreak
         #region Sync 
 
         [Theory]
-        [MemberData(nameof(GetTestData), parameters: "Providers\\LyricsFreak\\lyric_test_data.json")]
+        [MemberData(nameof(GetTestData), arguments: "Providers\\LyricsFreak\\lyric_test_data.json")]
         public void SearchLyric_IntegrationDynamicData_Success(LyricsTestData testData)
         {
             // Arrange
@@ -63,7 +63,7 @@ namespace LyricsScraperNET.IntegrationTest.Providers.LyricsFreak
         #region Async
 
         [Theory]
-        [MemberData(nameof(GetTestData), parameters: "Providers\\LyricsFreak\\lyric_test_data.json")]
+        [MemberData(nameof(GetTestData), arguments: "Providers\\LyricsFreak\\lyric_test_data.json")]
         public async Task SearchLyricAsync_IntegrationDynamicData_Success(LyricsTestData testData)
         {
             // Arrange

@@ -1,86 +1,81 @@
 name: CI/CD LyricsScraperNET
-
 on:
   push:
   pull_request:
-
 jobs:
   lyrics_scraper_net-cicd:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v3
+        uses: actions/checkout@v7
+
+      - name: Setup .NET SDKs
+        uses: actions/setup-dotnet@v6
         with:
-          dotnet-version: "3.1.x"
-      - uses: actions/setup-dotnet@v3
-        with:
-          dotnet-version: "5.0.x"
-      - uses: actions/setup-dotnet@v3
-        with:
-          dotnet-version: "6.0.x"
-      - uses: actions/setup-dotnet@v3
-        with:
-          dotnet-version: "7.0.x"
-      - uses: actions/setup-dotnet@v3
-        with:
-          dotnet-version: "8.0.x"
+          dotnet-version: |
+            8.0.x
+            9.0.x
+            10.0.x
+
       - name: Set RELEASE_VERSION
         run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+
       - name: Restore Packages
         run: dotnet restore
+
       - name: Lint
         run: dotnet format --verify-no-changes --exclude *\xunit*\*
+
       - name: Build
         run: dotnet build --configuration Release --verbosity minimal
+
       - name: Test (Unit) with Coverage
         run: |
           dotnet test Tests/LyricsScraperNET.UnitTest \
             --configuration Release \
-            --collect:"XPlat Code Coverage" \
             --results-directory ./TestResults \
-            --settings coverlet.runsettings
+            -- \
+            --coverage --coverage-output-format cobertura
+
       - name: Upload Coverage to Codecov
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v7
         with:
           files: ./TestResults/**/*.cobertura.xml
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
+
       # Temporarily switched off. There are errors during CI.
       # - name: Test (Integration)
         # run: dotnet test Tests/LyricsScraperNET.IntegrationTest
+
       - name: Publish to NuGET
         run: ./publish.sh
         if: startsWith( github.ref, 'refs/tags/')
         env:
           NUGET_TOKEN: ${{ secrets.NUGET_TOKEN }}
+
       - name: Publish to GH Release
-        uses: actions/create-release@v1
+        uses: softprops/action-gh-release@v3
         if: startsWith( github.ref, 'refs/tags/')
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ github.ref }}
-          release_name: LyricsScraperNET ${{ github.ref }}
+          name: LyricsScraperNET ${{ github.ref_name }}
           body: |
             TODO
           draft: true
           prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Upload to GH Release
         if: startsWith( github.ref, 'refs/tags/')
         run: |
-          zip -j LyricsScraperNET-netstandard2.0.zip LyricsScraperNET/bin/Release/netstandard2.0/*
-          zip -j LyricsScraperNET-netstandard2.1.zip LyricsScraperNET/bin/Release/netstandard2.1/*
-          zip -j LyricsScraperNET-net5.0.zip LyricsScraperNET/bin/Release/net5.0/*
-          zip -j LyricsScraperNET-net6.0.zip LyricsScraperNET/bin/Release/net6.0/*
-          zip -j LyricsScraperNET-net7.0.zip LyricsScraperNET/bin/Release/net7.0/*
           zip -j LyricsScraperNET-net8.0.zip LyricsScraperNET/bin/Release/net8.0/*
+          zip -j LyricsScraperNET-net9.0.zip LyricsScraperNET/bin/Release/net9.0/*
+          zip -j LyricsScraperNET-net10.0.zip LyricsScraperNET/bin/Release/net10.0/*
           gh release upload "$RELEASE_VERSION" \
-            "LyricsScraperNET-netstandard2.0.zip" \
-            "LyricsScraperNET-netstandard2.1.zip" \
-            "LyricsScraperNET-net5.0.zip" \
-            "LyricsScraperNET-net6.0.zip" \
-            "LyricsScraperNET-net7.0.zip" \
             "LyricsScraperNET-net8.0.zip" \
+            "LyricsScraperNET-net9.0.zip" \
+            "LyricsScraperNET-net10.0.zip"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

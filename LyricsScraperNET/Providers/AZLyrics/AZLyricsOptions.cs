@@ -22,12 +22,7 @@ namespace LyricsScraperNET.Providers.AZLyrics
 
         public override int GetHashCode()
         {
-            unchecked
-            {
-                int hash = 17;
-                hash = (hash * 31) + ExternalProviderType.GetHashCode();
-                return hash;
-            }
+            return System.HashCode.Combine(ExternalProviderType);
         }
     }
 }

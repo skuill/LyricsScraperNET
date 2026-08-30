@@ -9,6 +9,7 @@
         SongLyrics,
         LyricFind,
         KPopLyrics,
-        LyricsFreak
+        LyricsFreak,
+        Lrclib
     }
 }

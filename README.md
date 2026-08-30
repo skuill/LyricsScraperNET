@@ -13,7 +13,7 @@
 
 ## 🌟 Features
 
-- **Multi-framework support**: Compatible with `.NET Standard 2.x`, `.NET 5`, `.NET 6`, `.NET 7`, `.NET 8`.
+- **Multi-framework support**: Compatible with `.NET 8`, `.NET 9`, `.NET 10`.
 - **Integrated logging**: Effortless debugging and tracking.
 - **Modular architecture**: Highly testable and customizable.
 - **Flexible configuration**: Multiple ways to configure the library.
@@ -32,6 +32,7 @@ The library currently supports the following providers:
 - [LyricFind](https://www.lyricfind.com/)
 - [LyricsFreak](https://www.lyricsfreak.com/) (added by [@ajay201402](https://github.com/ajay201402))
 - [kpoplyrics](https://www.kpoplyrics.net/) (added by [@Lukeuke](https://github.com/Lukeuke))
+- [LRCLIB](https://lrclib.net/)
 - [Letras.mus.br](https://www.letras.mus.br/) (**Coming soon** 🚧. [Issue #40](https://github.com/skuill/LyricsScraperNET/issues/40))
 - [darklyrics](http://www.darklyrics.com/) (**Coming soon** 🚧. [Issue #41](https://github.com/skuill/LyricsScraperNET/issues/41))
 - [vagalume](https://www.vagalume.com.br/) (**Coming soon** 🚧. [Issue #42](https://github.com/skuill/LyricsScraperNET/issues/42))

@@ -136,7 +136,7 @@ namespace LyricsScraperNET.Providers.LyricFind
             }
 
             // Trim the beginning of the text to the lyrics
-            text = text.Substring(startIndex + _lyricStart.Length + 1);
+            text = text[(startIndex + _lyricStart.Length + 1)..];
 
             // Finding the end of the lyric text in the json field value.
             int start = text.IndexOf("\"") + 1;
@@ -154,7 +154,7 @@ namespace LyricsScraperNET.Providers.LyricFind
                 return new SearchResult(Models.ExternalProviderType.LyricFind);
             }
 
-            string result = Parser.Parse(text.Substring(start, endOfLyricInJson - start));
+            string result = Parser.Parse(text[start..endOfLyricInJson]);
 
             return new SearchResult(result, Models.ExternalProviderType.LyricFind);
         }
@@ -163,7 +163,7 @@ namespace LyricsScraperNET.Providers.LyricFind
         /// <summary>
         /// Check if lyric text contains region restricted information like viewable (false) and repsonse with code (206) and description.
         /// </summary>
-        private bool IsRegionRestrictedLyric(string text)
+        private static bool IsRegionRestrictedLyric(string text)
         {
             return TryReturnBooleanFieldValue(text, _viewableStart, "false")
                 && Regex.IsMatch(text, _lyricNotAvailablePattern);
@@ -172,7 +172,7 @@ namespace LyricsScraperNET.Providers.LyricFind
         /// <summary>
         /// Check if lyric text contains instrumental flag.
         /// </summary>
-        private bool IsInstumentalLyric(string text)
+        private static bool IsInstumentalLyric(string text)
         {
             return TryReturnBooleanFieldValue(text, _instrumentalStart)
                 || TryReturnBooleanFieldValue(text, _songIsInstrumentalStart);
@@ -182,13 +182,13 @@ namespace LyricsScraperNET.Providers.LyricFind
         /// Try to find and return the fielad value as boolean. Pattern: [<paramref name="fieldName"/>:true(or false)].
         /// In case if fieldName is not found returns false.
         /// </summary>
-        private bool TryReturnBooleanFieldValue(string text, string fieldName, string booleanValue = "true")
+        private static bool TryReturnBooleanFieldValue(string text, string fieldName, string booleanValue = "true")
         {
             var startIndex = text.IndexOf(fieldName);
             if (startIndex <= 0)
                 return false;
             var fieldValue = text.Substring(startIndex + fieldName.Length + 1, 5);
-            return fieldValue.IndexOf(booleanValue, StringComparison.OrdinalIgnoreCase) >= 0;
+            return fieldValue.Contains(booleanValue, StringComparison.OrdinalIgnoreCase);
         }
     }
 }

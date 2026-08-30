@@ -386,7 +386,7 @@ namespace LyricsScraperNET.UnitTest
             var client = GetLyricsScraperClientWithMockedProvider();
 
             // Act
-            var result = await client.SearchLyricAsync(searchRequest);
+            var result = await client.SearchLyricAsync(searchRequest, TestContext.Current.CancellationToken);
 
             // Assert
             Assert.NotNull(result);
@@ -422,8 +422,10 @@ namespace LyricsScraperNET.UnitTest
             // Arrange
             var configuration = new LyricScraperClientConfig { UseParallelSearch = configValue };
             var mockedProviders = new[] { GetExternalProviderMock(ExternalProviderType.None) };
-            var client = new LyricsScraperClient(configuration, mockedProviders);
-            client.UseParallelSearch = variableValue;
+            var client = new LyricsScraperClient(configuration, mockedProviders)
+            {
+                UseParallelSearch = variableValue
+            };
 
             // Act
             var actualResult = client.UseParallelSearch;
@@ -443,7 +445,11 @@ namespace LyricsScraperNET.UnitTest
 
             var fastProvider = A.Fake<IExternalProvider>();
             A.CallTo(() => fastProvider.SearchLyricAsync(A<SearchRequest>._, A<CancellationToken>._))
-                .Returns(fastResult);
+                .ReturnsLazily(async (SearchRequest r, CancellationToken ct) =>
+                {
+                    await Task.Delay(1000, ct); // Simulate a fast execution.
+                    return fastResult;
+                });
             A.CallTo(() => fastProvider.IsEnabled).Returns(true);
 
             // Create slow providers that simulate delayed response.
@@ -476,7 +482,7 @@ namespace LyricsScraperNET.UnitTest
             var client = new LyricsScraperClient(config, providers);
 
             // Act
-            var result = await client.SearchLyricAsync(searchRequest);
+            var result = await client.SearchLyricAsync(searchRequest, TestContext.Current.CancellationToken);
 
             // Assert
             // Verify the result matches the fast provider's response.
@@ -537,7 +543,7 @@ namespace LyricsScraperNET.UnitTest
             var client = new LyricsScraperClient(config, providers);
 
             // Act
-            var result = await client.SearchLyricAsync(searchRequest);
+            var result = await client.SearchLyricAsync(searchRequest, TestContext.Current.CancellationToken);
 
             // Assert
             Assert.Equal("Slow result", result.LyricText);
@@ -561,7 +567,11 @@ namespace LyricsScraperNET.UnitTest
             var fastResult = new SearchResult("Fast result", ExternalProviderType.None);
             var fastProvider = A.Fake<IExternalProvider>();
             A.CallTo(() => fastProvider.SearchLyricAsync(A<SearchRequest>._, A<CancellationToken>._))
-                .Returns(fastResult);
+                .ReturnsLazily(async (SearchRequest r, CancellationToken ct) =>
+                {
+                    await Task.Delay(1000, ct); // Simulate a fast execution.
+                    return fastResult;
+                });
             A.CallTo(() => fastProvider.IsEnabled).Returns(true);
 
             // Create slow providers that simulate delayed response but are not used because fast provider wins.
@@ -638,7 +648,7 @@ namespace LyricsScraperNET.UnitTest
             var client = new LyricsScraperClient(config, providers);
 
             // Act
-            var result = await client.SearchLyricAsync(searchRequest);
+            var result = await client.SearchLyricAsync(searchRequest, TestContext.Current.CancellationToken);
 
             // Assert
             // Verify that the result comes from the slow provider.
@@ -689,7 +699,7 @@ namespace LyricsScraperNET.UnitTest
             var client = new LyricsScraperClient(config, providers);
 
             // Act
-            var result = await client.SearchLyricAsync(searchRequest);
+            var result = await client.SearchLyricAsync(searchRequest, TestContext.Current.CancellationToken);
 
             // Assert
             // Verify that the result comes from the slow provider.
@@ -706,19 +716,19 @@ namespace LyricsScraperNET.UnitTest
 
         #region helpers
 
-        private ExternalProviderType[] GetExternalProviderTypes()
+        private static ExternalProviderType[] GetExternalProviderTypes()
         {
-            return new[] { ExternalProviderType.AZLyrics, ExternalProviderType.SongLyrics };
+            return [ExternalProviderType.AZLyrics, ExternalProviderType.SongLyrics];
         }
 
-        private ILyricsScraperClient GetLyricsScraperClient()
+        private static ILyricsScraperClient GetLyricsScraperClient()
         {
             return new LyricsScraperClient()
                 .WithAZLyrics()
                 .WithSongLyrics();
         }
 
-        private ILyricsScraperClient GetLyricsScraperClientWithMockedProvider()
+        private static LyricsScraperClient GetLyricsScraperClientWithMockedProvider()
         {
             var client = new LyricsScraperClient();
             var externalProvider = GetExternalProviderMock(ExternalProviderType.AZLyrics);
@@ -727,7 +737,7 @@ namespace LyricsScraperNET.UnitTest
             return client;
         }
 
-        private IExternalProvider GetExternalProviderMock(ExternalProviderType externalProviderType)
+        private static IExternalProvider GetExternalProviderMock(ExternalProviderType externalProviderType)
         {
             var externalProviderMock = A.Fake<IExternalProvider>();
 
@@ -750,7 +760,7 @@ namespace LyricsScraperNET.UnitTest
             return externalProviderMock;
         }
 
-        private SearchRequest GetSearchRequestMock()
+        private static SearchRequest GetSearchRequestMock()
         {
             var searchRequestMock = A.Fake<SearchRequest>();
             string error = string.Empty;

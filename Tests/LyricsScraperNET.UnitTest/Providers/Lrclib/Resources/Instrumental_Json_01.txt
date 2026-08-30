@@ -1,0 +1,1 @@
+{"id":624237,"name":"YYZ","trackName":"YYZ","artistName":"Rush","albumName":"Moving Pictures","duration":266.0,"instrumental":true,"plainLyrics":null,"syncedLyrics":null,"lyricsfile":"version: '1.0'\nmetadata:\n  title: YYZ\n  artist: Rush\n  album: Moving Pictures\n  duration_ms: 266000\n  instrumental: true\nlines: []\n"}

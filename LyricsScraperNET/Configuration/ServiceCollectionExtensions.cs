@@ -3,6 +3,7 @@ using LyricsScraperNET.Providers.AZLyrics;
 using LyricsScraperNET.Providers.Genius;
 using LyricsScraperNET.Providers.KPopLyrics;
 using LyricsScraperNET.Providers.LyricFind;
+using LyricsScraperNET.Providers.Lrclib;
 using LyricsScraperNET.Providers.LyricsFreak;
 using LyricsScraperNET.Providers.Musixmatch;
 using LyricsScraperNET.Providers.SongLyrics;
@@ -13,8 +14,14 @@ using System;
 
 namespace LyricsScraperNET.Configuration
 {
+    /// <summary>
+    /// Extension methods for configuring the LyricsScraperNET services in the DI container.
+    /// </summary>
     public static class ServiceCollectionExtensions
     {
+        /// <summary>
+        /// Adds the LyricsScraperNET services to the service collection with automatic provider discovery.
+        /// </summary>
         public static IServiceCollection AddLyricScraperClientService(
             this IServiceCollection services,
             IConfiguration configuration)
@@ -28,6 +35,7 @@ namespace LyricsScraperNET.Configuration
                 services.AddProvider<SongLyricsOptions, SongLyricsProvider>(lyricScraperClientConfig);
                 services.AddProvider<LyricFindOptions, LyricFindProvider>(lyricScraperClientConfig);
                 services.AddProvider<KPopLyricsOptions, KPopLyricsProvider>(lyricScraperClientConfig);
+                services.AddProvider<LrclibOptions, LrclibProvider>(lyricScraperClientConfig);
 
                 services.AddMusixmatchService(lyricScraperClientConfig);
 

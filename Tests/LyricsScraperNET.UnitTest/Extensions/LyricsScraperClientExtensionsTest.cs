@@ -116,6 +116,21 @@ namespace LyricsScraperNET.UnitTest.Extensions
         }
 
         [Fact]
+        public void LyricsScraperClient_WithLrclib_ReturnsIsEnabled()
+        {
+            // Act
+            var lyricsScraperClient = _lyricsScraperClient.WithLrclib();
+            var externalTypeProvider = lyricsScraperClient[ExternalProviderType.Lrclib];
+
+            // Assert
+            Assert.NotNull(lyricsScraperClient);
+            Assert.True(lyricsScraperClient.IsEnabled);
+            Assert.NotNull(externalTypeProvider);
+            Assert.True(externalTypeProvider.IsEnabled);
+            Assert.Equal(Constants.ProvidersSearchPriorities[ExternalProviderType.Lrclib], externalTypeProvider.SearchPriority);
+        }
+
+        [Fact]
         public void LyricsScraperClient_WithAllProviders_ReturnsIsEnabled()
         {
             // Act

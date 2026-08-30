@@ -13,7 +13,7 @@ namespace LyricsScraperNET.UnitTest.Providers.LyricFind
     public class LyricFindProviderTest : ProviderTestBase
     {
         [Theory]
-        [MemberData(nameof(GetTestData), parameters: "Providers\\LyricFind\\lyric_test_data.json")]
+        [MemberData(nameof(GetTestData), arguments: "Providers\\LyricFind\\lyric_test_data.json")]
         public void SearchLyric_UnitDynamicData_Success(LyricsTestData testData)
         {
             // Arrange
@@ -36,7 +36,7 @@ namespace LyricsScraperNET.UnitTest.Providers.LyricFind
         }
 
         [Theory]
-        [MemberData(nameof(GetTestData), parameters: "Providers\\LyricFind\\instrumental_test_data.json")]
+        [MemberData(nameof(GetTestData), arguments: "Providers\\LyricFind\\instrumental_test_data.json")]
         public void SearchLyric_UnitDynamicData_Instrumental(LyricsTestData testData)
         {
             // Arrange
@@ -59,7 +59,7 @@ namespace LyricsScraperNET.UnitTest.Providers.LyricFind
         }
 
         [Theory]
-        [MemberData(nameof(GetTestData), parameters: "Providers\\LyricFind\\region_restricted_test_data.json")]
+        [MemberData(nameof(GetTestData), arguments: "Providers\\LyricFind\\region_restricted_test_data.json")]
         public void SearchLyric_UnitDynamicData_RegionRestricted(LyricsTestData testData)
         {
             // Arrange
@@ -69,7 +69,7 @@ namespace LyricsScraperNET.UnitTest.Providers.LyricFind
             SearchRequest searchRequest = CreateSearchRequest(testData);
 
             // Act
-            var searchResult = lyricsClient.SearchLyric(searchRequest);
+            var searchResult = lyricsClient.SearchLyric(searchRequest, TestContext.Current.CancellationToken);
 
             // Assert
             Assert.NotNull(searchResult);
@@ -81,7 +81,7 @@ namespace LyricsScraperNET.UnitTest.Providers.LyricFind
         }
 
         [Theory]
-        [MemberData(nameof(GetTestData), parameters: "Providers\\LyricFind\\not_found_test_data.json")]
+        [MemberData(nameof(GetTestData), arguments: "Providers\\LyricFind\\not_found_test_data.json")]
         public void SearchLyric_UnitDynamicData_NotFound(LyricsTestData testData)
         {
             // Arrange
@@ -91,7 +91,7 @@ namespace LyricsScraperNET.UnitTest.Providers.LyricFind
             SearchRequest searchRequest = CreateSearchRequest(testData);
 
             // Act
-            var searchResult = lyricsClient.SearchLyric(searchRequest);
+            var searchResult = lyricsClient.SearchLyric(searchRequest, TestContext.Current.CancellationToken);
 
             // Assert
             Assert.NotNull(searchResult);

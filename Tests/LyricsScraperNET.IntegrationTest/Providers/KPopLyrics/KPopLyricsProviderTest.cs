@@ -7,23 +7,15 @@ using LyricsScraperNET.Providers.Models;
 using LyricsScraperNET.TestShared.Providers;
 using LyricsScraperNET.TestShared.TestModel;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace LyricsScraperNET.IntegrationTest.Providers.KPopLyrics
 {
-    public class KPopLyricsProviderTest : ProviderTestBase
+    public class KPopLyricsProviderTest(ITestOutputHelper testOutputHelper) : ProviderTestBase
     {
-        private readonly ITestOutputHelper _testOutputHelper;
-
-        public KPopLyricsProviderTest(ITestOutputHelper testOutputHelper)
-        {
-            _testOutputHelper = testOutputHelper;
-        }
-
         #region sync
 
         [Theory]
-        [MemberData(nameof(GetTestData), parameters: "Providers\\KPopLyrics\\lyric_test_data.json")]
+        [MemberData(nameof(GetTestData), arguments: "Providers\\KPopLyrics\\lyric_test_data.json")]
         public void SearchLyric_IntegrationDynamicData_Success(LyricsTestData testData)
         {
             // Arrange
@@ -41,8 +33,8 @@ namespace LyricsScraperNET.IntegrationTest.Providers.KPopLyrics
             Assert.True(string.IsNullOrEmpty(searchResult.ResponseMessage));
             Assert.Equal(ExternalProviderType.KPopLyrics, searchResult.ExternalProviderType);
             Assert.Equal(testData.LyricResultData.Replace("\r\n", "\n"), searchResult.LyricText.Replace("\r\n", "\n"));
-            _testOutputHelper.WriteLine(testData.LyricResultData.Length.ToString());
-            _testOutputHelper.WriteLine(searchResult.LyricText.Length.ToString());
+            testOutputHelper.WriteLine(testData.LyricResultData.Length.ToString());
+            testOutputHelper.WriteLine(searchResult.LyricText.Length.ToString());
         }
 
         [Theory]
@@ -71,7 +63,7 @@ namespace LyricsScraperNET.IntegrationTest.Providers.KPopLyrics
         #region async
 
         [Theory]
-        [MemberData(nameof(GetTestData), parameters: "Providers\\KPopLyrics\\lyric_test_data.json")]
+        [MemberData(nameof(GetTestData), arguments: "Providers\\KPopLyrics\\lyric_test_data.json")]
         public async Task SearchLyricAsync_IntegrationDynamicData_Success(LyricsTestData testData)
         {
             // Arrange

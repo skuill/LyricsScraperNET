@@ -16,7 +16,7 @@ namespace LyricsScraperNET.IntegrationTest.Providers.LyricFind
         #region sync
 
         [Theory]
-        [MemberData(nameof(GetTestData), parameters: "Providers\\LyricFind\\lyric_test_data.json")]
+        [MemberData(nameof(GetTestData), arguments: "Providers\\LyricFind\\lyric_test_data.json")]
         public void SearchLyric_IntegrationDynamicData_Success(LyricsTestData testData)
         {
             // Arrange
@@ -37,7 +37,7 @@ namespace LyricsScraperNET.IntegrationTest.Providers.LyricFind
             Assert.False(searchResult.Instrumental);
         }
 
-        [RegionalTestTheory(excludeRegions: new[] { "AM", "RU" })]
+        [RegionalTestTheory(excludeRegions: ["AM", "RU"])]
         [InlineData("rush", "yyz")]
         public void SearchLyric_Instrumental_ShouldReturnSuccess(string artist, string song)
         {
@@ -58,7 +58,7 @@ namespace LyricsScraperNET.IntegrationTest.Providers.LyricFind
             Assert.True(searchResult.Instrumental);
         }
 
-        [RegionalTestTheory(includeRegions: new[] { "AM", "RU" })]
+        [RegionalTestTheory(includeRegions: ["AM", "RU"])]
         [InlineData("rush", "Tom Sawyer")]
         public void SearchLyric_LyricAreNotAvailableInRegion_ShouldRegionRestrictedStatus(string artist, string song)
         {
@@ -104,7 +104,7 @@ namespace LyricsScraperNET.IntegrationTest.Providers.LyricFind
         #region async
 
         [Theory]
-        [MemberData(nameof(GetTestData), parameters: "Providers\\LyricFind\\lyric_test_data.json")]
+        [MemberData(nameof(GetTestData), arguments: "Providers\\LyricFind\\lyric_test_data.json")]
         public async Task SearchLyricAsync_IntegrationDynamicData_Success(LyricsTestData testData)
         {
             // Arrange
@@ -112,7 +112,7 @@ namespace LyricsScraperNET.IntegrationTest.Providers.LyricFind
             SearchRequest searchRequest = CreateSearchRequest(testData);
 
             // Act
-            var searchResult = await lyricsClient.SearchLyricAsync(searchRequest);
+            var searchResult = await lyricsClient.SearchLyricAsync(searchRequest, TestContext.Current.CancellationToken);
 
             // Assert
             Assert.NotNull(searchResult);
@@ -124,7 +124,7 @@ namespace LyricsScraperNET.IntegrationTest.Providers.LyricFind
             Assert.False(searchResult.Instrumental);
         }
 
-        [RegionalTestTheory(excludeRegions: new[] { "AM", "RU" })]
+        [RegionalTestTheory(excludeRegions: ["AM", "RU"])]
         [InlineData("rush", "yyz")]
         public async Task SearchLyricAsync_Instrumental_ShouldReturnSuccess(string artist, string song)
         {
@@ -144,7 +144,7 @@ namespace LyricsScraperNET.IntegrationTest.Providers.LyricFind
             Assert.True(searchResult.Instrumental);
         }
 
-        [RegionalTestTheory(includeRegions: new[] { "AM", "RU" })]
+        [RegionalTestTheory(includeRegions: ["AM", "RU"])]
         [InlineData("rush", "Tom Sawyer")]
         public async Task SearchLyricAsync_LyricAreNotAvailableInRegion_ShouldRegionRestrictedStatus(string artist, string song)
         {
@@ -173,7 +173,7 @@ namespace LyricsScraperNET.IntegrationTest.Providers.LyricFind
             var searchRequest = new ArtistAndSongSearchRequest(artist, song);
 
             // Act
-            var searchResult = await lyricsClient.SearchLyricAsync(searchRequest);
+            var searchResult = await lyricsClient.SearchLyricAsync(searchRequest, TestContext.Current.CancellationToken);
 
             // Assert
             Assert.NotNull(searchResult);

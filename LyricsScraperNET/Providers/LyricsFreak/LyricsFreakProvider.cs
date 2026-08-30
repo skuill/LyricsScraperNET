@@ -139,7 +139,7 @@ namespace LyricsScraperNET.Providers.LyricsFreak
 
         #region Private methods
 
-        private string GetSongHrefFromHtmlBody(string htmlBody, string song)
+        private static string GetSongHrefFromHtmlBody(string htmlBody, string song)
         {
             // Encoded needed for songs like "Devil's Calling". Title in htmlBody will be: "Devil&#039;s Calling Lyrics"
             string formattedXPath = string.Format(LyricsHrefXPath, GetEncodedSong(song));
@@ -160,7 +160,7 @@ namespace LyricsScraperNET.Providers.LyricsFreak
             return hrefSong;
         }
 
-        private string GetSongLyricsFromHtmlBody(string htmlBody)
+        private static string GetSongLyricsFromHtmlBody(string htmlBody)
         {
             var lyricsNode = htmlBody.SelectSingleNodeByXPath(LyricsDivXPath);
 
@@ -171,7 +171,7 @@ namespace LyricsScraperNET.Providers.LyricsFreak
             return lyricsText;
         }
 
-        private string GetEncodedSong(string song)
+        private static string GetEncodedSong(string song)
         {
             string encodedSong = System.Net.WebUtility.HtmlEncode(song).ToLowerInvariant();
             encodedSong = encodedSong.Replace("&#39;", "&#039;");

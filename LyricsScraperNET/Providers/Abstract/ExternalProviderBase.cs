@@ -27,15 +27,14 @@ namespace LyricsScraperNET.Providers.Abstract
             if (!IsEnabled)
                 return new SearchResult();
 
-            switch (searchRequest)
+            return searchRequest switch
             {
-                case ArtistAndSongSearchRequest artistAndSongSearchRequest:
-                    return SearchLyric(artistAndSongSearchRequest.Artist, artistAndSongSearchRequest.Song, cancellationToken);
-                case UriSearchRequest uriSearchRequest:
-                    return SearchLyric(uriSearchRequest.Uri, cancellationToken);
-                default:
-                    return new SearchResult();
-            }
+                ArtistAndSongSearchRequest artistAndSongSearchRequest
+                    => SearchLyric(artistAndSongSearchRequest.Artist, artistAndSongSearchRequest.Song, cancellationToken),
+                UriSearchRequest uriSearchRequest
+                    => SearchLyric(uriSearchRequest.Uri, cancellationToken),
+                _ => new SearchResult(),
+            };
         }
 
         protected virtual SearchResult SearchLyric(Uri uri, CancellationToken cancellationToken = default)
@@ -53,15 +52,14 @@ namespace LyricsScraperNET.Providers.Abstract
             if (!IsEnabled)
                 return new SearchResult();
 
-            switch (searchRequest)
+            return searchRequest switch
             {
-                case ArtistAndSongSearchRequest artistAndSongSearchRequest:
-                    return await SearchLyricAsync(artistAndSongSearchRequest.Artist, artistAndSongSearchRequest.Song, cancellationToken);
-                case UriSearchRequest uriSearchRequest:
-                    return await SearchLyricAsync(uriSearchRequest.Uri, cancellationToken);
-                default:
-                    return new SearchResult();
-            }
+                ArtistAndSongSearchRequest artistAndSongSearchRequest
+                    => await SearchLyricAsync(artistAndSongSearchRequest.Artist, artistAndSongSearchRequest.Song, cancellationToken),
+                UriSearchRequest uriSearchRequest
+                    => await SearchLyricAsync(uriSearchRequest.Uri, cancellationToken),
+                _ => new SearchResult(),
+            };
         }
 
         protected virtual Task<SearchResult> SearchLyricAsync(Uri uri, CancellationToken cancellationToken = default)
@@ -86,14 +84,12 @@ namespace LyricsScraperNET.Providers.Abstract
 
         public void Enable()
         {
-            if (Options != null)
-                Options.Enabled = true;
+            Options?.Enabled = true;
         }
 
         public void Disable()
         {
-            if (Options != null)
-                Options.Enabled = false;
+            Options?.Enabled = false;
         }
 
         public virtual void WithLogger(ILoggerFactory loggerFactory)

@@ -19,8 +19,10 @@ namespace LyricsScraperNET.Network
 
         public HtmlAgilityWebClient()
         {
-            _htmlWeb = new HtmlWeb();
-            _htmlWeb.UsingCache = false;
+            _htmlWeb = new HtmlWeb
+            {
+                UsingCache = false
+            };
         }
 
         public HtmlAgilityWebClient(ILogger<HtmlAgilityWebClient> logger) : this()

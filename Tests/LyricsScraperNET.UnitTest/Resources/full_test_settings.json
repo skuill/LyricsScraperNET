@@ -30,6 +30,10 @@
     "LyricsFreakOptions": {
       "SearchPriority": 77,
       "Enabled": true
+    },
+    "LrclibOptions": {
+      "SearchPriority": 88,
+      "Enabled": true
     }
   }
 }

@@ -15,7 +15,7 @@ namespace LyricsScraperNET.IntegrationTest.Providers.Genius
         #region sync
 
         [Theory]
-        [MemberData(nameof(GetTestData), parameters: "Providers\\Genius\\lyric_test_data.json")]
+        [MemberData(nameof(GetTestData), arguments: "Providers\\Genius\\lyric_test_data.json")]
         public void SearchLyric_IntegrationDynamicData_Success(LyricsTestData testData)
         {
             // Arrange
@@ -37,7 +37,7 @@ namespace LyricsScraperNET.IntegrationTest.Providers.Genius
         }
 
         [Theory]
-        [MemberData(nameof(GetTestData), parameters: "Providers\\Genius\\instrumental_test_data.json")]
+        [MemberData(nameof(GetTestData), arguments: "Providers\\Genius\\instrumental_test_data.json")]
         public void SearchLyric_UnitDynamicData_Instrumental(LyricsTestData testData)
         {
             // Arrange
@@ -58,7 +58,7 @@ namespace LyricsScraperNET.IntegrationTest.Providers.Genius
         }
 
         [Theory]
-        [InlineData("asdfasdfasdfasdf", "asdfasdfasdfasdf")]
+        [InlineData("asdfasdfasdfasdf123321", "asdfasdfasdfasdf123321")]
         public void SearchLyric_NotExistsLyrics_ShouldReturnNoDataFoundStatus(string artist, string song)
         {
             // Arrange
@@ -83,7 +83,7 @@ namespace LyricsScraperNET.IntegrationTest.Providers.Genius
         #region async
 
         [Theory]
-        [MemberData(nameof(GetTestData), parameters: "Providers\\Genius\\lyric_test_data.json")]
+        [MemberData(nameof(GetTestData), arguments: "Providers\\Genius\\lyric_test_data.json")]
         public async Task SearchLyricAsync_IntegrationDynamicData_Success(LyricsTestData testData)
         {
             // Arrange
@@ -91,7 +91,7 @@ namespace LyricsScraperNET.IntegrationTest.Providers.Genius
             SearchRequest searchRequest = CreateSearchRequest(testData);
 
             // Act
-            var searchResult = await lyricsClient.SearchLyricAsync(searchRequest);
+            var searchResult = await lyricsClient.SearchLyricAsync(searchRequest, TestContext.Current.CancellationToken);
 
             // Assert
             Assert.NotNull(searchResult);
@@ -104,7 +104,7 @@ namespace LyricsScraperNET.IntegrationTest.Providers.Genius
         }
 
         [Theory]
-        [MemberData(nameof(GetTestData), parameters: "Providers\\Genius\\instrumental_test_data.json")]
+        [MemberData(nameof(GetTestData), arguments: "Providers\\Genius\\instrumental_test_data.json")]
         public async Task SearchLyricAsync_UnitDynamicData_Instrumental(LyricsTestData testData)
         {
             // Arrange
@@ -112,7 +112,7 @@ namespace LyricsScraperNET.IntegrationTest.Providers.Genius
             SearchRequest searchRequest = CreateSearchRequest(testData);
 
             // Act
-            var searchResult = await lyricsClient.SearchLyricAsync(searchRequest);
+            var searchResult = await lyricsClient.SearchLyricAsync(searchRequest, TestContext.Current.CancellationToken);
 
             // Assert
             Assert.NotNull(searchResult);
@@ -124,7 +124,7 @@ namespace LyricsScraperNET.IntegrationTest.Providers.Genius
         }
 
         [Theory]
-        [InlineData("asdfasdfasdfasdf", "asdfasdfasdfasdf")]
+        [InlineData("asdfasdfasdfasdf123321", "asdfasdfasdfasdf123321")]
         public async Task SearchLyricAsync_NotExistsLyrics_ShouldReturnNoDataFoundStatus(string artist, string song)
         {
             // Arrange
@@ -132,7 +132,7 @@ namespace LyricsScraperNET.IntegrationTest.Providers.Genius
             var searchRequest = new ArtistAndSongSearchRequest(artist, song);
 
             // Act
-            var searchResult = await lyricsClient.SearchLyricAsync(searchRequest);
+            var searchResult = await lyricsClient.SearchLyricAsync(searchRequest, TestContext.Current.CancellationToken);
 
             // Assert
             Assert.NotNull(searchResult);

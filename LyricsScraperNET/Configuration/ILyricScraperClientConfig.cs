@@ -28,5 +28,7 @@ namespace LyricsScraperNET.Configuration
         IExternalProviderOptions KPopLyricsOptions { get; }
 
         IExternalProviderOptions LyricsFreakOptions { get; }
+
+        IExternalProviderOptions LrclibOptions { get; }
     }
 }
