@@ -13,8 +13,14 @@ using System;
 
 namespace LyricsScraperNET.Configuration
 {
+    /// <summary>
+    /// Extension methods for configuring the LyricsScraperNET services in the DI container.
+    /// </summary>
     public static class ServiceCollectionExtensions
     {
+        /// <summary>
+        /// Adds the LyricsScraperNET services to the service collection with automatic provider discovery.
+        /// </summary>
         public static IServiceCollection AddLyricScraperClientService(
             this IServiceCollection services,
             IConfiguration configuration)

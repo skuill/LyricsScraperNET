@@ -13,7 +13,7 @@ namespace LyricsScraperNET.UnitTest.Providers.LyricsFreak
     public class LyricsFreakProviderTest : ProviderTestBase
     {
         [Theory]
-        [MemberData(nameof(GetTestData), parameters: "Providers\\LyricsFreak\\lyric_test_data.json")]
+        [MemberData(nameof(GetTestData), arguments: "Providers\\LyricsFreak\\lyric_test_data.json")]
         public void SearchLyric_UnitDynamicData_Success(LyricsTestData testData)
         {
             // Arrange

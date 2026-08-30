@@ -20,7 +20,7 @@ namespace LyricsScraperNET.IntegrationTest
             var searchRequest = new ArtistAndSongSearchRequest(artistToSearch, songToSearch);
 
             // Act
-            var searchResult = lyricsScraperClient.SearchLyric(searchRequest);
+            var searchResult = lyricsScraperClient.SearchLyric(searchRequest, TestContext.Current.CancellationToken);
 
             // Assert
             Assert.NotNull(searchResult);
@@ -44,7 +44,7 @@ namespace LyricsScraperNET.IntegrationTest
             var searchRequest = new ArtistAndSongSearchRequest(artistToSearch, songToSearch);
 
             // Act
-            var searchResult = await lyricsScraperClient.SearchLyricAsync(searchRequest);
+            var searchResult = await lyricsScraperClient.SearchLyricAsync(searchRequest, TestContext.Current.CancellationToken);
 
             // Assert
             Assert.NotNull(searchResult);
@@ -68,7 +68,7 @@ namespace LyricsScraperNET.IntegrationTest
             var searchRequest = new ArtistAndSongSearchRequest(artistToSearch, songToSearch);
 
             // Act
-            var searchResult = lyricsScraperClient.SearchLyric(searchRequest);
+            var searchResult = lyricsScraperClient.SearchLyric(searchRequest, TestContext.Current.CancellationToken);
 
             // Assert
             Assert.NotNull(searchResult);
@@ -91,7 +91,7 @@ namespace LyricsScraperNET.IntegrationTest
             var searchRequest = new ArtistAndSongSearchRequest(artistToSearch, songToSearch);
 
             // Act
-            var searchResult = await lyricsScraperClient.SearchLyricAsync(searchRequest);
+            var searchResult = await lyricsScraperClient.SearchLyricAsync(searchRequest, TestContext.Current.CancellationToken);
 
             // Assert
             Assert.NotNull(searchResult);

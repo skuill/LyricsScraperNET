@@ -13,7 +13,7 @@ namespace LyricsScraperNET.UnitTest.Providers.Genius
     public class GeniusProviderTest : ProviderTestBase
     {
         [Theory]
-        [MemberData(nameof(GetTestData), parameters: "Providers\\Genius\\lyric_test_data.json")]
+        [MemberData(nameof(GetTestData), arguments: "Providers\\Genius\\lyric_test_data.json")]
         public void SearchLyric_UnitDynamicData_Success(LyricsTestData testData)
         {
             // Arrange
@@ -37,7 +37,7 @@ namespace LyricsScraperNET.UnitTest.Providers.Genius
         }
 
         [Theory]
-        [MemberData(nameof(GetTestData), parameters: "Providers\\Genius\\instrumental_test_data.json")]
+        [MemberData(nameof(GetTestData), arguments: "Providers\\Genius\\instrumental_test_data.json")]
         public void SearchLyric_UnitDynamicData_Instrumental(LyricsTestData testData)
         {
             // Arrange

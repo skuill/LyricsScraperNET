@@ -9,10 +9,10 @@ namespace LyricsScraperNET.Providers.Musixmatch
         private ILogger<MusixmatchTokenCache>? _logger;
 
         // Musixmatch Token memory cache
-        private static IMemoryCache? _memoryCache;
+        private static MemoryCache? _memoryCache;
         private static MemoryCacheEntryOptions? _memoryCacheEntryOptions;
 
-        private static readonly object _syncLock = new object();
+        private static readonly object _syncLock = new();
 
         private readonly string MusixmatchTokenKey = "MusixmatchToken";
 
@@ -22,36 +22,30 @@ namespace LyricsScraperNET.Providers.Musixmatch
             InitializeMemoryCacheEntryOptions();
         }
 
-        private void InitializeMemoryCache()
+        private static void InitializeMemoryCache()
         {
             if (_memoryCache == null)
             {
                 lock (_syncLock)
                 {
-                    if (_memoryCache == null)
+                    _memoryCache ??= new MemoryCache(new MemoryCacheOptions()
                     {
-                        _memoryCache = new MemoryCache(new MemoryCacheOptions()
-                        {
-                            SizeLimit = 1024,
-                        });
-                    }
+                        SizeLimit = 1024,
+                    });
                 }
             }
         }
 
-        private void InitializeMemoryCacheEntryOptions()
+        private static void InitializeMemoryCacheEntryOptions()
         {
             if (_memoryCacheEntryOptions == null)
             {
                 lock (_syncLock)
                 {
-                    if (_memoryCacheEntryOptions == null)
+                    _memoryCacheEntryOptions ??= new MemoryCacheEntryOptions()
                     {
-                        _memoryCacheEntryOptions = new MemoryCacheEntryOptions()
-                        {
-                            Size = 1
-                        };
-                    }
+                        Size = 1
+                    };
                 }
             }
         }
@@ -68,12 +62,12 @@ namespace LyricsScraperNET.Providers.Musixmatch
 
             _logger?.LogDebug("Musixmatch. Use default MusixmatchToken.");
             string musixmatchTokenValue;
-            if (!_memoryCache.TryGetValue(MusixmatchTokenKey, out musixmatchTokenValue))
+            if (!_memoryCache!.TryGetValue(MusixmatchTokenKey, out musixmatchTokenValue!))
             {
                 _logger?.LogDebug("Musixmatch. Generate new token.");
                 var musixmatchToken = new MusixmatchToken();
                 musixmatchTokenValue = musixmatchToken.Token;
-                _memoryCache.Set(MusixmatchTokenKey, musixmatchTokenValue, _memoryCacheEntryOptions);
+                _memoryCache!.Set(MusixmatchTokenKey, musixmatchTokenValue, _memoryCacheEntryOptions);
             }
             return musixmatchTokenValue;
         }

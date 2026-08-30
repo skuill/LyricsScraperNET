@@ -13,7 +13,7 @@ namespace LyricsScraperNET.UnitTest.Providers.SongLyrics
     public class SongLyricsProviderTest : ProviderTestBase
     {
         [Theory]
-        [MemberData(nameof(GetTestData), parameters: "Providers\\SongLyrics\\lyric_test_data.json")]
+        [MemberData(nameof(GetTestData), arguments: "Providers\\SongLyrics\\lyric_test_data.json")]
         public void SearchLyric_UnitDynamicData_Success(LyricsTestData testData)
         {
             // Arrange
@@ -36,7 +36,7 @@ namespace LyricsScraperNET.UnitTest.Providers.SongLyrics
         }
 
         [Theory]
-        [MemberData(nameof(GetTestData), parameters: "Providers\\SongLyrics\\instrumental_test_data.json")]
+        [MemberData(nameof(GetTestData), arguments: "Providers\\SongLyrics\\instrumental_test_data.json")]
         public void SearchLyric_UnitDynamicData_Instrumental(LyricsTestData testData)
         {
             // Arrange

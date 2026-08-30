@@ -119,7 +119,7 @@ namespace LyricsScraperNET.Providers.KPopLyrics
             var htmlDoc = new HtmlDocument();
             htmlDoc.LoadHtml(text);
 
-            var mainNode = htmlDoc.DocumentNode.SelectNodes(LyricsContainerNodesXPath).FirstOrDefault();
+            var mainNode = htmlDoc.DocumentNode?.SelectNodes(LyricsContainerNodesXPath)?.FirstOrDefault();
 
             if (mainNode is null)
             {
@@ -133,9 +133,9 @@ namespace LyricsScraperNET.Providers.KPopLyrics
                 return new SearchResult(ExternalProviderType.KPopLyrics, ResponseStatusCode.NoDataFound);
             }
 
-            var h2Nodes = htmlDoc.DocumentNode.SelectNodes("//h2");
+            var h2Nodes = htmlDoc.DocumentNode?.SelectNodes("//h2");
 
-            if (h2Nodes is null || !h2Nodes.Any())
+            if (h2Nodes is null || h2Nodes.Count == 0)
             {
                 _logger?.LogWarning($"KPopLyrics. Can't parse lyric from the page. Couldn't find header nodes. Uri: {uri}");
                 return new SearchResult(ExternalProviderType.KPopLyrics, ResponseStatusCode.NoDataFound);
@@ -167,7 +167,7 @@ namespace LyricsScraperNET.Providers.KPopLyrics
             return new SearchResult(result, ExternalProviderType.KPopLyrics);
         }
 
-        private string TakeParagraphsUntilHeader(HtmlNode startNode)
+        private static string TakeParagraphsUntilHeader(HtmlNode startNode)
         {
             var paragraphs = new List<string>();
 

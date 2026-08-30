@@ -15,7 +15,7 @@ namespace LyricsScraperNET.IntegrationTest.Providers.SongLyrics
         #region sync
 
         [Theory]
-        [MemberData(nameof(GetTestData), parameters: "Providers\\SongLyrics\\lyric_test_data.json")]
+        [MemberData(nameof(GetTestData), arguments: "Providers\\SongLyrics\\lyric_test_data.json")]
         public void SearchLyric_IntegrationDynamicData_Success(LyricsTestData testData)
         {
             // Arrange
@@ -83,7 +83,7 @@ namespace LyricsScraperNET.IntegrationTest.Providers.SongLyrics
         #region async
 
         [Theory]
-        [MemberData(nameof(GetTestData), parameters: "Providers\\SongLyrics\\lyric_test_data.json")]
+        [MemberData(nameof(GetTestData), arguments: "Providers\\SongLyrics\\lyric_test_data.json")]
         public async Task SearchLyricAsync_IntegrationDynamicData_Success(LyricsTestData testData)
         {
             // Arrange
@@ -91,7 +91,7 @@ namespace LyricsScraperNET.IntegrationTest.Providers.SongLyrics
             SearchRequest searchRequest = CreateSearchRequest(testData);
 
             // Act
-            var searchResult = await lyricsClient.SearchLyricAsync(searchRequest);
+            var searchResult = await lyricsClient.SearchLyricAsync(searchRequest, TestContext.Current.CancellationToken);
 
             // Assert
             Assert.NotNull(searchResult);
@@ -112,7 +112,7 @@ namespace LyricsScraperNET.IntegrationTest.Providers.SongLyrics
             var searchRequest = new ArtistAndSongSearchRequest(artist, song);
 
             // Act
-            var searchResult = await lyricsClient.SearchLyricAsync(searchRequest);
+            var searchResult = await lyricsClient.SearchLyricAsync(searchRequest, TestContext.Current.CancellationToken);
 
             // Assert
             Assert.NotNull(searchResult);
@@ -132,7 +132,7 @@ namespace LyricsScraperNET.IntegrationTest.Providers.SongLyrics
             var searchRequest = new ArtistAndSongSearchRequest(artist, song);
 
             // Act
-            var searchResult = await lyricsClient.SearchLyricAsync(searchRequest);
+            var searchResult = await lyricsClient.SearchLyricAsync(searchRequest, TestContext.Current.CancellationToken);
 
             // Assert
             Assert.NotNull(searchResult);

@@ -15,7 +15,7 @@ namespace LyricsScraperNET.IntegrationTest.Providers.Musixmatch
         #region sync
 
         [Theory]
-        [MemberData(nameof(GetTestData), parameters: "Providers\\Musixmatch\\lyric_test_data.json")]
+        [MemberData(nameof(GetTestData), arguments: "Providers\\Musixmatch\\lyric_test_data.json")]
         public void SearchLyric_IntegrationDynamicData_Success(LyricsTestData testData)
         {
             // Arrange
@@ -37,7 +37,7 @@ namespace LyricsScraperNET.IntegrationTest.Providers.Musixmatch
         }
 
         [Theory]
-        [MemberData(nameof(GetTestData), parameters: "Providers\\Musixmatch\\instrumental_test_data.json")]
+        [MemberData(nameof(GetTestData), arguments: "Providers\\Musixmatch\\instrumental_test_data.json")]
         public void SearchLyric_IntegrationDynamicData_Instrumental(LyricsTestData testData)
         {
             // Arrange
@@ -83,7 +83,7 @@ namespace LyricsScraperNET.IntegrationTest.Providers.Musixmatch
         #region async
 
         [Theory]
-        [MemberData(nameof(GetTestData), parameters: "Providers\\Musixmatch\\lyric_test_data.json")]
+        [MemberData(nameof(GetTestData), arguments: "Providers\\Musixmatch\\lyric_test_data.json")]
         public async Task SearchLyricAsync_IntegrationDynamicData_Success(LyricsTestData testData)
         {
             // Arrange
@@ -91,7 +91,7 @@ namespace LyricsScraperNET.IntegrationTest.Providers.Musixmatch
             SearchRequest searchRequest = CreateSearchRequest(testData);
 
             // Act
-            var searchResult = await lyricsClient.SearchLyricAsync(searchRequest);
+            var searchResult = await lyricsClient.SearchLyricAsync(searchRequest, TestContext.Current.CancellationToken);
 
             // Assert
             Assert.NotNull(searchResult);
@@ -104,7 +104,7 @@ namespace LyricsScraperNET.IntegrationTest.Providers.Musixmatch
         }
 
         [Theory]
-        [MemberData(nameof(GetTestData), parameters: "Providers\\Musixmatch\\instrumental_test_data.json")]
+        [MemberData(nameof(GetTestData), arguments: "Providers\\Musixmatch\\instrumental_test_data.json")]
         public async Task SearchLyricAsync_IntegrationDynamicData_Instrumental(LyricsTestData testData)
         {
             // Arrange
@@ -112,7 +112,7 @@ namespace LyricsScraperNET.IntegrationTest.Providers.Musixmatch
             SearchRequest searchRequest = CreateSearchRequest(testData);
 
             // Act
-            var searchResult = await lyricsClient.SearchLyricAsync(searchRequest);
+            var searchResult = await lyricsClient.SearchLyricAsync(searchRequest, TestContext.Current.CancellationToken);
 
             // Assert
             Assert.NotNull(searchResult);
@@ -132,7 +132,7 @@ namespace LyricsScraperNET.IntegrationTest.Providers.Musixmatch
             var searchRequest = new ArtistAndSongSearchRequest(artist, song);
 
             // Act
-            var searchResult = await lyricsClient.SearchLyricAsync(searchRequest);
+            var searchResult = await lyricsClient.SearchLyricAsync(searchRequest, TestContext.Current.CancellationToken);
 
             // Assert
             Assert.NotNull(searchResult);

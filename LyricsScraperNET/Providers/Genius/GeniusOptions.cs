@@ -9,7 +9,7 @@ namespace LyricsScraperNET.Providers.Genius
         public bool Enabled { get; set; }
 
         // Optional. Use to retrieve lyric url for provided artist and song.
-        public string ApiKey { get; set; }
+        public string ApiKey { get; set; } = string.Empty;
 
         public string ConfigurationSectionName { get; } = "GeniusOptions";
 

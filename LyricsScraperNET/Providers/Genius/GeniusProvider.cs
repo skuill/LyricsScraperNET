@@ -176,7 +176,7 @@ namespace LyricsScraperNET.Providers.Genius
             var referentFragmentNodes = htmlDocument.DocumentNode.SelectNodes(_referentFragmentNodesXPath);
             if (referentFragmentNodes != null)
                 foreach (HtmlNode fragmentNode in referentFragmentNodes)
-                    fragmentNode.ParentNode.ReplaceChild(htmlDocument.CreateTextNode(fragmentNode.ChildNodes[0].InnerHtml), fragmentNode);
+                    fragmentNode.ParentNode?.ReplaceChild(htmlDocument.CreateTextNode(fragmentNode.ChildNodes[0].InnerHtml), fragmentNode);
             var spanNodes = htmlDocument.DocumentNode.SelectNodes("//span");
             if (spanNodes != null)
                 foreach (HtmlNode spanNode in spanNodes)
@@ -227,7 +227,7 @@ namespace LyricsScraperNET.Providers.Genius
             return artistAndSongHit.Result.Url;
         }
 
-        private string GetApiSearchQuery(string artist, string song)
+        private static string GetApiSearchQuery(string artist, string song)
             => string.Format(GeniusSearchQueryFormat, artist, song);
     }
 }
