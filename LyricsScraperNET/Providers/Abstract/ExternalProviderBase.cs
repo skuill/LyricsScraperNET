@@ -29,9 +29,9 @@ namespace LyricsScraperNET.Providers.Abstract
 
             return searchRequest switch
             {
-                ArtistAndSongSearchRequest artistAndSongSearchRequest 
+                ArtistAndSongSearchRequest artistAndSongSearchRequest
                     => SearchLyric(artistAndSongSearchRequest.Artist, artistAndSongSearchRequest.Song, cancellationToken),
-                UriSearchRequest uriSearchRequest 
+                UriSearchRequest uriSearchRequest
                     => SearchLyric(uriSearchRequest.Uri, cancellationToken),
                 _ => new SearchResult(),
             };
@@ -54,9 +54,9 @@ namespace LyricsScraperNET.Providers.Abstract
 
             return searchRequest switch
             {
-                ArtistAndSongSearchRequest artistAndSongSearchRequest 
+                ArtistAndSongSearchRequest artistAndSongSearchRequest
                     => await SearchLyricAsync(artistAndSongSearchRequest.Artist, artistAndSongSearchRequest.Song, cancellationToken),
-                UriSearchRequest uriSearchRequest 
+                UriSearchRequest uriSearchRequest
                     => await SearchLyricAsync(uriSearchRequest.Uri, cancellationToken),
                 _ => new SearchResult(),
             };
