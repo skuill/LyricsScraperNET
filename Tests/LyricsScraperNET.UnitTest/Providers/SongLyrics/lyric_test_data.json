@@ -2,8 +2,15 @@
   {
     "LyricPagePath": "Providers/SongLyrics/Resources/Lyrics_HtmlPage_01.txt",
     "LyricResultPath": "Providers/SongLyrics/Resources/Lyrics_Result_01.txt",
-    "ArtistName": "Attack Attack!",
-    "SongName": "I Swear I'll Change",
+    "ArtistName": "Test Artist",
+    "SongName": "Test Song",
+    "SongUri": null
+  },
+  {
+    "LyricPagePath": "Providers/SongLyrics/Resources/Lyrics_HtmlPage_02.txt",
+    "LyricResultPath": "Providers/SongLyrics/Resources/Lyrics_Result_02.txt",
+    "ArtistName": "Test Artist",
+    "SongName": "Legacy Test Song",
     "SongUri": null
   }
 ]

@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>Test Artist - Legacy Test Song Lyrics</title>
+</head>
+<body>
+	<!-- Legacy markup: the lyrics container is a paragraph without verse nodes. -->
+	<p id="songLyricsDiv" class="songLyricsV14">First line of the legacy test page<br />
+Second line of the legacy test page<br />
+Third line of the legacy test page</p>
+</body>
+</html>

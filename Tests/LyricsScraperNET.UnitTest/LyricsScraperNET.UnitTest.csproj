@@ -79,6 +79,18 @@
 		<None Update="Providers\SongLyrics\Resources\Lyrics_Result_01.txt">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
+		<None Update="Providers\SongLyrics\Resources\Lyrics_HtmlPage_02.txt">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<None Update="Providers\SongLyrics\Resources\Lyrics_Result_02.txt">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<None Update="Providers\SongLyrics\Resources\NotExist_HtmlPage_01.txt">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<None Update="Providers\SongLyrics\not_exist_test_data.json">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
 		<None Update="Providers\SongLyrics\lyric_test_data.json">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>

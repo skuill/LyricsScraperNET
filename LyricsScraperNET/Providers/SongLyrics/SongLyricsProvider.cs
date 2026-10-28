@@ -1,4 +1,5 @@
-﻿using LyricsScraperNET.Extensions;
+﻿using HtmlAgilityPack;
+using LyricsScraperNET.Extensions;
 using LyricsScraperNET.Helpers;
 using LyricsScraperNET.Models.Responses;
 using LyricsScraperNET.Network;
@@ -7,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using System;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,9 +21,14 @@ namespace LyricsScraperNET.Providers.SongLyrics
         private readonly IExternalUriConverter _uriConverter;
 
         /// <summary>
-        /// The html node that contains part of the lyric.
+        /// The html node that contains the lyric. The tag is not part of the XPath because the site changed it from p to div.
         /// </summary>
-        private const string LyricsContainerNodesXPath = "//p[contains(@id, 'songLyricsDiv')]";
+        private const string LyricsContainerNodesXPath = "//*[@id='songLyricsDiv']";
+
+        /// <summary>
+        /// Verses of the lyric inside <see cref="LyricsContainerNodesXPath"/>.
+        /// </summary>
+        private const string LyricsVerseNodesXPath = "./p";
 
         /// <summary>
         /// The text in the <see cref="LyricsContainerNodesXPath"/> if the lyrics do not exist on the site.
@@ -33,11 +40,17 @@ namespace LyricsScraperNET.Providers.SongLyrics
         /// </summary>
         private const string InstrumentalLyricText = "Instrumental";
 
+        /// <summary>
+        /// For instrumental songs the site shows a message in the songLyricsDiv. Example: "YYZ" by Rush is an instrumental track; it has no lyrics.
+        /// </summary>
+        private const string InstrumentalLyricPattern = @"\bis an instrumental (track|song)\b";
+
         #region Constructors
 
         public SongLyricsProvider()
         {
-            WebClient = new HtmlAgilityWebClient();
+            // HtmlAgilityPack sends a browser-like User-Agent, which the site answers with a bot challenge page.
+            WebClient = new NetHttpClient();
             Parser = new SongLyricsParser();
             Options = new SongLyricsOptions() { Enabled = true };
             _uriConverter = new SongLyricsUriConverter();
@@ -135,14 +148,31 @@ namespace LyricsScraperNET.Providers.SongLyrics
                 return new SearchResult(Models.ExternalProviderType.SongLyrics);
             }
 
+            var lyricText = GetLyricText(lyricsContainerNode);
+
             // Check if lyric is instrumental
-            if (string.Equals(lyricsContainerNode.InnerText, InstrumentalLyricText, StringComparison.OrdinalIgnoreCase)
-                || string.Equals(lyricsContainerNode.InnerText, $"[{InstrumentalLyricText}]", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(lyricText, InstrumentalLyricText, StringComparison.OrdinalIgnoreCase)
+                || string.Equals(lyricText, $"[{InstrumentalLyricText}]", StringComparison.OrdinalIgnoreCase)
+                || Regex.IsMatch(lyricText, InstrumentalLyricPattern, RegexOptions.IgnoreCase))
                 return new SearchResult(Models.ExternalProviderType.SongLyrics).AddInstrumental(true);
 
-            var parsedLyric = Parser.Parse(lyricsContainerNode.InnerText);
+            var parsedLyric = Parser.Parse(lyricText);
 
             return new SearchResult(parsedLyric, Models.ExternalProviderType.SongLyrics);
+        }
+
+        /// <summary>
+        /// Returns verses separated by an empty line. Falls back to the whole container text if there are no verse nodes.
+        /// </summary>
+        private static string GetLyricText(HtmlNode lyricsContainerNode)
+        {
+            var verseNodes = lyricsContainerNode.SelectNodes(LyricsVerseNodesXPath);
+            if (verseNodes == null || verseNodes.Count == 0)
+                return lyricsContainerNode.InnerText.Trim();
+
+            return string.Join("\n\n", verseNodes
+                .Select(verseNode => verseNode.InnerText.Trim())
+                .Where(verse => !string.IsNullOrEmpty(verse)));
         }
     }
 }
