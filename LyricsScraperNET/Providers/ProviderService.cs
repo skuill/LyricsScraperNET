@@ -10,43 +10,67 @@ namespace LyricsScraperNET.Providers
 {
     public class ProviderService : IProviderService
     {
-        private List<IExternalProvider> _providers = new();
+        // Copy-on-write: searches read an immutable snapshot, so one client can be used from many tasks at once
+        // while providers are added or removed.
+        private volatile IExternalProvider[] _providers = [];
+        private readonly object _syncLock = new();
 
         public IEnumerable<IExternalProvider> GetAvailableProviders(SearchRequest searchRequest)
         {
+            var providers = _providers;
             var providerType = searchRequest.GetProviderType();
             return providerType.IsNoneProviderType()
-                ? _providers.Where(p => p.IsEnabled).OrderByDescending(p => p.SearchPriority)
-                : _providers.Where(p => p.IsEnabled && p.Options.ExternalProviderType == providerType).OrderByDescending(p => p.SearchPriority);
+                ? providers.Where(p => p.IsEnabled).OrderByDescending(p => p.SearchPriority).ToList()
+                : providers.Where(p => p.IsEnabled && p.Options.ExternalProviderType == providerType).OrderByDescending(p => p.SearchPriority).ToList();
         }
 
         public IExternalProvider? this[ExternalProviderType providerType]
         {
-            get => IsProviderAvailable(providerType)
-                ? _providers.FirstOrDefault(p => p.Options.ExternalProviderType == providerType)
-                : default;
+            // One snapshot: the check and the lookup must see the same providers.
+            get => providerType.IsNoneProviderType()
+                ? default
+                : _providers.FirstOrDefault(p => p.Options.ExternalProviderType == providerType);
         }
 
         public void AddProvider(IExternalProvider provider)
         {
-            if (!_providers.Contains(provider))
+            lock (_syncLock)
             {
-                _providers.Add(provider);
+                if (!_providers.Contains(provider))
+                {
+                    _providers = [.. _providers, provider];
+                }
             }
         }
 
         public void RemoveProvider(ExternalProviderType providerType)
         {
-            _providers.RemoveAll(p => p.Options.ExternalProviderType == providerType);
+            lock (_syncLock)
+            {
+                _providers = _providers.Where(p => p.Options.ExternalProviderType != providerType).ToArray();
+            }
         }
 
-        public void EnableAllProviders() => _providers.ForEach(p => p.Enable());
-        public void DisableAllProviders() => _providers.ForEach(p => p.Disable());
+        public void EnableAllProviders()
+        {
+            foreach (var provider in _providers)
+                provider.Enable();
+        }
+
+        public void DisableAllProviders()
+        {
+            foreach (var provider in _providers)
+                provider.Disable();
+        }
 
         public bool AnyEnabled() => _providers.Any(x => x.IsEnabled);
-        public bool AnyAvailable() => _providers.Any();
+        public bool AnyAvailable() => _providers.Length > 0;
 
-        public void WithLogger(ILoggerFactory loggerFactory) => _providers.ForEach(p => p.WithLogger(loggerFactory));
+        public void WithLogger(ILoggerFactory loggerFactory)
+        {
+            foreach (var provider in _providers)
+                provider.WithLogger(loggerFactory);
+        }
 
         public bool IsProviderAvailable(ExternalProviderType providerType)
             => !providerType.IsNoneProviderType()

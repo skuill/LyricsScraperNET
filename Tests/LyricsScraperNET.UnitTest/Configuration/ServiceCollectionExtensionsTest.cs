@@ -6,6 +6,7 @@ using LyricsScraperNET.TestShared.Helpers;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -155,6 +156,41 @@ namespace LyricsScraperNET.UnitTest.Configuration
             A.CallTo(logger)
                 .Where(call => call.Method.Name == nameof(ILogger.Log))
                 .MustHaveHappenedTwiceExactly();
+        }
+
+        [Theory]
+        [InlineData("00:00:05", 5000)]
+        [InlineData(null, 10000)]
+        public void IocContainer_ProviderTimeoutFromConfig_IsUsedByClient(string configValue, int expectedMilliseconds)
+        {
+            // Arrange
+            var settings = new Dictionary<string, string>
+            {
+                ["LyricScraperClient:GeniusOptions:Enabled"] = "true",
+            };
+            if (configValue != null)
+                settings["LyricScraperClient:ProviderTimeout"] = configValue;
+
+            var configuration = new ConfigurationBuilder()
+                .AddInMemoryCollection(settings)
+                .Build();
+
+            var serviceCollection = new ServiceCollection();
+
+            // Act
+            serviceCollection.AddLyricScraperClientService(configuration);
+
+            var service = serviceCollection.BuildServiceProvider(
+                new ServiceProviderOptions
+                {
+                    ValidateOnBuild = true,
+                    ValidateScopes = true
+                }).CreateScope().ServiceProvider.GetRequiredService<ILyricsScraperClient>();
+
+            // Assert
+            Assert.Equal(TimeSpan.FromMilliseconds(expectedMilliseconds), service.ProviderTimeout);
+            Assert.False(service.UseParallelSearch);
+            Assert.True(service.IsEnabled);
         }
 
         [Fact]

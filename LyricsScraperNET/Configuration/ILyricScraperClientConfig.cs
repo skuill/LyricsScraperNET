@@ -1,4 +1,5 @@
 ﻿using LyricsScraperNET.Providers.Abstract;
+using System;
 
 namespace LyricsScraperNET.Configuration
 {
@@ -14,6 +15,11 @@ namespace LyricsScraperNET.Configuration
         /// searching across all available external providers.
         /// </summary>
         bool UseParallelSearch { get; }
+
+        /// <summary>
+        /// Maximum time one external provider gets to answer, for example "00:00:10". Null means the library default (10 seconds).
+        /// </summary>
+        TimeSpan? ProviderTimeout { get; }
 
         IExternalProviderOptions AZLyricsOptions { get; }
 

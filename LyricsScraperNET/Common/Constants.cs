@@ -1,4 +1,5 @@
 ﻿using LyricsScraperNET.Providers.Models;
+using System;
 using System.Collections.Generic;
 
 namespace LyricsScraperNET.Common
@@ -16,6 +17,11 @@ namespace LyricsScraperNET.Common
         };
 
         internal const string LibraryUserAgent = "LyricsScraperNET/1.0 (https://github.com/skuill/LyricsScraperNET)";
+
+        /// <summary>
+        /// Default maximum time one external provider gets to answer.
+        /// </summary>
+        internal static readonly TimeSpan DefaultProviderTimeout = TimeSpan.FromSeconds(10);
 
         internal static class ResponseMessages
         {

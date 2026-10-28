@@ -17,12 +17,25 @@ namespace LyricsScraperNET
         bool IsEnabled { get; }
 
         /// <summary>
-        /// Determines whether to use parallel search instead of sequential search. 
-        /// If explicitly set, the value from the local variable is used. 
-        /// Otherwise, it falls back to the configuration setting. 
+        /// Determines whether to use parallel search instead of sequential search.
+        /// If explicitly set, the value from the local variable is used.
+        /// Otherwise, it falls back to the configuration setting.
         /// By default, sequential search is used if not specified.
+        ///
+        /// Parallel search starts all providers at once and returns a result as soon as no provider with a higher
+        /// search priority is still running; among providers with the same priority the fastest one wins.
+        /// The remaining providers are canceled.
         /// </summary>
         bool UseParallelSearch { get; set; }
+
+        /// <summary>
+        /// Maximum time one external provider gets to answer. A provider that does not answer in time is treated as "not found"
+        /// and the search continues with the other providers.
+        /// If explicitly set, the value from the local variable is used. Otherwise, it falls back to the configuration setting.
+        /// Default: 10 seconds. Use <see cref="Timeout.InfiniteTimeSpan"/> to disable the timeout.
+        /// </summary>
+        /// <exception cref="ArgumentOutOfRangeException">The value is not positive and not <see cref="Timeout.InfiniteTimeSpan"/>.</exception>
+        TimeSpan ProviderTimeout { get; set; }
 
         IExternalProvider? this[ExternalProviderType providerType] { get; }
 
@@ -31,8 +44,11 @@ namespace LyricsScraperNET
         /// 1) Search by Uri: <see cref="UriSearchRequest"/>
         /// 2) Search by Artist and Song name: <see cref="ArtistAndSongSearchRequest"/>
         /// 
-        /// Supports cancellation via <see cref="CancellationToken"/>. 
+        /// Supports cancellation via <see cref="CancellationToken"/>.
         /// Throws <see cref="OperationCanceledException"/> if the operation is canceled.
+        ///
+        /// Blocks the calling thread until the search completes. Prefer <see cref="SearchLyricAsync"/> on thread pool threads
+        /// (ASP.NET, background services): many concurrent blocking calls can starve the thread pool.
         /// </summary>
         SearchResult SearchLyric(SearchRequest searchRequest, CancellationToken cancellationToken = default);
 

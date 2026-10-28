@@ -17,6 +17,7 @@ Notes for AI coding agents working in this repository. Personal or machine-speci
 - xunit.v3 on Microsoft Testing Platform (`global.json`).
 - Unit tests with coverage (same as CI): `dotnet test Tests/LyricsScraperNET.UnitTest --configuration Release -- --coverage --coverage-output-format cobertura`
 - Integration tests hit real sites and can fail because of site changes or rate limits. One class at a time: build, then run the test exe from `Tests/LyricsScraperNET.IntegrationTest/bin/Release/net10.0` with native xunit options, e.g. `LyricsScraperNET.IntegrationTest.exe -class "LyricsScraperNET.IntegrationTest.Providers.Genius.GeniusProviderTest"`.
+- Mutation check for every fix or new behavior: temporarily break the change (revert the fix, remove a guard, replace a condition), run the tests and make sure at least one test fails, then restore it. If no test fails, either the test is missing or weak, or the code is dead and should be removed. Prefer deterministic tests (gates such as `TaskCompletionSource`, `ManualResetEventSlim`) over wall-clock thresholds; use a safety timeout so a broken implementation fails the test instead of hanging it.
 - New functionality must be covered by tests. Mocks: FakeItEasy. Assert whole objects / all stored data, verify calls to external clients (`A.CallTo(...).MustHaveHappened...`). Keep the existing test style (Arrange / Act / Assert comments, test data in `lyric_test_data.json` + `Resources/`).
 
 ## Public API rules

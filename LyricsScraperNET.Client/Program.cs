@@ -132,6 +132,9 @@ namespace LyricsScraperNET.Client
             //// To perform parallel searches across multiple external providers, enable the following option:
             // lyricsScraperClient.UseParallelSearch = true;
 
+            //// Maximum time one provider gets to answer (default: 10 seconds, Timeout.InfiniteTimeSpan disables it):
+            // lyricsScraperClient.ProviderTimeout = TimeSpan.FromSeconds(5);
+
             // To enable library logging, the LoggerFactory must be configured and passed to the client.
             var loggerFactory = LoggerFactory.Create(builder =>
             {

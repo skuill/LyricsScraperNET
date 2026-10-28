@@ -11,6 +11,7 @@ using LyricsScraperNET.Validations;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -31,6 +32,31 @@ namespace LyricsScraperNET
         {
             get => _useParallelSearch ?? _lyricScraperClientConfig?.UseParallelSearch ?? false;
             set => _useParallelSearch = value;
+        }
+
+        // Stored as ticks: a TimeSpan? write is not atomic, and the value can be changed while other threads search.
+        private const long ProviderTimeoutNotSet = long.MinValue;
+        private long _providerTimeoutTicks = ProviderTimeoutNotSet;
+        /// <inheritdoc />
+        public TimeSpan ProviderTimeout
+        {
+            get
+            {
+                var ticks = Volatile.Read(ref _providerTimeoutTicks);
+                if (ticks != ProviderTimeoutNotSet)
+                    return TimeSpan.FromTicks(ticks);
+
+                var configTimeout = _lyricScraperClientConfig?.ProviderTimeout;
+                return configTimeout.HasValue && IsValidTimeout(configTimeout.Value)
+                    ? configTimeout.Value
+                    : Constants.DefaultProviderTimeout;
+            }
+            set
+            {
+                if (!IsValidTimeout(value))
+                    throw new ArgumentOutOfRangeException(nameof(value), value, "The timeout must be positive or Timeout.InfiniteTimeSpan.");
+                Volatile.Write(ref _providerTimeoutTicks, value.Ticks);
+            }
         }
 
         /// <inheritdoc />
@@ -73,102 +99,214 @@ namespace LyricsScraperNET
         /// <inheritdoc />
         public SearchResult SearchLyric(SearchRequest searchRequest, CancellationToken cancellationToken = default)
         {
-            try
-            {
-                // Run async operation synchronously
-                return SearchLyricInternal(searchRequest,
-                    (provider, ct) => Task.FromResult(provider.SearchLyric(searchRequest, ct)),
-                    cancellationToken).Result;
-            }
-            catch (AggregateException ex) when (ex.InnerException is OperationCanceledException)
-            {
-                // Catch AggregateException and throw OperationCanceledException
-                throw ex.InnerException;
-            }
+            // Settings are read once, so a concurrent change cannot mix modes within one search.
+            var useParallelSearch = UseParallelSearch;
+
+            // Parallel search always uses the async provider methods, so only the caller thread is blocked
+            // instead of one thread per provider. Sequential search calls the sync provider methods on the caller thread
+            // (no extra thread pool threads); the timeout then works through the provider's cancellation token.
+            var settings = new SearchSettings(useParallelSearch, ProviderTimeout, RunProviderOnCallerThread: !useParallelSearch);
+            Func<IExternalProvider, CancellationToken, Task<SearchResult>> searchAction = useParallelSearch
+                ? (provider, ct) => provider.SearchLyricAsync(searchRequest, ct)
+                : (provider, ct) => Task.FromResult(provider.SearchLyric(searchRequest, ct));
+
+            return SearchLyricInternal(searchRequest, searchAction, settings, cancellationToken).GetAwaiter().GetResult();
         }
 
         /// <inheritdoc />
         public Task<SearchResult> SearchLyricAsync(SearchRequest searchRequest, CancellationToken cancellationToken = default)
             => SearchLyricInternal(searchRequest,
                 (provider, ct) => provider.SearchLyricAsync(searchRequest, ct),
+                new SearchSettings(UseParallelSearch, ProviderTimeout, RunProviderOnCallerThread: false),
                 cancellationToken);
+
+        /// <summary>
+        /// Client settings captured once at the start of a search.
+        /// <paramref name="RunProviderOnCallerThread"/>: call the provider directly instead of starting it on the thread pool.
+        /// </summary>
+        private readonly record struct SearchSettings(bool UseParallelSearch, TimeSpan ProviderTimeout, bool RunProviderOnCallerThread);
 
         private async Task<SearchResult> SearchLyricInternal(
             SearchRequest searchRequest,
             Func<IExternalProvider, CancellationToken, Task<SearchResult>> searchAction,
+            SearchSettings settings,
             CancellationToken cancellationToken = default)
         {
             if (!ValidSearchRequestAndConfig(searchRequest, out var searchResult))
                 return searchResult;
 
-            if (UseParallelSearch)
-            {
-                var tasks = new List<Task<SearchResult>>();
+            var foundResult = settings.UseParallelSearch
+                ? await SearchInParallel(searchRequest, searchAction, settings, cancellationToken).ConfigureAwait(false)
+                : await SearchSequentially(searchRequest, searchAction, settings, cancellationToken).ConfigureAwait(false);
 
-                // Create a linked cancellation token to propagate cancellation
-                using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-
-                foreach (var provider in _providerService.GetAvailableProviders(searchRequest))
-                {
-                    tasks.Add(Task.Run(async () =>
-                    {
-                        try
-                        {
-                            // Await the asynchronous search method with the linked cancellation token
-                            return await searchAction(provider, linkedCts.Token);
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger?.LogError(ex, $"Error in provider {provider.GetType().Name}");
-                            return SearchResult.Empty;
-                        }
-                    }, linkedCts.Token));
-                }
-
-                while (tasks.Count > 0)
-                {
-                    var completedTask = await Task.WhenAny(tasks);
-                    tasks.Remove(completedTask);
-
-                    var result = await completedTask;
-                    if (!result.IsEmpty() || result.Instrumental)
-                    {
-                        linkedCts.Cancel(); // Stop other search tasks
-                        return result;
-                    }
-                }
-            }
-            else
-            {
-                foreach (var provider in _providerService.GetAvailableProviders(searchRequest))
-                {
-                    // Check for cancellation before each external provider call
-                    cancellationToken.ThrowIfCancellationRequested();
-
-                    try
-                    {
-                        var result = await searchAction(provider, cancellationToken);
-                        if (!result.IsEmpty() || result.Instrumental)
-                            return result; // Return the result if it is valid
-                    }
-                    catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
-                    {
-                        // Log the cancellation and rethrow the exception
-                        _logger?.LogInformation("Search operation was canceled.");
-                        throw;
-                    }
-                    catch (Exception ex)
-                    {
-                        // Log any unexpected errors to prevent the method from crashing
-                        _logger?.LogError(ex, "Error during provider search.");
-                    }
-                }
-            }
+            if (foundResult != null)
+                return foundResult;
 
             // No providers found valid results, log the failure and add a message
             searchResult.AddNoDataFoundMessage(Constants.ResponseMessages.NotFoundLyric);
             return searchResult;
         }
+
+        private async Task<SearchResult?> SearchSequentially(
+            SearchRequest searchRequest,
+            Func<IExternalProvider, CancellationToken, Task<SearchResult>> searchAction,
+            SearchSettings settings,
+            CancellationToken cancellationToken)
+        {
+            foreach (var provider in _providerService.GetAvailableProviders(searchRequest))
+            {
+                // Check for cancellation before each external provider call
+                cancellationToken.ThrowIfCancellationRequested();
+
+                var result = await SearchWithProvider(provider, searchAction, settings, cancellationToken).ConfigureAwait(false);
+
+                // A provider canceled by the caller returns null, so the cancellation has to be rethrown here.
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    _logger?.LogInformation("Search operation was canceled.");
+                    cancellationToken.ThrowIfCancellationRequested();
+                }
+
+                if (result != null)
+                    return result;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Starts all providers at once. A result is returned as soon as no provider with a higher <see cref="IExternalProvider.SearchPriority"/>
+        /// is still running, so the result does not depend on which site answers first. Among providers with the same priority the fastest one wins.
+        /// The remaining providers are canceled. Caller cancellation is rethrown as <see cref="OperationCanceledException"/>.
+        /// </summary>
+        private async Task<SearchResult?> SearchInParallel(
+            SearchRequest searchRequest,
+            Func<IExternalProvider, CancellationToken, Task<SearchResult>> searchAction,
+            SearchSettings settings,
+            CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+
+            // SearchWithProvider starts the provider on the thread pool, so starting all providers here does not block.
+            // Priorities are captured once: a concurrent options change cannot change the decision during the search.
+            var running = _providerService.GetAvailableProviders(searchRequest)
+                .Select(provider => (Priority: provider.SearchPriority, Task: SearchWithProvider(provider, searchAction, settings, linkedCts.Token)))
+                .ToList();
+
+            // Found results in completion order.
+            var found = new List<(int Priority, SearchResult Result)>();
+
+            try
+            {
+                while (running.Count > 0)
+                {
+                    // Each task completes on caller cancellation too (SearchWithProvider stops waiting), so the loop wakes up.
+                    var completedTask = await Task.WhenAny(running.Select(x => x.Task)).ConfigureAwait(false);
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    var completed = running.First(x => x.Task == completedTask);
+                    running.Remove(completed);
+
+                    var result = await completed.Task.ConfigureAwait(false);
+                    if (result != null)
+                        found.Add((completed.Priority, result));
+
+                    if (found.Count == 0)
+                        continue;
+
+                    // OrderByDescending is stable: among equal priorities the earliest completed result is taken.
+                    var best = found.OrderByDescending(x => x.Priority).First();
+                    if (!running.Any(x => x.Priority > best.Priority))
+                        return best.Result;
+                }
+
+                return null;
+            }
+            finally
+            {
+                // Stop the providers that are still running.
+                linkedCts.Cancel();
+            }
+        }
+
+        /// <summary>
+        /// Returns the found result or null. The provider gets <see cref="ProviderTimeout"/> to answer;
+        /// provider errors and timeouts are logged and not rethrown.
+        /// </summary>
+        private async Task<SearchResult?> SearchWithProvider(
+            IExternalProvider provider,
+            Func<IExternalProvider, CancellationToken, Task<SearchResult>> searchAction,
+            SearchSettings settings,
+            CancellationToken cancellationToken)
+        {
+            var timeout = settings.ProviderTimeout;
+            using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            if (timeout != Timeout.InfiniteTimeSpan)
+                timeoutCts.CancelAfter(timeout);
+
+            Task<SearchResult>? searchTask = null;
+            try
+            {
+                // Task.Run: a provider that blocks synchronously before returning its task must not delay the timeout below.
+                searchTask = settings.RunProviderOnCallerThread
+                    ? searchAction(provider, timeoutCts.Token)
+                    : Task.Run(() => searchAction(provider, timeoutCts.Token), CancellationToken.None);
+
+                // WaitAsync also stops waiting for a provider that ignores its cancellation token.
+                var result = timeout == Timeout.InfiniteTimeSpan
+                    ? await searchTask.WaitAsync(cancellationToken).ConfigureAwait(false)
+                    : await searchTask.WaitAsync(timeout, cancellationToken).ConfigureAwait(false);
+
+                return IsFound(result) ? result : null;
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                // Canceled by the caller or because the search already has a result.
+                ObserveAbandonedTask(searchTask);
+                return null;
+            }
+            catch (Exception ex) when (ex is TimeoutException || (ex is OperationCanceledException && timeoutCts.IsCancellationRequested))
+            {
+                ObserveAbandonedTask(searchTask);
+                _logger?.LogWarning("Provider {Provider} did not answer within {Timeout}.", provider.GetType().Name, timeout);
+                return null;
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Error in provider {Provider}.", provider.GetType().Name);
+                return null;
+            }
+            finally
+            {
+                // WaitAsync can return before the parent cancellation reaches timeoutCts,
+                // so cancel it explicitly before it is disposed: a provider that is still running must be stopped.
+                timeoutCts.Cancel();
+            }
+        }
+
+        /// <summary>
+        /// The search stopped waiting for this provider task. If the task fails later, its exception is observed here,
+        /// so it does not surface as <see cref="TaskScheduler.UnobservedTaskException"/>.
+        /// </summary>
+        private static void ObserveAbandonedTask(Task? task)
+        {
+            if (task == null || task.IsCompleted)
+                return;
+
+            task.ContinueWith(
+                static t => _ = t.Exception,
+                CancellationToken.None,
+                TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously,
+                TaskScheduler.Default);
+        }
+
+        private static bool IsFound(SearchResult? result)
+            => result != null && (!result.IsEmpty() || result.Instrumental);
+
+        private static bool IsValidTimeout(TimeSpan timeout)
+            => timeout == Timeout.InfiniteTimeSpan || timeout > TimeSpan.Zero;
 
         private bool ValidSearchRequestAndConfig(SearchRequest searchRequest, out SearchResult searchResult)
         {
