@@ -2,10 +2,8 @@
 using LyricsScraperNET.Providers.AZLyrics;
 using LyricsScraperNET.Providers.Genius;
 using LyricsScraperNET.Providers.KPopLyrics;
-using LyricsScraperNET.Providers.LyricFind;
 using LyricsScraperNET.Providers.Lrclib;
 using LyricsScraperNET.Providers.LyricsFreak;
-using LyricsScraperNET.Providers.Musixmatch;
 using LyricsScraperNET.Providers.SongLyrics;
 using System.Text.Json.Serialization;
 
@@ -20,11 +18,7 @@ namespace LyricsScraperNET.Configuration
 
         public IExternalProviderOptions GeniusOptions { get; set; } = new GeniusOptions();
 
-        public IExternalProviderOptions MusixmatchOptions { get; set; } = new MusixmatchOptions();
-
         public IExternalProviderOptions SongLyricsOptions { get; set; } = new SongLyricsOptions();
-
-        public IExternalProviderOptions LyricFindOptions { get; set; } = new LyricFindOptions();
 
         public IExternalProviderOptions KPopLyricsOptions { get; set; } = new KPopLyricsOptions();
 
@@ -38,9 +32,7 @@ namespace LyricsScraperNET.Configuration
         /// <inheritdoc />
         public bool IsEnabled => AZLyricsOptions.Enabled
             || GeniusOptions.Enabled
-            || MusixmatchOptions.Enabled
             || SongLyricsOptions.Enabled
-            || LyricFindOptions.Enabled
             || KPopLyricsOptions.Enabled
             || LyricsFreakOptions.Enabled
             || LrclibOptions.Enabled;

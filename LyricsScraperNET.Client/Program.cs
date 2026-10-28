@@ -126,9 +126,8 @@ namespace LyricsScraperNET.Client
             //     = new LyricsScraperClient()
             //         .WithGenius()
             //         .WithAZLyrics()
-            //         .WithMusixmatch()
             //         .WithSongLyrics()
-            //         .WithLyricFind();
+            //         .WithLrclib();
 
             //// To perform parallel searches across multiple external providers, enable the following option:
             // lyricsScraperClient.UseParallelSearch = true;
