@@ -1,7 +1,6 @@
 ﻿using LyricsScraperNET.Common;
 using LyricsScraperNET.Providers.Models;
-using System;
-using System.Linq;
+using LyricsScraperNET.TestShared.Helpers;
 using Xunit;
 
 namespace LyricsScraperNET.UnitTest.Extensions
@@ -56,18 +55,21 @@ namespace LyricsScraperNET.UnitTest.Extensions
         }
 
         [Fact]
-        public void LyricsScraperClient_WithMusixmatch_ReturnsIsEnabled()
+        public void LyricsScraperClient_WithMusixmatch_RemovedProvider_AddsNothing()
         {
+            // Arrange
+            var client = _lyricsScraperClient;
+
             // Act
-            var lyricsScraperClient = _lyricsScraperClient.WithMusixmatch();
+#pragma warning disable CS0618 // Obsolete: the provider was removed in 3.0.0
+            var lyricsScraperClient = client.WithMusixmatch();
             var externalTypeProvider = lyricsScraperClient[ExternalProviderType.Musixmatch];
+#pragma warning restore CS0618
 
             // Assert
-            Assert.NotNull(lyricsScraperClient);
-            Assert.True(lyricsScraperClient.IsEnabled);
-            Assert.NotNull(externalTypeProvider);
-            Assert.True(externalTypeProvider.IsEnabled);
-            Assert.Equal(Constants.ProvidersSearchPriorities[ExternalProviderType.Musixmatch], externalTypeProvider.SearchPriority);
+            Assert.Same(client, lyricsScraperClient);
+            Assert.False(lyricsScraperClient.IsEnabled);
+            Assert.Null(externalTypeProvider);
         }
 
         [Fact]
@@ -101,18 +103,21 @@ namespace LyricsScraperNET.UnitTest.Extensions
         }
 
         [Fact]
-        public void LyricsScraperClient_WithLyricFind_ReturnsIsEnabled()
+        public void LyricsScraperClient_WithLyricFind_RemovedProvider_AddsNothing()
         {
+            // Arrange
+            var client = _lyricsScraperClient;
+
             // Act
-            var lyricsScraperClient = _lyricsScraperClient.WithLyricFind();
+#pragma warning disable CS0618 // Obsolete: the provider was removed in 3.0.0
+            var lyricsScraperClient = client.WithLyricFind();
             var externalTypeProvider = lyricsScraperClient[ExternalProviderType.LyricFind];
+#pragma warning restore CS0618
 
             // Assert
-            Assert.NotNull(lyricsScraperClient);
-            Assert.True(lyricsScraperClient.IsEnabled);
-            Assert.NotNull(externalTypeProvider);
-            Assert.True(externalTypeProvider.IsEnabled);
-            Assert.Equal(Constants.ProvidersSearchPriorities[ExternalProviderType.LyricFind], externalTypeProvider.SearchPriority);
+            Assert.Same(client, lyricsScraperClient);
+            Assert.False(lyricsScraperClient.IsEnabled);
+            Assert.Null(externalTypeProvider);
         }
 
         [Fact]
@@ -139,15 +144,19 @@ namespace LyricsScraperNET.UnitTest.Extensions
             Assert.NotNull(lyricsScraperClient);
             Assert.True(lyricsScraperClient.IsEnabled);
 
-            foreach (var providerType in Enum.GetValues(typeof(ExternalProviderType)).Cast<ExternalProviderType>())
+            foreach (var providerType in ExternalProviderTypeHelper.SupportedProviderTypes)
             {
-                if (providerType == ExternalProviderType.None)
-                    continue;
                 var externalTypeProvider = lyricsScraperClient[providerType];
 
                 // Assert
                 Assert.NotNull(externalTypeProvider);
                 Assert.True(externalTypeProvider.IsEnabled);
+                Assert.Equal(Constants.ProvidersSearchPriorities[providerType], externalTypeProvider.SearchPriority);
+            }
+
+            foreach (var providerType in ExternalProviderTypeHelper.RemovedProviderTypes)
+            {
+                Assert.Null(lyricsScraperClient[providerType]);
             }
         }
     }

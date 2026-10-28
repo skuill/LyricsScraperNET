@@ -1,10 +1,11 @@
-﻿using LyricsScraperNET.Configuration;
+﻿using FakeItEasy;
+using LyricsScraperNET.Configuration;
 using LyricsScraperNET.Models.Requests;
 using LyricsScraperNET.Providers.Models;
 using LyricsScraperNET.TestShared.Helpers;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using System;
+using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -57,22 +58,17 @@ namespace LyricsScraperNET.UnitTest.Configuration
         public void IocContainer_GetService_LyricsScraperClient_FullSetup()
         {
             // Arrange
-            var externalProviderTypes = Enum.GetValues(typeof(ExternalProviderType))
-                .Cast<ExternalProviderType>()
-                .Where(p => p != ExternalProviderType.None);
-
             Dictionary<ExternalProviderType, int> expectedSearchPriorities = new Dictionary<ExternalProviderType, int>()
             {
                 { ExternalProviderType.Genius, 11},
                 { ExternalProviderType.AZLyrics, 22},
-                { ExternalProviderType.Musixmatch, 33},
                 { ExternalProviderType.SongLyrics, 44},
-                { ExternalProviderType.LyricFind, 55},
                 { ExternalProviderType.KPopLyrics, 66},
                 { ExternalProviderType.LyricsFreak, 77},
                 { ExternalProviderType.Lrclib, 88}
             };
 
+            // The settings still contain sections of providers removed in 3.0.0. They must be ignored.
             string settingsPath = "Resources\\full_test_settings.json";
 
             var serviceCollection = new ServiceCollection();
@@ -94,11 +90,118 @@ namespace LyricsScraperNET.UnitTest.Configuration
             Assert.True(service.IsEnabled);
             Assert.True(service.UseParallelSearch);
 
-            foreach (var providerType in externalProviderTypes)
+            Assert.Equal(expectedSearchPriorities.Keys.OrderBy(x => x), ExternalProviderTypeHelper.SupportedProviderTypes.OrderBy(x => x));
+            foreach (var providerType in ExternalProviderTypeHelper.SupportedProviderTypes)
             {
                 Assert.True(service[providerType].IsEnabled);
                 Assert.Equal(expectedSearchPriorities[providerType], service[providerType].SearchPriority);
             }
+
+            foreach (var providerType in ExternalProviderTypeHelper.RemovedProviderTypes)
+            {
+                Assert.Null(service[providerType]);
+            }
         }
+
+        [Fact]
+        public void IocContainer_ConfigWithRemovedProviders_LogsWarningOncePerRemovedSection()
+        {
+            // Arrange
+            var configuration = new ConfigurationBuilder()
+                .AddInMemoryCollection(new Dictionary<string, string>
+                {
+                    ["LyricScraperClient:GeniusOptions:Enabled"] = "true",
+                    ["LyricScraperClient:MusixmatchOptions:Enabled"] = "true",
+                    ["LyricScraperClient:MusixmatchOptions:SearchPriority"] = "33",
+                    ["LyricScraperClient:LyricFindOptions:Enabled"] = "true",
+                })
+                .Build();
+
+            var (loggerFactory, logger) = CreateFakeLoggerFactory();
+
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddSingleton(loggerFactory);
+
+            var expectedMessages = new[]
+            {
+                "Configuration section 'LyricScraperClient:MusixmatchOptions' belongs to a provider that was removed in LyricsScraperNET 3.0.0. The section is ignored, please remove it from your configuration.",
+                "Configuration section 'LyricScraperClient:LyricFindOptions' belongs to a provider that was removed in LyricsScraperNET 3.0.0. The section is ignored, please remove it from your configuration.",
+            };
+
+            // Act
+            serviceCollection.AddLyricScraperClientService(configuration);
+
+            var serviceProvider = serviceCollection.BuildServiceProvider(
+                new ServiceProviderOptions
+                {
+                    ValidateOnBuild = true,
+                    ValidateScopes = true
+                });
+
+            // Two scopes: the warning must not be repeated for every resolved client.
+            var firstClient = serviceProvider.CreateScope().ServiceProvider.GetRequiredService<ILyricsScraperClient>();
+            var secondClient = serviceProvider.CreateScope().ServiceProvider.GetRequiredService<ILyricsScraperClient>();
+
+            // Assert
+            Assert.True(firstClient.IsEnabled);
+            Assert.True(secondClient.IsEnabled);
+            Assert.NotNull(firstClient[ExternalProviderType.Genius]);
+            foreach (var providerType in ExternalProviderTypeHelper.RemovedProviderTypes)
+            {
+                Assert.Null(firstClient[providerType]);
+            }
+
+            Assert.Equal(expectedMessages, GetLoggedMessages(logger, LogLevel.Warning));
+            A.CallTo(logger)
+                .Where(call => call.Method.Name == nameof(ILogger.Log))
+                .MustHaveHappenedTwiceExactly();
+        }
+
+        [Fact]
+        public void IocContainer_ConfigWithoutRemovedProviders_DoesNotLogWarning()
+        {
+            // Arrange
+            var configuration = new ConfigurationBuilder()
+                .AddInMemoryCollection(new Dictionary<string, string>
+                {
+                    ["LyricScraperClient:GeniusOptions:Enabled"] = "true",
+                })
+                .Build();
+
+            var (loggerFactory, logger) = CreateFakeLoggerFactory();
+
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddSingleton(loggerFactory);
+
+            // Act
+            serviceCollection.AddLyricScraperClientService(configuration);
+
+            var service = serviceCollection.BuildServiceProvider(
+                new ServiceProviderOptions
+                {
+                    ValidateOnBuild = true,
+                    ValidateScopes = true
+                }).CreateScope().ServiceProvider.GetRequiredService<ILyricsScraperClient>();
+
+            // Assert
+            Assert.True(service.IsEnabled);
+            A.CallTo(logger)
+                .Where(call => call.Method.Name == nameof(ILogger.Log))
+                .MustNotHaveHappened();
+        }
+
+        private static (ILoggerFactory LoggerFactory, ILogger Logger) CreateFakeLoggerFactory()
+        {
+            var logger = A.Fake<ILogger>();
+            var loggerFactory = A.Fake<ILoggerFactory>();
+            A.CallTo(() => loggerFactory.CreateLogger(A<string>._)).Returns(logger);
+            return (loggerFactory, logger);
+        }
+
+        private static List<string> GetLoggedMessages(ILogger logger, LogLevel logLevel)
+            => Fake.GetCalls(logger)
+                .Where(call => call.Method.Name == nameof(ILogger.Log) && call.GetArgument<LogLevel>(0) == logLevel)
+                .Select(call => call.Arguments[2].ToString())
+                .ToList();
     }
 }

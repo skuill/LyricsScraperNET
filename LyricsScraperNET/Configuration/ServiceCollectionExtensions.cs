@@ -2,15 +2,15 @@
 using LyricsScraperNET.Providers.AZLyrics;
 using LyricsScraperNET.Providers.Genius;
 using LyricsScraperNET.Providers.KPopLyrics;
-using LyricsScraperNET.Providers.LyricFind;
 using LyricsScraperNET.Providers.Lrclib;
 using LyricsScraperNET.Providers.LyricsFreak;
-using LyricsScraperNET.Providers.Musixmatch;
 using LyricsScraperNET.Providers.SongLyrics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
+using System.Linq;
 
 namespace LyricsScraperNET.Configuration
 {
@@ -33,11 +33,10 @@ namespace LyricsScraperNET.Configuration
                 services.AddProvider<AZLyricsOptions, AZLyricsProvider>(lyricScraperClientConfig);
                 services.AddProvider<GeniusOptions, GeniusProvider>(lyricScraperClientConfig);
                 services.AddProvider<SongLyricsOptions, SongLyricsProvider>(lyricScraperClientConfig);
-                services.AddProvider<LyricFindOptions, LyricFindProvider>(lyricScraperClientConfig);
                 services.AddProvider<KPopLyricsOptions, KPopLyricsProvider>(lyricScraperClientConfig);
                 services.AddProvider<LrclibOptions, LrclibProvider>(lyricScraperClientConfig);
 
-                services.AddMusixmatchService(lyricScraperClientConfig);
+                services.AddRemovedProvidersWarning(lyricScraperClientConfig);
 
                 services.Configure<LyricScraperClientConfig>(lyricScraperClientConfig);
                 services.AddScoped<ILyricScraperClientConfig>(x => x.GetRequiredService<IOptionsSnapshot<LyricScraperClientConfig>>().Value);
@@ -64,18 +63,21 @@ namespace LyricsScraperNET.Configuration
             return services;
         }
 
-        private static IServiceCollection AddMusixmatchService(
-           this IServiceCollection services,
-           IConfiguration configuration)
+        /// <summary>
+        /// Sections of removed providers are ignored. Registers a one-time warning if the configuration still contains them.
+        /// </summary>
+        private static IServiceCollection AddRemovedProvidersWarning(
+            this IServiceCollection services,
+            IConfiguration configuration)
         {
-            var configurationSection = configuration.GetSection(Activator.CreateInstance<MusixmatchOptions>().ConfigurationSectionName);
-            if (configurationSection.Exists())
-            {
-                services.Configure<MusixmatchOptions>(configurationSection);
+            var removedSectionNames = RemovedProvidersWarning.RemovedProviderSectionNames
+                .Where(sectionName => configuration.GetSection(sectionName).Exists())
+                .ToArray();
 
-                services.AddSingleton<IMusixmatchTokenCache, MusixmatchTokenCache>();
-                services.AddScoped<IMusixmatchClientWrapper, MusixmatchClientWrapper>();
-                services.AddScoped(typeof(IExternalProvider), typeof(MusixmatchProvider));
+            if (removedSectionNames.Length > 0)
+            {
+                services.AddSingleton<IPostConfigureOptions<LyricScraperClientConfig>>(serviceProvider =>
+                    new RemovedProvidersWarning(serviceProvider.GetService<ILoggerFactory>(), removedSectionNames));
             }
 
             return services;

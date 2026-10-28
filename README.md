@@ -27,9 +27,7 @@ The library currently supports the following providers:
 
 - [AZLyrics](https://www.azlyrics.com/)
 - [Genius](https://genius.com/)
-- [MusixMatch](https://www.musixmatch.com/)
 - [SongLyrics](https://www.songlyrics.com/)
-- [LyricFind](https://www.lyricfind.com/)
 - [LyricsFreak](https://www.lyricsfreak.com/) (added by [@ajay201402](https://github.com/ajay201402))
 - [kpoplyrics](https://www.kpoplyrics.net/) (added by [@Lukeuke](https://github.com/Lukeuke))
 - [LRCLIB](https://lrclib.net/)
@@ -37,6 +35,18 @@ The library currently supports the following providers:
 - [darklyrics](http://www.darklyrics.com/) (**Coming soon** 🚧. [Issue #41](https://github.com/skuill/LyricsScraperNET/issues/41))
 - [vagalume](https://www.vagalume.com.br/) (**Coming soon** 🚧. [Issue #42](https://github.com/skuill/LyricsScraperNET/issues/42))
 - [Lyrics](https://www.lyrics.com/) (**Coming soon** 🚧. [Issue #25](https://github.com/skuill/LyricsScraperNET/issues/25))
+
+### 🗑️ Removed Providers
+
+| Provider | Removed in | Reason | Issue |
+|---|---|---|---|
+| [MusixMatch](https://www.musixmatch.com/) | 3.0.0 | The site serves decoy lyrics to non-authorized clients, so the provider returned wrong text for any query. | [#54](https://github.com/skuill/LyricsScraperNET/issues/54) |
+| [LyricFind](https://www.lyricfind.com/) | 3.0.0 | Lyrics pages are behind a JavaScript bot challenge and cannot be loaded with plain HTTP requests. | [#29](https://github.com/skuill/LyricsScraperNET/issues/29) |
+
+Upgrading from 2.x:
+- Configuration sections of removed providers (`MusixmatchOptions`, `LyricFindOptions`) are ignored. If logging is configured, the library writes a warning once; remove these sections from your configuration.
+- `WithMusixmatch()` and `WithLyricFind()` are marked `[Obsolete]` and do nothing.
+- `ExternalProviderType.Musixmatch` and `ExternalProviderType.LyricFind` are marked `[Obsolete]` and kept only so the numeric values of the other providers do not change. A search request with one of them returns `BadRequest`.
 
 ---
 
@@ -84,6 +94,18 @@ Install the package from NuGet:
 ```sh
 dotnet add package LyricsScraperNET
 ```
+
+---
+
+## ⚖️ Responsible Use
+
+- LyricsScraperNET does not host, store or redistribute lyrics. It requests them from the providers on behalf of the application that uses it.
+- Lyrics are protected by copyright of their authors and publishers. You are responsible for following the terms of use of each provider and the copyright law that applies to you, especially if you show lyrics publicly or use them commercially.
+- The library does not bypass bot protection, captchas or other access restrictions. A provider whose site blocks automated access is removed (see "Removed Providers" above).
+
+### Provider removal requests
+
+If you own or represent a site used by one of the providers and want it removed from the library, open an [issue](https://github.com/skuill/LyricsScraperNET/issues/new) or contact the maintainer through the channels listed on the [GitHub profile](https://github.com/skuill). The provider will be removed promptly.
 
 ---
 

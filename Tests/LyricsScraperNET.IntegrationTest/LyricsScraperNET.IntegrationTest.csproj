@@ -39,12 +39,6 @@
 		<None Update="Providers\Genius\Resources\Lyrics_Result_02.txt">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
-		<None Update="Providers\LyricFind\Resources\Lyrics_Result_01.txt">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</None>
-		<None Update="Providers\LyricFind\lyric_test_data.json">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</None>
 		<None Update="Providers\LyricsFreak\lyric_test_data.json">
 		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
@@ -56,15 +50,6 @@
 		</None>
 		<None Update="Providers\LyricsFreak\Resources\Lyrics_Result_02.txt">
 		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</None>
-		<None Update="Providers\Musixmatch\instrumental_test_data.json">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</None>
-		<None Update="Providers\Musixmatch\Resources\Lyrics_Result_01.txt">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</None>
-		<None Update="Providers\Musixmatch\lyric_test_data.json">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
 		<None Update="Providers\Genius\Resources\Lyrics_Result_01.txt">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

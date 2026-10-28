@@ -37,7 +37,7 @@ namespace LyricsScraperNET.Providers.SongLyrics
 
         public SongLyricsProvider()
         {
-            WebClient = new NetHttpClient();
+            WebClient = new HtmlAgilityWebClient();
             Parser = new SongLyricsParser();
             Options = new SongLyricsOptions() { Enabled = true };
             _uriConverter = new SongLyricsUriConverter();

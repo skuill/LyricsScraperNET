@@ -19,11 +19,7 @@ namespace LyricsScraperNET.Configuration
 
         IExternalProviderOptions GeniusOptions { get; }
 
-        IExternalProviderOptions MusixmatchOptions { get; }
-
         IExternalProviderOptions SongLyricsOptions { get; }
-
-        IExternalProviderOptions LyricFindOptions { get; }
 
         IExternalProviderOptions KPopLyricsOptions { get; }
 
