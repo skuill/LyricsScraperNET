@@ -26,9 +26,10 @@ namespace LyricsScraperNET.Providers
 
         public IExternalProvider? this[ExternalProviderType providerType]
         {
-            get => IsProviderAvailable(providerType)
-                ? _providers.FirstOrDefault(p => p.Options.ExternalProviderType == providerType)
-                : default;
+            // One snapshot: the check and the lookup must see the same providers.
+            get => providerType.IsNoneProviderType()
+                ? default
+                : _providers.FirstOrDefault(p => p.Options.ExternalProviderType == providerType);
         }
 
         public void AddProvider(IExternalProvider provider)

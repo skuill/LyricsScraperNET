@@ -44,8 +44,11 @@ namespace LyricsScraperNET
         /// 1) Search by Uri: <see cref="UriSearchRequest"/>
         /// 2) Search by Artist and Song name: <see cref="ArtistAndSongSearchRequest"/>
         /// 
-        /// Supports cancellation via <see cref="CancellationToken"/>. 
+        /// Supports cancellation via <see cref="CancellationToken"/>.
         /// Throws <see cref="OperationCanceledException"/> if the operation is canceled.
+        ///
+        /// Blocks the calling thread until the search completes. Prefer <see cref="SearchLyricAsync"/> on thread pool threads
+        /// (ASP.NET, background services): many concurrent blocking calls can starve the thread pool.
         /// </summary>
         SearchResult SearchLyric(SearchRequest searchRequest, CancellationToken cancellationToken = default);
 
