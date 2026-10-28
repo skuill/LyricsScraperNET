@@ -27,6 +27,10 @@ Notes for AI coding agents working in this repository. Personal or machine-speci
 ## Conventions
 - English only in code, comments, docs and commit messages.
 - Branches: `feature/<issue>_<desc>`, `bugfix/<issue>_<desc>`. A pushed tag publishes to NuGet (`publish.sh`, `.github/workflows/cicd.yaml`).
+- Pull requests always target `main`. PRs are squash-merged, so start every new branch from the latest `main` and do not keep committing to a branch after its PR is merged.
+- Commit messages and PR titles start with all issue numbers they cover, e.g. `#54 #29 Removed Musixmatch and LyricFind providers`.
+- Provider code must not bypass bot protection, captchas or other access restrictions of the sites (see "Responsible Use" in `README.md`).
+- Do not commit real lyrics or saved site pages as test data (#69).
 - Follow existing patterns; do not silently change working configs (CI, lint, coverage).
 - Trust code over README when they disagree.
 - Skip `bin/ obj/ .vs/ TestResults/` when searching.
