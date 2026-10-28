@@ -9,9 +9,7 @@ namespace LyricsScraperNET.Common
         {
             { ExternalProviderType.AZLyrics, 6},
             { ExternalProviderType.Genius, 5},
-            { ExternalProviderType.Musixmatch, 0},
             { ExternalProviderType.SongLyrics, 4},
-            { ExternalProviderType.LyricFind, 1},
             { ExternalProviderType.KPopLyrics, 2},
             { ExternalProviderType.LyricsFreak, 3},
             { ExternalProviderType.Lrclib, 7}

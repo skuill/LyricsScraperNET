@@ -1,12 +1,11 @@
 ﻿using LyricsScraperNET.Providers.AZLyrics;
 using LyricsScraperNET.Providers.Genius;
 using LyricsScraperNET.Providers.KPopLyrics;
-using LyricsScraperNET.Providers.LyricFind;
 using LyricsScraperNET.Providers.Lrclib;
 using LyricsScraperNET.Providers.LyricsFreak;
 using LyricsScraperNET.Providers.Models;
-using LyricsScraperNET.Providers.Musixmatch;
 using LyricsScraperNET.Providers.SongLyrics;
+using System;
 
 namespace LyricsScraperNET
 {
@@ -24,11 +23,12 @@ namespace LyricsScraperNET
             return lyricsScraperClient;
         }
 
+        /// <summary>
+        /// Does nothing. The Musixmatch provider was removed in 3.0.0.
+        /// </summary>
+        [Obsolete("The Musixmatch provider was removed in LyricsScraperNET 3.0.0. This method does nothing and will be deleted in a future major version.")]
         public static ILyricsScraperClient WithMusixmatch(this ILyricsScraperClient lyricsScraperClient)
-        {
-            lyricsScraperClient.AddProvider(new MusixmatchProvider());
-            return lyricsScraperClient;
-        }
+            => lyricsScraperClient;
 
         public static ILyricsScraperClient WithSongLyrics(this ILyricsScraperClient lyricsScraperClient)
         {
@@ -36,11 +36,12 @@ namespace LyricsScraperNET
             return lyricsScraperClient;
         }
 
+        /// <summary>
+        /// Does nothing. The LyricFind provider was removed in 3.0.0.
+        /// </summary>
+        [Obsolete("The LyricFind provider was removed in LyricsScraperNET 3.0.0. This method does nothing and will be deleted in a future major version.")]
         public static ILyricsScraperClient WithLyricFind(this ILyricsScraperClient lyricsScraperClient)
-        {
-            lyricsScraperClient.AddProvider(new LyricFindProvider());
-            return lyricsScraperClient;
-        }
+            => lyricsScraperClient;
 
         public static ILyricsScraperClient WithKPopLyrics(this ILyricsScraperClient lyricsScraperClient)
         {
@@ -69,9 +70,7 @@ namespace LyricsScraperNET
             return lyricsScraperClient
                 .WithGenius()
                 .WithAZLyrics()
-                .WithMusixmatch()
                 .WithSongLyrics()
-                .WithLyricFind()
                 .WithKPopLyrics()
                 .WithLyricsFreak()
                 .WithLrclib();
