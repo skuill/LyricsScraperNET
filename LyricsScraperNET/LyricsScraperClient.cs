@@ -34,6 +34,28 @@ namespace LyricsScraperNET
             set => _useParallelSearch = value;
         }
 
+        private TimeSpan? _providerTimeout;
+        /// <inheritdoc />
+        public TimeSpan ProviderTimeout
+        {
+            get
+            {
+                if (_providerTimeout.HasValue)
+                    return _providerTimeout.Value;
+
+                var configTimeout = _lyricScraperClientConfig?.ProviderTimeout;
+                return configTimeout.HasValue && IsValidTimeout(configTimeout.Value)
+                    ? configTimeout.Value
+                    : Constants.DefaultProviderTimeout;
+            }
+            set
+            {
+                if (!IsValidTimeout(value))
+                    throw new ArgumentOutOfRangeException(nameof(value), value, "The timeout must be positive or Timeout.InfiniteTimeSpan.");
+                _providerTimeout = value;
+            }
+        }
+
         /// <inheritdoc />
         public bool IsEnabled => _providerService.AnyEnabled();
 
@@ -119,22 +141,17 @@ namespace LyricsScraperNET
                 // Check for cancellation before each external provider call
                 cancellationToken.ThrowIfCancellationRequested();
 
-                try
-                {
-                    var result = await searchAction(provider, cancellationToken).ConfigureAwait(false);
-                    if (IsFound(result))
-                        return result;
-                }
-                catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+                var result = await SearchWithProvider(provider, searchAction, cancellationToken).ConfigureAwait(false);
+
+                // A provider canceled by the caller returns null, so the cancellation has to be rethrown here.
+                if (cancellationToken.IsCancellationRequested)
                 {
                     _logger?.LogInformation("Search operation was canceled.");
-                    throw;
+                    cancellationToken.ThrowIfCancellationRequested();
                 }
-                catch (Exception ex)
-                {
-                    // Log any unexpected errors to prevent the method from crashing
-                    _logger?.LogError(ex, "Error in provider {Provider}.", provider.GetType().Name);
-                }
+
+                if (result != null)
+                    return result;
             }
 
             return null;
@@ -159,7 +176,9 @@ namespace LyricsScraperNET
                 .ToList();
 
             // Completes when the caller cancels, even if a provider ignores its cancellation token.
-            var cancellationTask = Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken);
+            // Registered on the owned linked token, not on the caller token: the linked source is canceled and disposed
+            // in finally, so no registration stays on a long-lived caller token after the search.
+            var cancellationTask = Task.Delay(Timeout.InfiniteTimeSpan, linkedCts.Token);
 
             // Found results in completion order.
             var found = new List<(int Priority, SearchResult Result)>();
@@ -197,16 +216,28 @@ namespace LyricsScraperNET
         }
 
         /// <summary>
-        /// Returns the found result or null. Provider errors are logged and not rethrown.
+        /// Returns the found result or null. The provider gets <see cref="ProviderTimeout"/> to answer;
+        /// provider errors and timeouts are logged and not rethrown.
         /// </summary>
         private async Task<SearchResult?> SearchWithProvider(
             IExternalProvider provider,
             Func<IExternalProvider, CancellationToken, Task<SearchResult>> searchAction,
             CancellationToken cancellationToken)
         {
+            var timeout = ProviderTimeout;
+            using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            if (timeout != Timeout.InfiniteTimeSpan)
+                timeoutCts.CancelAfter(timeout);
+
             try
             {
-                var result = await searchAction(provider, cancellationToken).ConfigureAwait(false);
+                var searchTask = searchAction(provider, timeoutCts.Token);
+
+                // WaitAsync also stops waiting for a provider that ignores its cancellation token.
+                var result = timeout == Timeout.InfiniteTimeSpan
+                    ? await searchTask.ConfigureAwait(false)
+                    : await searchTask.WaitAsync(timeout, cancellationToken).ConfigureAwait(false);
+
                 return IsFound(result) ? result : null;
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
@@ -214,15 +245,29 @@ namespace LyricsScraperNET
                 // Canceled by the caller or because the search already has a result.
                 return null;
             }
+            catch (Exception ex) when (ex is TimeoutException || (ex is OperationCanceledException && timeoutCts.IsCancellationRequested))
+            {
+                _logger?.LogWarning("Provider {Provider} did not answer within {Timeout}.", provider.GetType().Name, timeout);
+                return null;
+            }
             catch (Exception ex)
             {
                 _logger?.LogError(ex, "Error in provider {Provider}.", provider.GetType().Name);
                 return null;
             }
+            finally
+            {
+                // WaitAsync can return before the parent cancellation reaches timeoutCts,
+                // so cancel it explicitly before it is disposed: a provider that is still running must be stopped.
+                timeoutCts.Cancel();
+            }
         }
 
         private static bool IsFound(SearchResult? result)
             => result != null && (!result.IsEmpty() || result.Instrumental);
+
+        private static bool IsValidTimeout(TimeSpan timeout)
+            => timeout == Timeout.InfiniteTimeSpan || timeout > TimeSpan.Zero;
 
         private bool ValidSearchRequestAndConfig(SearchRequest searchRequest, out SearchResult searchResult)
         {

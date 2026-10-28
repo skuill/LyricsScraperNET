@@ -5,6 +5,7 @@ using LyricsScraperNET.Providers.KPopLyrics;
 using LyricsScraperNET.Providers.Lrclib;
 using LyricsScraperNET.Providers.LyricsFreak;
 using LyricsScraperNET.Providers.SongLyrics;
+using System;
 using System.Text.Json.Serialization;
 
 namespace LyricsScraperNET.Configuration
@@ -28,6 +29,9 @@ namespace LyricsScraperNET.Configuration
 
         /// <inheritdoc />
         public bool UseParallelSearch { get; set; } = false;
+
+        /// <inheritdoc />
+        public TimeSpan? ProviderTimeout { get; set; }
 
         /// <inheritdoc />
         public bool IsEnabled => AZLyricsOptions.Enabled

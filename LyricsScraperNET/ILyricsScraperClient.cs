@@ -28,6 +28,15 @@ namespace LyricsScraperNET
         /// </summary>
         bool UseParallelSearch { get; set; }
 
+        /// <summary>
+        /// Maximum time one external provider gets to answer. A provider that does not answer in time is treated as "not found"
+        /// and the search continues with the other providers.
+        /// If explicitly set, the value from the local variable is used. Otherwise, it falls back to the configuration setting.
+        /// Default: 10 seconds. Use <see cref="Timeout.InfiniteTimeSpan"/> to disable the timeout.
+        /// </summary>
+        /// <exception cref="ArgumentOutOfRangeException">The value is not positive and not <see cref="Timeout.InfiniteTimeSpan"/>.</exception>
+        TimeSpan ProviderTimeout { get; set; }
+
         IExternalProvider? this[ExternalProviderType providerType] { get; }
 
         /// <summary>
