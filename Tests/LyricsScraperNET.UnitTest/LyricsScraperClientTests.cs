@@ -8,6 +8,7 @@ using LyricsScraperNET.Providers.Models;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -346,7 +347,7 @@ namespace LyricsScraperNET.UnitTest
                 lyricsScraperClient.SearchLyric(searchRequest, cancellationTokenSource.Token));
 
             // Assert
-            Assert.IsType<TaskCanceledException>(exception); // Check that this is TaskCanceledException
+            Assert.Equal(cancellationTokenSource.Token, exception.CancellationToken);
         }
 
         [Fact]
@@ -686,7 +687,7 @@ namespace LyricsScraperNET.UnitTest
                     return slowResult;
                 });
             A.CallTo(() => slowProvider1.IsEnabled).Returns(true);
-            A.CallTo(() => fastProvider.SearchPriority).Returns(1);
+            A.CallTo(() => slowProvider1.SearchPriority).Returns(1);
 
             // Add all providers to a list.
             var providers = new List<IExternalProvider> { slowProvider1, fastProvider };
@@ -710,6 +711,162 @@ namespace LyricsScraperNET.UnitTest
 
             // Ensure that the slow provider was called exactly once.
             A.CallTo(() => slowProvider1.SearchLyricAsync(A<SearchRequest>._, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
+        }
+
+        [Fact]
+        public async Task SearchLyricAsync_ParallelSearch_HigherPriorityProviderWinsOverFasterProvider()
+        {
+            // Arrange
+            var highPriorityResult = new SearchResult("High priority result", ExternalProviderType.Genius);
+            var lowPriorityResult = new SearchResult("Low priority result", ExternalProviderType.AZLyrics);
+
+            var highPriorityProvider = CreateDelayedProviderMock(priority: 10, delayMilliseconds: 300, highPriorityResult);
+            var lowPriorityProvider = CreateDelayedProviderMock(priority: 1, delayMilliseconds: 0, lowPriorityResult);
+
+            var client = CreateParallelClient(lowPriorityProvider, highPriorityProvider);
+            var searchRequest = new ArtistAndSongSearchRequest("some artist", "some song");
+
+            // Act
+            var result = await client.SearchLyricAsync(searchRequest, TestContext.Current.CancellationToken);
+
+            // Assert
+            Assert.Same(highPriorityResult, result);
+            A.CallTo(() => highPriorityProvider.SearchLyricAsync(searchRequest, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
+            A.CallTo(() => lowPriorityProvider.SearchLyricAsync(searchRequest, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
+        }
+
+        [Fact]
+        public async Task SearchLyricAsync_ParallelSearch_HigherPriorityProviderNotFound_ReturnsLowerPriorityResult()
+        {
+            // Arrange
+            var lowPriorityResult = new SearchResult("Low priority result", ExternalProviderType.AZLyrics);
+
+            var highPriorityProvider = CreateDelayedProviderMock(priority: 10, delayMilliseconds: 200, new SearchResult(ExternalProviderType.Genius));
+            var lowPriorityProvider = CreateDelayedProviderMock(priority: 1, delayMilliseconds: 0, lowPriorityResult);
+
+            var client = CreateParallelClient(lowPriorityProvider, highPriorityProvider);
+            var searchRequest = new ArtistAndSongSearchRequest("some artist", "some song");
+
+            // Act
+            var result = await client.SearchLyricAsync(searchRequest, TestContext.Current.CancellationToken);
+
+            // Assert
+            Assert.Same(lowPriorityResult, result);
+            A.CallTo(() => highPriorityProvider.SearchLyricAsync(searchRequest, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
+            A.CallTo(() => lowPriorityProvider.SearchLyricAsync(searchRequest, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
+        }
+
+        [Fact]
+        public async Task SearchLyricAsync_ParallelSearch_CallerCancels_ThrowsEvenIfProviderIgnoresToken()
+        {
+            // Arrange
+            var provider = A.Fake<IExternalProvider>();
+            A.CallTo(() => provider.IsEnabled).Returns(true);
+            A.CallTo(() => provider.SearchLyricAsync(A<SearchRequest>._, A<CancellationToken>._))
+                .ReturnsLazily(async () =>
+                {
+                    await Task.Delay(5000, CancellationToken.None); // Ignores the cancellation token.
+                    return new SearchResult("Late result", ExternalProviderType.Genius);
+                });
+
+            var client = CreateParallelClient(provider);
+            var searchRequest = new ArtistAndSongSearchRequest("some artist", "some song");
+            using var cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
+            cancellationTokenSource.CancelAfter(100);
+            var stopwatch = Stopwatch.StartNew();
+
+            // Act
+            var exception = await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
+                client.SearchLyricAsync(searchRequest, cancellationTokenSource.Token));
+
+            // Assert
+            stopwatch.Stop();
+            Assert.Equal(cancellationTokenSource.Token, exception.CancellationToken);
+            Assert.True(stopwatch.Elapsed < TimeSpan.FromSeconds(3), $"Cancellation took {stopwatch.Elapsed}.");
+            A.CallTo(() => provider.SearchLyricAsync(searchRequest, A<CancellationToken>.That.Matches(ct => ct.IsCancellationRequested)))
+                .MustHaveHappenedOnceExactly();
+        }
+
+        [Fact]
+        public async Task SearchLyricAsync_ParallelSearch_AlreadyCanceledToken_ThrowsWithoutCallingProviders()
+        {
+            // Arrange
+            var provider = CreateDelayedProviderMock(priority: 1, delayMilliseconds: 0, new SearchResult("Result", ExternalProviderType.Genius));
+            var client = CreateParallelClient(provider);
+            var searchRequest = new ArtistAndSongSearchRequest("some artist", "some song");
+            using var cancellationTokenSource = new CancellationTokenSource();
+            cancellationTokenSource.Cancel();
+
+            // Act
+            var exception = await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
+                client.SearchLyricAsync(searchRequest, cancellationTokenSource.Token));
+
+            // Assert
+            Assert.Equal(cancellationTokenSource.Token, exception.CancellationToken);
+            A.CallTo(() => provider.SearchLyricAsync(A<SearchRequest>._, A<CancellationToken>._)).MustNotHaveHappened();
+            A.CallTo(() => provider.SearchLyric(A<SearchRequest>._, A<CancellationToken>._)).MustNotHaveHappened();
+        }
+
+        [Fact]
+        public void SearchLyric_ParallelSearch_UsesAsyncProviderMethods()
+        {
+            // Arrange
+            var expectedResult = new SearchResult("Result", ExternalProviderType.Genius);
+            var provider = CreateDelayedProviderMock(priority: 1, delayMilliseconds: 0, expectedResult);
+            var client = CreateParallelClient(provider);
+            var searchRequest = new ArtistAndSongSearchRequest("some artist", "some song");
+
+            // Act
+            var result = client.SearchLyric(searchRequest, TestContext.Current.CancellationToken);
+
+            // Assert
+            Assert.Same(expectedResult, result);
+            A.CallTo(() => provider.SearchLyricAsync(searchRequest, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
+            A.CallTo(() => provider.SearchLyric(A<SearchRequest>._, A<CancellationToken>._)).MustNotHaveHappened();
+        }
+
+        [Fact]
+        public async Task SearchLyricAsync_ParallelSearch_NoProviderFound_ReturnsNotFound()
+        {
+            // Arrange
+            var firstProvider = CreateDelayedProviderMock(priority: 2, delayMilliseconds: 50, new SearchResult(ExternalProviderType.Genius));
+            var secondProvider = CreateDelayedProviderMock(priority: 1, delayMilliseconds: 0, new SearchResult(ExternalProviderType.AZLyrics));
+            var client = CreateParallelClient(firstProvider, secondProvider);
+            var searchRequest = new ArtistAndSongSearchRequest("some artist", "some song");
+
+            // Act
+            var result = await client.SearchLyricAsync(searchRequest, TestContext.Current.CancellationToken);
+
+            // Assert
+            Assert.True(result.IsEmpty());
+            Assert.Equal(ResponseStatusCode.NoDataFound, result.ResponseStatusCode);
+            Assert.Equal(Constants.ResponseMessages.NotFoundLyric, result.ResponseMessage);
+            Assert.Equal(ExternalProviderType.None, result.ExternalProviderType);
+            Assert.False(result.Instrumental);
+            A.CallTo(() => firstProvider.SearchLyricAsync(searchRequest, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
+            A.CallTo(() => secondProvider.SearchLyricAsync(searchRequest, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
+        }
+
+        private static IExternalProvider CreateDelayedProviderMock(int priority, int delayMilliseconds, SearchResult result)
+        {
+            var provider = A.Fake<IExternalProvider>();
+            A.CallTo(() => provider.IsEnabled).Returns(true);
+            A.CallTo(() => provider.SearchPriority).Returns(priority);
+            A.CallTo(() => provider.SearchLyricAsync(A<SearchRequest>._, A<CancellationToken>._))
+                .ReturnsLazily(async (SearchRequest _, CancellationToken ct) =>
+                {
+                    if (delayMilliseconds > 0)
+                        await Task.Delay(delayMilliseconds, ct);
+                    return result;
+                });
+            return provider;
+        }
+
+        private static LyricsScraperClient CreateParallelClient(params IExternalProvider[] providers)
+        {
+            var config = A.Fake<ILyricScraperClientConfig>();
+            A.CallTo(() => config.UseParallelSearch).Returns(true);
+            return new LyricsScraperClient(config, providers);
         }
 
         #endregion UseParallelSearch
