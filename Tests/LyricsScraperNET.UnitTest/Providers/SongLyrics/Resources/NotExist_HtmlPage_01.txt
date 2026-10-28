@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>Test Artist - Unknown Test Song Lyrics</title>
+</head>
+<body>
+	<div id="songLyricsDiv-outer">
+		<div id="songLyricsDiv" class="lyrics-body">
+			<p>We do not have the lyrics for Unknown Test Song yet.</p>
+		</div>
+	</div>
+</body>
+</html>

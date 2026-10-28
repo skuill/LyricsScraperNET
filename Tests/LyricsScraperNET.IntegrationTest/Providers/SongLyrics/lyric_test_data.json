@@ -1,20 +1,20 @@
 ﻿[
   {
     "LyricResultPath": "Providers/SongLyrics/Resources/Lyrics_Result_01.txt",
-    "ArtistName": "Attack Attack!",
-    "SongName": "I Swear I'll Change",
+    "ArtistName": "John Newton",
+    "SongName": "Amazing Grace",
     "SongUri": null
   },
   {
     "LyricResultPath": "Providers/SongLyrics/Resources/Lyrics_Result_02.txt",
-    "ArtistName": "Parkway Drive",
-    "SongName": "Home Is For The Heartless",
+    "ArtistName": "Robert Burns",
+    "SongName": "Auld Lang Syne",
     "SongUri": null
   },
   {
-    "LyricResultPath": "Providers/SongLyrics/Resources/Lyrics_Result_02.txt",
+    "LyricResultPath": "Providers/SongLyrics/Resources/Lyrics_Result_01.txt",
     "ArtistName": null,
     "SongName": null,
-    "SongUri": "https://www.songlyrics.com/parkway-drive/home-is-for-the-heartless-lyrics/"
+    "SongUri": "https://www.songlyrics.com/john-newton/amazing-grace-lyrics/"
   }
 ]
