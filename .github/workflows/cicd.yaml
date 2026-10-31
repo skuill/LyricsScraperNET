@@ -29,6 +29,10 @@ jobs:
       - name: Build
         run: dotnet build --configuration Release --verbosity minimal
 
+      # Package Validation compares the public API with the last release on every push, not only when publishing.
+      - name: Pack (Package Validation)
+        run: dotnet pack LyricsScraperNET/LyricsScraperNET.csproj --configuration Release --no-build --output ./artifacts
+
       - name: Test (Unit) with Coverage
         run: |
           dotnet test Tests/LyricsScraperNET.UnitTest \

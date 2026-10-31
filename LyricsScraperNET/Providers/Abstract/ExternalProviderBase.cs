@@ -23,7 +23,7 @@ namespace LyricsScraperNET.Providers.Abstract
         /// </summary>
         private static readonly AsyncLocal<LoadTracker?> CurrentLoad = new();
 
-        public virtual IExternalProviderOptions Options => throw new NotImplementedException();
+        public abstract IExternalProviderOptions Options { get; }
 
         public virtual bool IsEnabled => Options != null && Options.Enabled;
 
