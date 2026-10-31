@@ -1,4 +1,5 @@
-﻿using LyricsScraperNET.Providers.AZLyrics;
+﻿using LyricsScraperNET.Common;
+using LyricsScraperNET.Providers.AZLyrics;
 using LyricsScraperNET.Providers.Genius;
 using LyricsScraperNET.Providers.KPopLyrics;
 using LyricsScraperNET.Providers.Lrclib;
@@ -26,7 +27,7 @@ namespace LyricsScraperNET
         /// <summary>
         /// Does nothing. The Musixmatch provider was removed in 3.0.0.
         /// </summary>
-        [Obsolete("The Musixmatch provider was removed in LyricsScraperNET 3.0.0. This method does nothing and will be deleted in a future major version.")]
+        [Obsolete(Obsoletions.MusixmatchRemoved.WithMusixmatchMessage, DiagnosticId = Obsoletions.MusixmatchRemoved.DiagnosticId, UrlFormat = Obsoletions.SharedUrlFormat)]
         public static ILyricsScraperClient WithMusixmatch(this ILyricsScraperClient lyricsScraperClient)
             => lyricsScraperClient;
 
@@ -39,7 +40,7 @@ namespace LyricsScraperNET
         /// <summary>
         /// Does nothing. The LyricFind provider was removed in 3.0.0.
         /// </summary>
-        [Obsolete("The LyricFind provider was removed in LyricsScraperNET 3.0.0. This method does nothing and will be deleted in a future major version.")]
+        [Obsolete(Obsoletions.LyricFindRemoved.WithLyricFindMessage, DiagnosticId = Obsoletions.LyricFindRemoved.DiagnosticId, UrlFormat = Obsoletions.SharedUrlFormat)]
         public static ILyricsScraperClient WithLyricFind(this ILyricsScraperClient lyricsScraperClient)
             => lyricsScraperClient;
 

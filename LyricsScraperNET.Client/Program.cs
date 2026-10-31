@@ -1,6 +1,13 @@
 ﻿using LyricsScraperNET.Configuration;
 using LyricsScraperNET.Models.Requests;
 using LyricsScraperNET.Models.Responses;
+using LyricsScraperNET.Providers.Abstract;
+using LyricsScraperNET.Providers.AZLyrics;
+using LyricsScraperNET.Providers.Genius;
+using LyricsScraperNET.Providers.KPopLyrics;
+using LyricsScraperNET.Providers.Lrclib;
+using LyricsScraperNET.Providers.LyricsFreak;
+using LyricsScraperNET.Providers.SongLyrics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -30,9 +37,15 @@ namespace LyricsScraperNET.Client
             //// How to configure for a certain external provider using explicit instantiation:
             //var result = await ExampleWithExplicitInstantiation(artistToSearch, songToSearch);
 
-            //// Checking that something was found. The response can be empty in two cases:
-            //// 1) A search error occurred. Detailed information can be found in the logs or in response fields like 'ResponseStatusCode' and 'ResponseMessage'.
-            //// 2) The requested song contains only the instrumental, no lyrics. In this case the flag 'Instrumental' will be true.
+            //// How to configure from appsettings.json without dependency injection:
+            //var result = await ExampleWithConfigurationWithoutDependencyInjection(artistToSearch, songToSearch);
+
+            //// Checking that something was found: 'Code' tells why the search ended, for example:
+            //// - Found: the lyrics are in 'LyricText';
+            //// - Instrumental: the song has no lyrics, 'LyricText' is empty;
+            //// - NotFound: at least one provider answered, none has the lyrics;
+            //// - AllProvidersFailed: no provider could check the request (site unavailable, timeout or error), the lyrics may exist.
+            //// 'ProviderAttempts' shows what each provider did, 'ResponseMessage' is a text for humans.
             if (result.IsEmpty())
             {
                 ConsoleExtensions.WriteLineDelimeter();
@@ -44,9 +57,12 @@ namespace LyricsScraperNET.Client
                 else
                 {
                     ($"Can't find lyrics for: [{artistToSearch} - {songToSearch}]. " +
-                        $"Status code: [{result.ResponseStatusCode}]. " +
+                        $"Code: [{result.Code}]. " +
                         $"Response message: [{result.ResponseMessage}].").WriteLineColored(ConsoleColor.Red);
                 }
+
+                foreach (var attempt in result.ProviderAttempts)
+                    attempt.ToString().WriteLineColored(ConsoleColor.DarkGray);
                 ConsoleExtensions.WriteLineDelimeter();
 
                 "Press any key to exit..".WriteLineColored(ConsoleColor.DarkGray);
@@ -65,6 +81,10 @@ namespace LyricsScraperNET.Client
 
             //// Lyrics provider information
             $"This lyric was found by [{result.ExternalProviderType}]\r\n".WriteLineColored(ConsoleColor.Magenta);
+
+            //// What each provider did, for example "Lrclib: NotFound (180 ms)" or "AZLyrics: Failed (95 ms): HTTP 403"
+            foreach (var attempt in result.ProviderAttempts)
+                attempt.ToString().WriteLineColored(ConsoleColor.DarkGray);
 
             "Press any key to exit..".WriteLineColored(ConsoleColor.DarkGray);
             Console.ReadLine();
@@ -105,6 +125,42 @@ namespace LyricsScraperNET.Client
             var result = await lyricsScraperClient.SearchLyricAsync(searchRequest, cancellationToken);
 
             return result;
+        }
+
+        /// <summary>
+        /// How to configure LyricScraperClient from appsettings.json without dependency injection:
+        /// the same sections as for the host configuration, the providers are created by hand.
+        /// </summary>
+        /// <param name="artistToSearch">artist name to search</param>
+        /// <param name="songToSearch">song name to search</param>
+        /// <returns>lyrics text</returns>
+        private static async Task<SearchResult> ExampleWithConfigurationWithoutDependencyInjection(string artistToSearch, string songToSearch)
+        {
+            //// Read the "LyricScraperClient" section: client settings and one section per provider (Enabled, SearchPriority, ApiKey for Genius).
+            IConfiguration configuration = new ConfigurationBuilder()
+                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                .AddEnvironmentVariables()
+                .Build();
+            var clientConfig = configuration
+                .GetSection(LyricScraperClientConfig.ConfigurationSectionName)
+                .Get<LyricScraperClientConfig>() ?? new LyricScraperClientConfig();
+
+            //// Create the providers with their options from the configuration.
+            IExternalProvider[] providers =
+            {
+                new GeniusProvider((GeniusOptions)clientConfig.GeniusOptions),
+                new AZLyricsProvider((AZLyricsOptions)clientConfig.AZLyricsOptions),
+                new SongLyricsProvider((SongLyricsOptions)clientConfig.SongLyricsOptions),
+                new KPopLyricsProvider((KPopLyricsOptions)clientConfig.KPopLyricsOptions),
+                new LyricsFreakProvider((LyricsFreakOptions)clientConfig.LyricsFreakOptions),
+                new LrclibProvider((LrclibOptions)clientConfig.LrclibOptions),
+            };
+
+            //// The client takes UseParallelSearch and ProviderTimeout from the configuration; disabled providers are skipped.
+            ILyricsScraperClient lyricsScraperClient = new LyricsScraperClient(clientConfig, providers);
+
+            var searchRequest = new ArtistAndSongSearchRequest(artistToSearch, songToSearch);
+            return await lyricsScraperClient.SearchLyricAsync(searchRequest, CancellationToken.None);
         }
 
         /// <summary>

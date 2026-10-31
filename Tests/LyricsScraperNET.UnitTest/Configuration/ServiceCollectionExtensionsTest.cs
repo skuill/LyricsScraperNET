@@ -134,8 +134,8 @@ namespace LyricsScraperNET.UnitTest.Configuration
 
             var expectedMessages = new[]
             {
-                "Configuration section 'LyricScraperClient:MusixmatchOptions' belongs to a provider that was removed in LyricsScraperNET 3.0.0. The section is ignored, please remove it from your configuration.",
-                "Configuration section 'LyricScraperClient:LyricFindOptions' belongs to a provider that was removed in LyricsScraperNET 3.0.0. The section is ignored, please remove it from your configuration.",
+                "Configuration section 'LyricScraperClient:MusixmatchOptions' belongs to a provider that was removed in LyricsScraperNET 3.0.0. The section is ignored, please remove it from your configuration. This warning will be removed in 4.0.0.",
+                "Configuration section 'LyricScraperClient:LyricFindOptions' belongs to a provider that was removed in LyricsScraperNET 3.0.0. The section is ignored, please remove it from your configuration. This warning will be removed in 4.0.0.",
             };
 
             // Act

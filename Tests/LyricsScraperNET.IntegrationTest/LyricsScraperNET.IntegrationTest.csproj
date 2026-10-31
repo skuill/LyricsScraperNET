@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<!-- LSNET001: the tests cover the obsolete sync API until it is removed in 4.0.0 (#79). -->
-		<NoWarn>CS0436;LSNET001</NoWarn>
+		<!-- LSNET0001 (sync API) and LSNET0002 (ResponseStatusCode): the tests cover the obsolete API until it is removed in 4.0.0 (#79, #74). -->
+		<NoWarn>CS0436;LSNET0001;LSNET0002</NoWarn>
 	</PropertyGroup>
 	
 	<PropertyGroup>

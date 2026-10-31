@@ -8,6 +8,7 @@ namespace LyricsScraperNET.Configuration
     /// <summary>
     /// Logs a warning once per application if the configuration contains sections of providers that were removed from the library.
     /// Runs when <see cref="LyricScraperClientConfig"/> is created, so the warning appears on the first client resolved from DI.
+    /// Removed in 4.0.0 (#81); the sections stay ignored.
     /// </summary>
     internal sealed class RemovedProvidersWarning : IPostConfigureOptions<LyricScraperClientConfig>
     {
@@ -38,7 +39,7 @@ namespace LyricsScraperNET.Configuration
             foreach (var sectionName in _sectionNames)
             {
                 _logger.LogWarning(
-                    "Configuration section '{ConfigurationSection}:{ProviderSection}' belongs to a provider that was removed in LyricsScraperNET 3.0.0. The section is ignored, please remove it from your configuration.",
+                    "Configuration section '{ConfigurationSection}:{ProviderSection}' belongs to a provider that was removed in LyricsScraperNET 3.0.0. The section is ignored, please remove it from your configuration. This warning will be removed in 4.0.0.",
                     LyricScraperClientConfig.ConfigurationSectionName,
                     sectionName);
             }

@@ -17,10 +17,11 @@ ILyricsScraperClient (LyricsScraperClient)
 | Folder | Content |
 |---|---|
 | `LyricsScraperNET/` | `ILyricsScraperClient` and `LyricsScraperClient`: entry point and search orchestration. |
+| `Common/` | `Constants`, `Obsoletions` (messages and diagnostic ids of all `[Obsolete]` members, see [obsoletions](obsoletions/README.md)). |
 | `Configuration/` | `LyricScraperClientConfig`, dependency injection (`ServiceCollectionExtensions`), the warning for removed providers. |
 | `Extensions/` | Fluent setup (`WithAllProviders()`, `WithGenius()`, ...), helpers. |
-| `Models/` | Requests (`ArtistAndSongSearchRequest`, `UriSearchRequest`) and `SearchResult`. |
-| `Network/` | `IWebClient`, `NetHttpClient`, `SharedHttpClient`. |
+| `Models/` | Requests (`ArtistAndSongSearchRequest`, `UriSearchRequest`), `SearchResult` with `SearchResultCode`, `ProviderAttempt`, `ProviderAttemptOutcome`, `LyricsScraperModelFactory`; `Abstract/` and `Serialization/` for the extensible enums. |
+| `Network/` | `NetHttpClient`, `SharedHttpClient`; `Abstract/` (`IWebClient`, internal `IWebClientWithStatus`), `Models/` (internal `WebLoadResult`, `WebLoadStatus`). |
 | `Providers/<Name>/` | One folder per provider: `<Name>Provider`, `<Name>Options`, `<Name>UriConverter`, `<Name>Parser`. |
 | `Providers/Abstract/` | `ExternalProviderBase` and the provider interfaces. |
 | `Validations/` | `RequestValidator`. |
@@ -31,11 +32,11 @@ ILyricsScraperClient (LyricsScraperClient)
 2. It takes a snapshot of the enabled providers ordered by `SearchPriority`, and of the settings (parallel mode, timeout).
 3. Each provider runs in `SearchWithProvider` with its own token: the caller token linked with `ProviderTimeout`. A timeout or an exception of a provider is logged and counts as "not found".
 4. A result counts as found if it has lyrics or is instrumental. Sequential mode stops at the first found result; parallel mode returns the found result with the highest priority once no provider with a higher priority is still running (see [configuration.md](configuration.md#search-order)).
-5. If nothing is found, the result is `NoDataFound`.
+5. Every started provider adds a `ProviderAttempt` (found, not found, failed, timeout, error, canceled). If nothing is found, the code is `NotFound` when at least one provider answered, otherwise `AllProvidersFailed`.
 
 Inside a provider:
 1. The URI converter builds the page URI, or the provider searches first (Genius: site or API search, LyricsFreak: artist page).
-2. The web client loads the page. Following the [web client contract](migration-2.x-to-3.0.md#web-client-contract), a failed request returns an empty string and never throws, except for caller cancellation.
+2. The provider loads the page with `LoadPageAsync` of `ExternalProviderBase`, which calls the web client and remembers how the last load of the call ended (success, 404 or failed), so the client can report `Failed` instead of `NotFound`. Following the [web client contract](migration-2.x-to-3.0.md#web-client-contract), a failed request returns an empty string and never throws, except for caller cancellation.
 3. The provider extracts the lyrics with HtmlAgilityPack (or JSON for LRCLIB and the Genius search) and the parser cleans the text.
 
 ## HTTP

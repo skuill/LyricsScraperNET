@@ -9,7 +9,7 @@ using System.Net.Http;
 
 namespace LyricsScraperNET.Providers
 {
-    public class ProviderService : IProviderService
+    internal sealed class ProviderService : IProviderService
     {
         // Copy-on-write: searches read an immutable snapshot, so one client can be used from many tasks at once
         // while providers are added or removed.
@@ -73,10 +73,7 @@ namespace LyricsScraperNET.Providers
                 provider.WithLogger(loggerFactory);
         }
 
-        /// <summary>
-        /// Internal: adding it to <see cref="IProviderService"/> would break its implementations.
-        /// </summary>
-        internal void WithHttpClient(HttpClient httpClient)
+        public void WithHttpClient(HttpClient httpClient)
         {
             foreach (var provider in _providers.OfType<ExternalProviderBase>())
                 provider.WithHttpClient(httpClient);

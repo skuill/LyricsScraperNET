@@ -80,7 +80,7 @@ namespace LyricsScraperNET.Providers.KPopLyrics
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            var text = await WebClient.LoadAsync(uri, cancellationToken).ConfigureAwait(false);
+            var text = await LoadPageAsync(uri, cancellationToken).ConfigureAwait(false);
 
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -110,13 +110,13 @@ namespace LyricsScraperNET.Providers.KPopLyrics
             if (mainNode is null)
             {
                 _logger?.LogWarning($"KPopLyrics. Can't parse lyric from the page. Couldn't find lyrics container. Uri: {uri}");
-                return new SearchResult(ExternalProviderType.KPopLyrics, ResponseStatusCode.NoDataFound);
+                return new SearchResult(ExternalProviderType.KPopLyrics);
             }
 
             if (mainNode.OuterHtml.Contains("no-content-found"))
             {
                 _logger?.LogInformation($"KPopLyrics. Page not found (404). Uri: {uri}");
-                return new SearchResult(ExternalProviderType.KPopLyrics, ResponseStatusCode.NoDataFound);
+                return new SearchResult(ExternalProviderType.KPopLyrics);
             }
 
             var h2Nodes = htmlDoc.DocumentNode?.SelectNodes("//h2");
@@ -124,7 +124,7 @@ namespace LyricsScraperNET.Providers.KPopLyrics
             if (h2Nodes is null || h2Nodes.Count == 0)
             {
                 _logger?.LogWarning($"KPopLyrics. Can't parse lyric from the page. Couldn't find header nodes. Uri: {uri}");
-                return new SearchResult(ExternalProviderType.KPopLyrics, ResponseStatusCode.NoDataFound);
+                return new SearchResult(ExternalProviderType.KPopLyrics);
             }
 
             // Sometimes lyrics have eng translation but sometimes its only romanized version.
@@ -137,7 +137,7 @@ namespace LyricsScraperNET.Providers.KPopLyrics
             if (h2Node is null)
             {
                 _logger?.LogWarning($"KPopLyrics. Can't parse lyric from the page. Couldn't find a valid lyrics header node. Uri: {uri}");
-                return new SearchResult(ExternalProviderType.KPopLyrics, ResponseStatusCode.NoDataFound);
+                return new SearchResult(ExternalProviderType.KPopLyrics);
             }
 
             var rawHtmlLyrics = TakeParagraphsUntilHeader(h2Node);
@@ -145,7 +145,7 @@ namespace LyricsScraperNET.Providers.KPopLyrics
             if (string.IsNullOrEmpty(rawHtmlLyrics))
             {
                 _logger?.LogWarning($"KPopLyrics. Can't parse lyric from the page. Couldn't extract lyrics content from paragraphs. Uri: {uri}");
-                return new SearchResult(ExternalProviderType.KPopLyrics, ResponseStatusCode.NoDataFound);
+                return new SearchResult(ExternalProviderType.KPopLyrics);
             }
 
             var result = Parser.Parse(rawHtmlLyrics);

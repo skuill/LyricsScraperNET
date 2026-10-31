@@ -1,13 +1,14 @@
 ﻿using LyricsScraperNET.Common;
 using LyricsScraperNET.Models.Requests;
 using LyricsScraperNET.Models.Responses;
-using LyricsScraperNET.Network;
 using LyricsScraperNET.Network.Abstract;
+using LyricsScraperNET.Network.Models;
+using LyricsScraperNET.Network;
 using Microsoft.Extensions.Logging;
-using System;
 using System.Net.Http;
-using System.Threading;
 using System.Threading.Tasks;
+using System.Threading;
+using System;
 
 namespace LyricsScraperNET.Providers.Abstract
 {
@@ -15,6 +16,12 @@ namespace LyricsScraperNET.Providers.Abstract
     {
         internal IExternalProviderLyricParser Parser { get; set; }
         internal IWebClient WebClient { get; set; }
+
+        /// <summary>
+        /// The last page load of the current provider call. One provider instance serves concurrent searches, so the state is kept
+        /// per call (<see cref="AsyncLocal{T}"/>): set by the public search methods, filled by <see cref="LoadPageAsync"/>.
+        /// </summary>
+        private static readonly AsyncLocal<LoadTracker?> CurrentLoad = new();
 
         public virtual IExternalProviderOptions Options => throw new NotImplementedException();
 
@@ -26,35 +33,47 @@ namespace LyricsScraperNET.Providers.Abstract
         #region Sync (obsolete, removed in 4.0.0)
 
         /// <inheritdoc />
-        [Obsolete(Constants.ObsoleteSyncApi.SearchLyricMessage, DiagnosticId = Constants.ObsoleteSyncApi.DiagnosticId, UrlFormat = Constants.ObsoleteSyncApi.UrlFormat)]
+        [Obsolete(Obsoletions.SyncApi.SearchLyricMessage, DiagnosticId = Obsoletions.SyncApi.DiagnosticId, UrlFormat = Obsoletions.SharedUrlFormat)]
         public virtual SearchResult SearchLyric(SearchRequest searchRequest, CancellationToken cancellationToken = default)
         {
             if (!IsEnabled)
                 return new SearchResult();
 
-#pragma warning disable LSNET001 // Calls the obsolete overloads below, so providers that still override them keep working.
-            return searchRequest switch
+            // A sync method shares the caller's context, so the previous tracker is restored.
+            var previousLoad = CurrentLoad.Value;
+            var load = new LoadTracker();
+            CurrentLoad.Value = load;
+            try
             {
-                ArtistAndSongSearchRequest artistAndSongSearchRequest
-                    => SearchLyric(artistAndSongSearchRequest.Artist, artistAndSongSearchRequest.Song, cancellationToken),
-                UriSearchRequest uriSearchRequest
-                    => SearchLyric(uriSearchRequest.Uri, cancellationToken),
-                _ => new SearchResult(),
-            };
-#pragma warning restore LSNET001
+#pragma warning disable LSNET0001 // Calls the obsolete overloads below, so providers that still override them keep working.
+                var searchResult = searchRequest switch
+                {
+                    ArtistAndSongSearchRequest artistAndSongSearchRequest
+                        => SearchLyric(artistAndSongSearchRequest.Artist, artistAndSongSearchRequest.Song, cancellationToken),
+                    UriSearchRequest uriSearchRequest
+                        => SearchLyric(uriSearchRequest.Uri, cancellationToken),
+                    _ => new SearchResult(),
+                };
+#pragma warning restore LSNET0001
+                return load.ApplyTo(searchResult);
+            }
+            finally
+            {
+                CurrentLoad.Value = previousLoad;
+            }
         }
 
         /// <summary>
         /// Blocks on <see cref="SearchLyricAsync(Uri, CancellationToken)"/>. Providers implement only the async overloads.
         /// </summary>
-        [Obsolete(Constants.ObsoleteSyncApi.SearchLyricMessage, DiagnosticId = Constants.ObsoleteSyncApi.DiagnosticId, UrlFormat = Constants.ObsoleteSyncApi.UrlFormat)]
+        [Obsolete(Obsoletions.SyncApi.SearchLyricMessage, DiagnosticId = Obsoletions.SyncApi.DiagnosticId, UrlFormat = Obsoletions.SharedUrlFormat)]
         protected virtual SearchResult SearchLyric(Uri uri, CancellationToken cancellationToken = default)
             => SearchLyricAsync(uri, cancellationToken).GetAwaiter().GetResult();
 
         /// <summary>
         /// Blocks on <see cref="SearchLyricAsync(string, string, CancellationToken)"/>. Providers implement only the async overloads.
         /// </summary>
-        [Obsolete(Constants.ObsoleteSyncApi.SearchLyricMessage, DiagnosticId = Constants.ObsoleteSyncApi.DiagnosticId, UrlFormat = Constants.ObsoleteSyncApi.UrlFormat)]
+        [Obsolete(Obsoletions.SyncApi.SearchLyricMessage, DiagnosticId = Obsoletions.SyncApi.DiagnosticId, UrlFormat = Obsoletions.SharedUrlFormat)]
         protected virtual SearchResult SearchLyric(string artist, string song, CancellationToken cancellationToken = default)
             => SearchLyricAsync(artist, song, cancellationToken).GetAwaiter().GetResult();
 
@@ -67,7 +86,11 @@ namespace LyricsScraperNET.Providers.Abstract
             if (!IsEnabled)
                 return new SearchResult();
 
-            return searchRequest switch
+            // Set inside an async method: the value does not flow back to the caller.
+            var load = new LoadTracker();
+            CurrentLoad.Value = load;
+
+            var searchResult = searchRequest switch
             {
                 ArtistAndSongSearchRequest artistAndSongSearchRequest
                     => await SearchLyricAsync(artistAndSongSearchRequest.Artist, artistAndSongSearchRequest.Song, cancellationToken).ConfigureAwait(false),
@@ -75,6 +98,7 @@ namespace LyricsScraperNET.Providers.Abstract
                     => await SearchLyricAsync(uriSearchRequest.Uri, cancellationToken).ConfigureAwait(false),
                 _ => new SearchResult(),
             };
+            return load.ApplyTo(searchResult);
         }
 
         protected virtual Task<SearchResult> SearchLyricAsync(Uri uri, CancellationToken cancellationToken = default)
@@ -84,6 +108,20 @@ namespace LyricsScraperNET.Providers.Abstract
             => throw new NotImplementedException();
 
         #endregion
+
+        /// <summary>
+        /// Loads a page through <see cref="WebClient"/> and remembers the outcome for the current search call,
+        /// so the client can tell "the site has no lyrics" from "the site could not be loaded". Providers use it instead of <c>WebClient.LoadAsync</c>.
+        /// </summary>
+        private protected async Task<string> LoadPageAsync(Uri uri, CancellationToken cancellationToken)
+        {
+            if (WebClient is not IWebClientWithStatus webClientWithStatus)
+                return await WebClient.LoadAsync(uri, cancellationToken).ConfigureAwait(false);
+
+            var loadResult = await webClientWithStatus.LoadWithStatusAsync(uri, cancellationToken).ConfigureAwait(false);
+            CurrentLoad.Value?.Record(loadResult);
+            return loadResult.Body;
+        }
 
         public void WithParser(IExternalProviderLyricParser parser)
         {
@@ -128,5 +166,22 @@ namespace LyricsScraperNET.Providers.Abstract
 
         public virtual void WithLogger(ILoggerFactory loggerFactory)
             => throw new NotImplementedException();
+
+        private sealed class LoadTracker
+        {
+            private WebLoadResult? _lastLoad;
+
+            internal void Record(WebLoadResult loadResult) => _lastLoad = loadResult;
+
+            /// <summary>
+            /// The last load decides: for example Genius falls back from a failed API request to the public search.
+            /// </summary>
+            internal SearchResult ApplyTo(SearchResult searchResult)
+            {
+                if (!searchResult.Code.IsSuccess && _lastLoad is { Status: WebLoadStatus.Failed } failedLoad)
+                    searchResult.LoadFailure = failedLoad;
+                return searchResult;
+            }
+        }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using LyricsScraperNET.Common;
+using LyricsScraperNET.Models.Responses;
 using LyricsScraperNET.Providers.Models;
 using System;
 
@@ -42,13 +43,18 @@ namespace LyricsScraperNET.Models.Requests
             return $"Uri: [{Uri}]. Provider: [{Provider}]";
         }
 
-        public override bool IsValid(out string error)
+        internal override bool IsValid(out SearchResultCode errorCode, out string errorMessage)
         {
-            bool result = Uri == null;
-            error = result
-                ? Constants.ResponseMessages.UriSearchRequestFieldsAreEmpty
-                : string.Empty;
-            return !result;
+            if (Uri == null)
+            {
+                errorCode = SearchResultCode.EmptyUri;
+                errorMessage = Constants.ResponseMessages.UriSearchRequestFieldsAreEmpty;
+                return false;
+            }
+
+            errorCode = SearchResultCode.None;
+            errorMessage = string.Empty;
+            return true;
         }
     }
 }

@@ -731,7 +731,7 @@ namespace LyricsScraperNET.UnitTest
             var result = await client.SearchLyricAsync(searchRequest, TestContext.Current.CancellationToken);
 
             // Assert
-            Assert.Same(highPriorityResult, result);
+            AssertProviderResult(highPriorityResult, result);
             A.CallTo(() => highPriorityProvider.SearchLyricAsync(searchRequest, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
             A.CallTo(() => lowPriorityProvider.SearchLyricAsync(searchRequest, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
         }
@@ -761,7 +761,7 @@ namespace LyricsScraperNET.UnitTest
             var result = await client.SearchLyricAsync(searchRequest, TestContext.Current.CancellationToken);
 
             // Assert
-            Assert.Same(highPriorityResult, result);
+            AssertProviderResult(highPriorityResult, result);
             Assert.True(lowProviderCalled.IsSet);
             A.CallTo(() => highPriorityProvider.SearchLyricAsync(searchRequest, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
             A.CallTo(() => lowPriorityProvider.SearchLyricAsync(searchRequest, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
@@ -783,7 +783,7 @@ namespace LyricsScraperNET.UnitTest
             var result = await client.SearchLyricAsync(searchRequest, TestContext.Current.CancellationToken);
 
             // Assert
-            Assert.Same(lowPriorityResult, result);
+            AssertProviderResult(lowPriorityResult, result);
             A.CallTo(() => highPriorityProvider.SearchLyricAsync(searchRequest, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
             A.CallTo(() => lowPriorityProvider.SearchLyricAsync(searchRequest, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
         }
@@ -856,7 +856,7 @@ namespace LyricsScraperNET.UnitTest
             var result = client.SearchLyric(searchRequest, TestContext.Current.CancellationToken);
 
             // Assert
-            Assert.Same(expectedResult, result);
+            AssertProviderResult(expectedResult, result);
             A.CallTo(() => provider.SearchLyricAsync(searchRequest, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
             A.CallTo(() => provider.SearchLyric(A<SearchRequest>._, A<CancellationToken>._)).MustNotHaveHappened();
         }
@@ -1065,7 +1065,7 @@ namespace LyricsScraperNET.UnitTest
                 var result = await client.SearchLyricAsync(searchRequest, TestContext.Current.CancellationToken).WaitAsync(SafetyTimeout, TestContext.Current.CancellationToken);
 
                 // Assert
-                Assert.Same(expectedResult, result);
+                AssertProviderResult(expectedResult, result);
                 Assert.False(gate.Task.IsCompleted);
                 A.CallTo(() => hangingProvider.SearchLyricAsync(searchRequest, A<CancellationToken>.That.Matches(ct => ct.IsCancellationRequested)))
                     .MustHaveHappenedOnceExactly();
@@ -1104,9 +1104,14 @@ namespace LyricsScraperNET.UnitTest
             var result = await client.SearchLyricAsync(searchRequest, TestContext.Current.CancellationToken);
 
             // Assert
+            // The only provider did not answer: nobody could check the request.
             Assert.True(result.IsEmpty());
-            Assert.Equal(ResponseStatusCode.NoDataFound, result.ResponseStatusCode);
-            Assert.Equal(Constants.ResponseMessages.NotFoundLyric, result.ResponseMessage);
+            Assert.Equal(SearchResultCode.AllProvidersFailed, result.Code);
+            Assert.Equal(ResponseStatusCode.Error, result.ResponseStatusCode);
+            Assert.Equal(Constants.ResponseMessages.AllProvidersFailed, result.ResponseMessage);
+            var attempt = Assert.Single(result.ProviderAttempts);
+            Assert.Equal(ProviderAttemptOutcome.Timeout, attempt.Outcome);
+            Assert.Equal($"No answer within {client.ProviderTimeout}", attempt.Message);
             Assert.True(observedToken.IsCancellationRequested);
             A.CallTo(() => provider.SearchLyricAsync(searchRequest, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
         }
@@ -1139,7 +1144,7 @@ namespace LyricsScraperNET.UnitTest
                 var result = await client.SearchLyricAsync(searchRequest, TestContext.Current.CancellationToken).WaitAsync(SafetyTimeout, TestContext.Current.CancellationToken);
 
                 // Assert
-                Assert.Same(expectedResult, result);
+                AssertProviderResult(expectedResult, result);
                 Assert.False(gate.IsSet);
                 A.CallTo(() => blockingProvider.SearchLyricAsync(searchRequest, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
                 A.CallTo(() => workingProvider.SearchLyricAsync(searchRequest, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
@@ -1175,7 +1180,7 @@ namespace LyricsScraperNET.UnitTest
             var result = await client.SearchLyricAsync(searchRequest, TestContext.Current.CancellationToken);
 
             // Assert
-            Assert.Same(expectedResult, result);
+            AssertProviderResult(expectedResult, result);
             A.CallTo(() => throwingProvider.SearchLyricAsync(searchRequest, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
             A.CallTo(() => workingProvider.SearchLyricAsync(searchRequest, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
             A.CallTo(logger)
@@ -1216,7 +1221,8 @@ namespace LyricsScraperNET.UnitTest
                 GC.Collect();
 
                 // Assert
-                Assert.Equal(ResponseStatusCode.NoDataFound, result.ResponseStatusCode);
+                Assert.Equal(SearchResultCode.AllProvidersFailed, result.Code);
+                Assert.Equal(ResponseStatusCode.Error, result.ResponseStatusCode);
                 Assert.Empty(unobserved);
             }
             finally
@@ -1331,7 +1337,7 @@ namespace LyricsScraperNET.UnitTest
             var result = client.SearchLyric(searchRequest, TestContext.Current.CancellationToken);
 
             // Assert
-            Assert.Same(expectedResult, result);
+            AssertProviderResult(expectedResult, result);
             Assert.Equal(Environment.CurrentManagedThreadId, providerThreadId);
             A.CallTo(() => provider.SearchLyric(searchRequest, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
             A.CallTo(() => provider.SearchLyricAsync(A<SearchRequest>._, A<CancellationToken>._)).MustNotHaveHappened();
@@ -1368,7 +1374,7 @@ namespace LyricsScraperNET.UnitTest
             var result = client.SearchLyric(searchRequest, TestContext.Current.CancellationToken);
 
             // Assert
-            Assert.Same(expectedResult, result);
+            AssertProviderResult(expectedResult, result);
             Assert.True(observedToken.IsCancellationRequested);
             A.CallTo(() => slowProvider.SearchLyric(searchRequest, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
             A.CallTo(() => workingProvider.SearchLyric(searchRequest, A<CancellationToken>._)).MustHaveHappenedOnceExactly();
@@ -1522,12 +1528,23 @@ namespace LyricsScraperNET.UnitTest
             return externalProviderMock;
         }
 
+        /// <summary>
+        /// Any valid request: the providers in these tests are fakes that accept every request.
+        /// </summary>
         private static SearchRequest GetSearchRequestMock()
+            => new ArtistAndSongSearchRequest("Artist", "Song");
+
+        /// <summary>
+        /// The client returns a copy of the provider result with <see cref="SearchResult.ProviderAttempts"/> filled.
+        /// </summary>
+        private static void AssertProviderResult(SearchResult expected, SearchResult actual)
         {
-            var searchRequestMock = A.Fake<SearchRequest>();
-            string error = string.Empty;
-            A.CallTo(() => searchRequestMock.IsValid(out error)).Returns(true);
-            return searchRequestMock;
+            Assert.NotSame(expected, actual);
+            Assert.Equal(expected.LyricText, actual.LyricText);
+            Assert.Equal(expected.ExternalProviderType, actual.ExternalProviderType);
+            Assert.Equal(expected.Code, actual.Code);
+            Assert.Equal(expected.ResponseMessage, actual.ResponseMessage);
+            Assert.NotEmpty(actual.ProviderAttempts);
         }
 
         #endregion helpers

@@ -1,5 +1,6 @@
 ﻿using LyricsScraperNET.Common;
 using LyricsScraperNET.Models.Requests;
+using LyricsScraperNET.Models.Responses;
 using System;
 using Xunit;
 
@@ -15,10 +16,11 @@ namespace LyricsScraperNET.UnitTest.Models.Requests
             var searchRequest = new UriSearchRequest(someUri);
 
             // Act
-            var validationResult = searchRequest.IsValid(out var errorMessage);
+            var validationResult = searchRequest.IsValid(out var errorCode, out var errorMessage);
 
             // Assert
             Assert.False(validationResult);
+            Assert.Equal(SearchResultCode.EmptyUri, errorCode);
             Assert.Equal(Constants.ResponseMessages.UriSearchRequestFieldsAreEmpty, errorMessage);
         }
 
@@ -29,10 +31,11 @@ namespace LyricsScraperNET.UnitTest.Models.Requests
             var searchRequest = new UriSearchRequest("https://www.greatsitefortest111.com/");
 
             // Act
-            var validationResult = searchRequest.IsValid(out var errorMessage);
+            var validationResult = searchRequest.IsValid(out var errorCode, out var errorMessage);
 
             // Assert
             Assert.True(validationResult);
+            Assert.Equal(SearchResultCode.None, errorCode);
             Assert.True(string.IsNullOrEmpty(errorMessage));
         }
     }

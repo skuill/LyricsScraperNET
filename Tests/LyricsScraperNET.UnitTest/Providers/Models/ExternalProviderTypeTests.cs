@@ -40,9 +40,9 @@ namespace LyricsScraperNET.UnitTest.Providers.Models
         public void RemovedProviderTypes_ShouldBeMusixmatchAndLyricFind()
         {
             // Arrange
-#pragma warning disable CS0618 // Obsolete: the providers were removed in 3.0.0
+#pragma warning disable LSNET0003, LSNET0004 // Obsolete: the providers were removed in 3.0.0
             var expected = new[] { ExternalProviderType.Musixmatch, ExternalProviderType.LyricFind };
-#pragma warning restore CS0618
+#pragma warning restore LSNET0003, LSNET0004
 
             // Act
             var actual = ExternalProviderTypeHelper.RemovedProviderTypes;

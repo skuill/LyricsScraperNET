@@ -4,21 +4,9 @@ namespace LyricsScraperNET.Extensions
 {
     internal static class SearchResultExtensions
     {
-        internal static SearchResult AddErrorMessage(this SearchResult searchResult, string responseMessage)
+        internal static SearchResult WithCode(this SearchResult searchResult, SearchResultCode code, string responseMessage)
         {
-            searchResult.ResponseStatusCode = ResponseStatusCode.Error;
-            return searchResult.AppendResponseMessage(responseMessage);
-        }
-
-        internal static SearchResult AddNoDataFoundMessage(this SearchResult searchResult, string responseMessage)
-        {
-            searchResult.ResponseStatusCode = ResponseStatusCode.NoDataFound;
-            return searchResult.AppendResponseMessage(responseMessage);
-        }
-
-        internal static SearchResult AddBadRequestMessage(this SearchResult searchResult, string responseMessage)
-        {
-            searchResult.ResponseStatusCode = ResponseStatusCode.BadRequest;
+            searchResult.Code = code;
             return searchResult.AppendResponseMessage(responseMessage);
         }
 
@@ -30,10 +18,9 @@ namespace LyricsScraperNET.Extensions
             return searchResult;
         }
 
-        internal static SearchResult AddInstrumental(this SearchResult searchResult, bool instrumental)
+        internal static SearchResult AsInstrumental(this SearchResult searchResult)
         {
-            searchResult.ResponseStatusCode = ResponseStatusCode.Success;
-            searchResult.Instrumental = instrumental;
+            searchResult.Code = SearchResultCode.Instrumental;
             return searchResult;
         }
     }

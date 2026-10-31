@@ -61,10 +61,10 @@ namespace LyricsScraperNET.UnitTest.Extensions
             var client = _lyricsScraperClient;
 
             // Act
-#pragma warning disable CS0618 // Obsolete: the provider was removed in 3.0.0
+#pragma warning disable LSNET0003 // Obsolete: Musixmatch was removed in 3.0.0, WithMusixmatch() in 4.0.0
             var lyricsScraperClient = client.WithMusixmatch();
             var externalTypeProvider = lyricsScraperClient[ExternalProviderType.Musixmatch];
-#pragma warning restore CS0618
+#pragma warning restore LSNET0003
 
             // Assert
             Assert.Same(client, lyricsScraperClient);
@@ -109,10 +109,10 @@ namespace LyricsScraperNET.UnitTest.Extensions
             var client = _lyricsScraperClient;
 
             // Act
-#pragma warning disable CS0618 // Obsolete: the provider was removed in 3.0.0
+#pragma warning disable LSNET0004 // Obsolete: LyricFind was removed in 3.0.0, WithLyricFind() in 4.0.0
             var lyricsScraperClient = client.WithLyricFind();
             var externalTypeProvider = lyricsScraperClient[ExternalProviderType.LyricFind];
-#pragma warning restore CS0618
+#pragma warning restore LSNET0004
 
             // Assert
             Assert.Same(client, lyricsScraperClient);

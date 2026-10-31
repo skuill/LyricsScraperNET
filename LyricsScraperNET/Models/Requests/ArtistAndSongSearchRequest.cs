@@ -1,4 +1,5 @@
 ﻿using LyricsScraperNET.Common;
+using LyricsScraperNET.Models.Responses;
 using LyricsScraperNET.Providers.Models;
 
 namespace LyricsScraperNET.Models.Requests
@@ -41,13 +42,18 @@ namespace LyricsScraperNET.Models.Requests
             return $"Artist: [{Artist}]. Song: [{Song}]. Provider: [{Provider}]";
         }
 
-        public override bool IsValid(out string error)
+        internal override bool IsValid(out SearchResultCode errorCode, out string errorMessage)
         {
-            bool result = string.IsNullOrEmpty(Artist) || string.IsNullOrEmpty(Song);
-            error = result
-                ? Constants.ResponseMessages.ArtistAndSongSearchRequestFieldsAreEmpty
-                : string.Empty;
-            return !result;
+            if (string.IsNullOrEmpty(Artist) || string.IsNullOrEmpty(Song))
+            {
+                errorCode = SearchResultCode.EmptyArtistOrSong;
+                errorMessage = Constants.ResponseMessages.ArtistAndSongSearchRequestFieldsAreEmpty;
+                return false;
+            }
+
+            errorCode = SearchResultCode.None;
+            errorMessage = string.Empty;
+            return true;
         }
     }
 }

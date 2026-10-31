@@ -100,7 +100,7 @@ namespace LyricsScraperNET.Providers.SongLyrics
                 _logger?.LogWarning($"SongLyrics. Please set up WebClient first");
                 return new SearchResult(Models.ExternalProviderType.SongLyrics);
             }
-            var htmlPageBody = await WebClient.LoadAsync(uri, cancellationToken).ConfigureAwait(false);
+            var htmlPageBody = await LoadPageAsync(uri, cancellationToken).ConfigureAwait(false);
             return GetParsedLyricFromHtmlPageBody(uri, htmlPageBody);
         }
 
@@ -140,7 +140,7 @@ namespace LyricsScraperNET.Providers.SongLyrics
             if (string.Equals(lyricText, InstrumentalLyricText, StringComparison.OrdinalIgnoreCase)
                 || string.Equals(lyricText, $"[{InstrumentalLyricText}]", StringComparison.OrdinalIgnoreCase)
                 || Regex.IsMatch(lyricText, InstrumentalLyricPattern, RegexOptions.IgnoreCase))
-                return new SearchResult(Models.ExternalProviderType.SongLyrics).AddInstrumental(true);
+                return new SearchResult(Models.ExternalProviderType.SongLyrics).AsInstrumental();
 
             var parsedLyric = Parser.Parse(lyricText);
 

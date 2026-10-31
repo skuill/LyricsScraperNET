@@ -82,7 +82,7 @@ namespace LyricsScraperNET.Providers.Lrclib
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            var text = await WebClient.LoadAsync(uri, cancellationToken).ConfigureAwait(false);
+            var text = await LoadPageAsync(uri, cancellationToken).ConfigureAwait(false);
 
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -127,11 +127,11 @@ namespace LyricsScraperNET.Providers.Lrclib
             if (response.Code == 404 || string.Equals(response.Name, "TrackNotFound", StringComparison.OrdinalIgnoreCase))
             {
                 _logger?.LogInformation($"Lrclib. Track not found for Uri: [{uri}]");
-                return new SearchResult(ExternalProviderType.Lrclib, ResponseStatusCode.NoDataFound);
+                return new SearchResult(ExternalProviderType.Lrclib);
             }
 
             if (response.Instrumental)
-                return new SearchResult(ExternalProviderType.Lrclib).AddInstrumental(true);
+                return new SearchResult(ExternalProviderType.Lrclib).AsInstrumental();
 
             if (string.IsNullOrWhiteSpace(response.PlainLyrics))
             {
