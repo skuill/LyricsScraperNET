@@ -1,6 +1,7 @@
-<img src="docs/assets/icon/icon-512.png" alt="LyricsScraperNET icon" width="128" align="right" />
-
 # LyricsScraperNET
+
+<!-- After the heading: GitHub draws the heading border over a floating image placed before it. -->
+<img src="docs/assets/icon/icon-512.png" alt="LyricsScraperNET icon" width="128" align="right" />
 
 [![CodeFactor](https://www.codefactor.io/repository/github/skuill/lyricsscrapernet/badge)](https://www.codefactor.io/repository/github/skuill/lyricsscrapernet)
 [![CI/CD LyricsScraperNET](https://github.com/skuill/LyricsScraperNET/actions/workflows/cicd.yaml/badge.svg)](https://github.com/skuill/LyricsScraperNET/actions/workflows/cicd.yaml)

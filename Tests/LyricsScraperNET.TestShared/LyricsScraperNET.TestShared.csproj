@@ -11,7 +11,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="FakeItEasy" Version="9.0.1" />
-		<PackageReference Include="xunit.v3.extensibility.core" Version="4.0.0" />
+		<PackageReference Include="xunit.v3.extensibility.core" Version="4.0.2" />
 	</ItemGroup>
 
 	<ItemGroup>

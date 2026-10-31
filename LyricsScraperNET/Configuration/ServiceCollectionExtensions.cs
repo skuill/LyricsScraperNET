@@ -42,7 +42,7 @@ namespace LyricsScraperNET.Configuration
                 // SocketsHttpHandler with PooledConnectionLifetime keeps DNS fresh even if a consumer holds a client for long:
                 // https://learn.microsoft.com/dotnet/core/extensions/httpclient-factory#using-ihttpclientfactory-together-with-socketshttphandler
                 services.AddHttpClient(HttpClientName)
-                    .UseSocketsHttpHandler((handler, _) => SharedHttpClient.ConfigureHandler(handler));
+                    .ConfigurePrimaryHttpMessageHandler(SharedHttpClient.CreateHandler);
 
                 services.AddProvider<LyricsFreakOptions, LyricsFreakProvider>(lyricScraperClientConfig);
                 services.AddProvider<AZLyricsOptions, AZLyricsProvider>(lyricScraperClientConfig);

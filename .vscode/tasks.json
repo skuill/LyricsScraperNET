@@ -1,8 +1,10 @@
 {
+    // Ctrl+Shift+B runs "build". Terminal > Run Task... lists all tasks.
     "version": "2.0.0",
     "tasks": [
         {
             "label": "build",
+            "detail": "Build the whole solution (Debug)",
             "command": "dotnet",
             "type": "process",
             "args": [
@@ -11,31 +13,124 @@
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary"
             ],
-            "problemMatcher": "$msCompile"
+            "problemMatcher": "$msCompile",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
         },
         {
-            "label": "publish",
+            "label": "build client",
+            "detail": "Build LyricsScraperNET.Client for net10.0 (used by the launch configuration)",
             "command": "dotnet",
             "type": "process",
             "args": [
-                "publish",
-                "${workspaceFolder}/LyricsScraperNET.sln",
+                "build",
+                "${workspaceFolder}/LyricsScraperNET.Client/LyricsScraperNET.Client.csproj",
+                "--framework",
+                "net10.0",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary"
             ],
             "problemMatcher": "$msCompile"
         },
         {
-            "label": "watch",
+            "label": "test: unit",
+            "detail": "Unit tests, no network",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "test",
+                "${workspaceFolder}/Tests/LyricsScraperNET.UnitTest"
+            ],
+            "problemMatcher": "$msCompile",
+            "group": {
+                "kind": "test",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "test: unit with coverage",
+            "detail": "Unit tests with Cobertura coverage, same as CI",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "test",
+                "${workspaceFolder}/Tests/LyricsScraperNET.UnitTest",
+                "--configuration",
+                "Release",
+                "--",
+                "--coverage",
+                "--coverage-output-format",
+                "cobertura"
+            ],
+            "problemMatcher": "$msCompile",
+            "group": "test"
+        },
+        {
+            "label": "test: integration class",
+            "detail": "Integration tests of one class against the live sites (asks for the class name)",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "run",
+                "--project",
+                "${workspaceFolder}/Tests/LyricsScraperNET.IntegrationTest",
+                "--",
+                "-class",
+                "LyricsScraperNET.IntegrationTest.${input:integrationTestClass}"
+            ],
+            "problemMatcher": "$msCompile",
+            "group": "test"
+        },
+        {
+            "label": "lint",
+            "detail": "Format check, same as CI",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "format",
+                "${workspaceFolder}/LyricsScraperNET.sln",
+                "--verify-no-changes",
+                "--exclude",
+                "*\\xunit*\\*"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "watch client",
+            "detail": "Run the client and restart it on code changes",
             "command": "dotnet",
             "type": "process",
             "args": [
                 "watch",
                 "run",
                 "--project",
-                "${workspaceFolder}/LyricsScraperNET.sln"
+                "${workspaceFolder}/LyricsScraperNET.Client/LyricsScraperNET.Client.csproj",
+                "--framework",
+                "net10.0"
             ],
-            "problemMatcher": "$msCompile"
+            "options": {
+                "cwd": "${workspaceFolder}/LyricsScraperNET.Client"
+            },
+            "problemMatcher": "$msCompile",
+            "isBackground": true
+        }
+    ],
+    "inputs": [
+        {
+            "id": "integrationTestClass",
+            "type": "pickString",
+            "description": "Integration test class",
+            "options": [
+                "LyricsScraperClientTests",
+                "Providers.AZLyrics.AZLyricsProviderTest",
+                "Providers.Genius.GeniusProviderTest",
+                "Providers.KPopLyrics.KPopLyricsProviderTest",
+                "Providers.Lrclib.LrclibProviderTest",
+                "Providers.LyricsFreak.LyricsFreakProviderTest",
+                "Providers.SongLyrics.SongLyricsProviderTest"
+            ]
         }
     ]
 }

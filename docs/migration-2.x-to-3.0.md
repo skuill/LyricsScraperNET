@@ -30,7 +30,7 @@ Applications on .NET Framework or .NET 5 to 7 stay on 2.x.
 
 | Package | Change |
 |---|---|
-| `Microsoft.Extensions.*` | 6.0 to 10.0 |
+| `Microsoft.Extensions.*` | 6.0 to the version of the target framework: 8.0.x for net8.0, 9.0.x for net9.0, 10.0.x for net10.0 |
 | `Microsoft.Extensions.Http` | Added (`IHttpClientFactory` with dependency injection) |
 | `HtmlAgilityPack` | 1.11 to 1.13 |
 | `MusixmatchClientLib` | Removed with the Musixmatch provider |
