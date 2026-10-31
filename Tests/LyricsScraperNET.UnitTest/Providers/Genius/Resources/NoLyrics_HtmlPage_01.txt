@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>Test Artist - Test Song Lyrics | Genius Lyrics</title>
+</head>
+<body>
+	<div class="LyricsPlaceholder__Container-sc-1">
+		<div class="LyricsPlaceholder__Message-sc-1">Lyrics for this song have yet to be released. Please check back once the song has been released.</div>
+	</div>
+</body>
+</html>

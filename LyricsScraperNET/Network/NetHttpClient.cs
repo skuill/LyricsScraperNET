@@ -28,14 +28,18 @@ namespace LyricsScraperNET.Network
 
         /// <param name="httpClient">Not disposed by this class: the owner of the client keeps it alive while it is used.</param>
         /// <param name="logger">Optional logger for failed requests.</param>
-        public NetHttpClient(HttpClient httpClient, ILogger<NetHttpClient>? logger = null)
+        /// <param name="configureRequest">Optional hook called for every request before it is sent, for example to add headers.</param>
+        public NetHttpClient(HttpClient httpClient, ILogger<NetHttpClient>? logger = null, Action<HttpRequestMessage>? configureRequest = null)
         {
             Ensure.ArgumentNotNull(httpClient, nameof(httpClient));
             HttpClient = httpClient;
             _logger = logger;
+            ConfigureRequest = configureRequest;
         }
 
         internal HttpClient HttpClient { get; }
+
+        internal Action<HttpRequestMessage>? ConfigureRequest { get; }
 
         /// <inheritdoc />
         public string Load(Uri uri, CancellationToken cancellationToken = default)
@@ -52,6 +56,7 @@ namespace LyricsScraperNET.Network
             try
             {
                 using var request = SharedHttpClient.CreateGetRequest(HttpClient, uri);
+                ConfigureRequest?.Invoke(request);
                 using var response = await HttpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
 
                 if (!response.IsSuccessStatusCode)

@@ -1,20 +1,20 @@
 ﻿[
   {
     "LyricResultPath": "Providers/Genius/Resources/Lyrics_Result_01.txt",
-    "ArtistName": "Parkway Drive",
-    "SongName": "Idols and Anchors",
+    "ArtistName": "John Newton",
+    "SongName": "Amazing Grace",
     "SongUri": null
   },
   {
     "LyricResultPath": "Providers/Genius/Resources/Lyrics_Result_02.txt",
-    "ArtistName": "Iron Maiden",
-    "SongName": "The Number of the Beast",
+    "ArtistName": "Robert Burns",
+    "SongName": "Auld Lang Syne",
     "SongUri": null
   },
   {
     "LyricResultPath": "Providers/Genius/Resources/Lyrics_Result_01.txt",
     "ArtistName": null,
     "SongName": null,
-    "SongUri": "https://genius.com/Parkway-drive-idols-and-anchors-lyrics"
+    "SongUri": "https://genius.com/John-newton-amazing-grace-lyrics"
   }
 ]

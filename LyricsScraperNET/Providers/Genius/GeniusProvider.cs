@@ -1,16 +1,21 @@
-﻿using Genius;
-using Genius.Models.Response;
-using HtmlAgilityPack;
+﻿using HtmlAgilityPack;
 using LyricsScraperNET.Extensions;
 using LyricsScraperNET.Helpers;
 using LyricsScraperNET.Models.Responses;
 using LyricsScraperNET.Network;
+using LyricsScraperNET.Network.Abstract;
 using LyricsScraperNET.Providers.Abstract;
+using LyricsScraperNET.Providers.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using System;
+using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -20,27 +25,26 @@ namespace LyricsScraperNET.Providers.Genius
     public sealed class GeniusProvider : ExternalProviderBase
     {
         private ILogger<GeniusProvider>? _logger;
-        private readonly IExternalUriConverter _uriConverter;
-
-        // Format: "artist song". Example: "Parkway Drive Carrion".
-        private const string GeniusSearchQueryFormat = "{0} {1}";
+        private readonly GeniusUriConverter _uriConverter;
 
         // Lyrics header. Note: Should be skipped in result
-        private const string _lyricsHeaderNodesXPath = "//div[contains(@class, 'LyricsHeader')]";
+        private const string LyricsHeaderNodesXPath = "//div[contains(@class, 'LyricsHeader')]";
 
-        private const string _referentFragmentNodesXPath = "//a[contains(@class, 'ReferentFragmentVariantdesktop') or contains(@class, 'ReferentFragmentdesktop') or contains(@class, 'ReferentFragment-desktop')]";
-        private const string _lyricsContainerNodesXPath = "//div[@data-lyrics-container]";
+        private const string LyricsContainerNodesXPath = "//div[@data-lyrics-container]";
 
         // In case of instrumental song without a lyric.
-        private const string _lyricsPlaceholderNodesXPath = "//div[contains(@class, 'LyricsPlaceholder')]";
-        private const string _instrumentalLyricText = "This song is an instrumental";
+        private const string LyricsPlaceholderNodesXPath = "//div[contains(@class, 'LyricsPlaceholder')]";
+        private const string InstrumentalLyricText = "This song is an instrumental";
+
+        // Straight, typographic and modifier letter apostrophes, backtick.
+        private const string Apostrophes = "'\u2019\u2018`\u02BC";
 
         #region Constructors
 
         public GeniusProvider()
         {
             Parser = new GeniusParser();
-            WebClient = new NetHttpClient();
+            WebClient = CreateWebClient(SharedHttpClient.Instance);
             Options = new GeniusOptions() { Enabled = true };
             _uriConverter = new GeniusUriConverter();
         }
@@ -95,39 +99,16 @@ namespace LyricsScraperNET.Providers.Genius
         {
             var htmlPageBody = await WebClient.LoadAsync(uri, cancellationToken);
 
-            cancellationToken.ThrowIfCancellationRequested();
-
-            var lyricResult = GetParsedLyricFromHtmlPageBody(htmlPageBody, out var instrumental);
-
-            return new SearchResult(lyricResult, Models.ExternalProviderType.Genius)
-                .AddInstrumental(instrumental);
+            return GetSearchResultFromHtmlPageBody(uri, htmlPageBody);
         }
 
         protected override async Task<SearchResult> SearchLyricAsync(string artist, string song, CancellationToken cancellationToken = default)
         {
-            string lyricUrl = string.Empty;
+            var lyricUri = await FindLyricUriAsync(artist, song, cancellationToken);
 
-            if (Options.TryGetApiKeyFromOptions(out var apiKey))
-            {
-                var geniusClient = new GeniusClient(apiKey);
-
-                var searchQuery = GetApiSearchQuery(artist, song);
-                var searchGeniusResponse = await geniusClient.SearchClient.Search(searchQuery);
-
-                cancellationToken.ThrowIfCancellationRequested();
-
-                lyricUrl = GetLyricUrlFromSearchResponse(searchGeniusResponse, artist, song);
-            }
-            if (string.IsNullOrEmpty(lyricUrl))
-            {
-                lyricUrl = GetLyricUrlWithoutApiKey(artist, song, cancellationToken);
-            }
-
-            cancellationToken.ThrowIfCancellationRequested();
-
-            return !string.IsNullOrWhiteSpace(lyricUrl)
-                ? await SearchLyricAsync(new Uri(lyricUrl), cancellationToken)
-                : new SearchResult(Models.ExternalProviderType.Genius);
+            return lyricUri != null
+                ? await SearchLyricAsync(lyricUri, cancellationToken)
+                : new SearchResult(ExternalProviderType.Genius);
         }
 
         #endregion
@@ -137,97 +118,175 @@ namespace LyricsScraperNET.Providers.Genius
             _logger = loggerFactory.CreateLogger<GeniusProvider>();
         }
 
-        private string GetLyricUrlWithoutApiKey(string artist, string song, CancellationToken cancellationToken = default)
+        /// <summary>
+        /// Requests to the official API get the API key. It is read on every request, so a key set after construction is used too,
+        /// and it is never sent to other hosts.
+        /// </summary>
+        private protected override IWebClient CreateWebClient(HttpClient httpClient)
+            => new NetHttpClient(httpClient, configureRequest: AddApiKey);
+
+        private void AddApiKey(HttpRequestMessage request)
         {
-            var htmlPageBody = WebClient.Load(_uriConverter.GetLyricUri(artist, song), cancellationToken);
-
-            if (string.IsNullOrWhiteSpace(htmlPageBody))
-                return string.Empty;
-
-            var parsedJsonResponse = JsonDocument.Parse(htmlPageBody);
-
-            cancellationToken.ThrowIfCancellationRequested();
-
-            if (!parsedJsonResponse.RootElement.TryGetProperty("response", out var responseJsonElement))
-                return string.Empty;
-
-            if (!responseJsonElement.TryGetProperty("hits", out var hitsJsonElement))
-                return string.Empty;
-
-            foreach (var hitJsonProperty in hitsJsonElement.EnumerateArray())
-            {
-                if (hitJsonProperty.TryGetProperty("result", out var resultJsonElement))
-                {
-                    if (resultJsonElement.TryGetProperty("url", out var lyricUrl))
-                        return lyricUrl.GetString() ?? string.Empty;
-                }
-            }
-
-            return string.Empty;
+            if (string.Equals(request.RequestUri?.Host, GeniusUriConverter.ApiHost, StringComparison.OrdinalIgnoreCase)
+                && Options.TryGetApiKeyFromOptions(out var apiKey))
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
         }
 
-        private string GetParsedLyricFromHtmlPageBody(string htmlPageBody, out bool instrumental)
+        private async Task<Uri?> FindLyricUriAsync(string artist, string song, CancellationToken cancellationToken)
         {
-            instrumental = false;
+            if (Options.TryGetApiKeyFromOptions(out _))
+            {
+                var apiSearchResponse = await WebClient.LoadAsync(_uriConverter.GetApiSearchUri(artist, song), cancellationToken);
 
+                // Only a failed API request falls back to the public search: a valid answer without a match is final.
+                if (TryGetLyricUriFromSearchResponse(apiSearchResponse, artist, song, out var apiLyricUri))
+                    return apiLyricUri;
+
+                _logger?.LogWarning("Genius. API search failed for artist {Artist} and song {Song}. Using the public search.", artist, song);
+            }
+
+            var searchResponse = await WebClient.LoadAsync(_uriConverter.GetLyricUri(artist, song), cancellationToken);
+            TryGetLyricUriFromSearchResponse(searchResponse, artist, song, out var lyricUri);
+            return lyricUri;
+        }
+
+        /// <summary>
+        /// Finds the hit whose primary artist and title match the request.
+        /// Returns false if <paramref name="searchResponse"/> is not a search response, for example an empty body or an error page.
+        /// </summary>
+        private bool TryGetLyricUriFromSearchResponse(string searchResponse, string artist, string song, out Uri? lyricUri)
+        {
+            lyricUri = null;
+
+            if (string.IsNullOrWhiteSpace(searchResponse))
+                return false;
+
+            JsonDocument document;
+            try
+            {
+                document = JsonDocument.Parse(searchResponse);
+            }
+            catch (JsonException ex)
+            {
+                _logger?.LogWarning(ex, "Genius. Search response is not JSON.");
+                return false;
+            }
+
+            using (document)
+            {
+                if (!TryGetProperty(document.RootElement, "response", JsonValueKind.Object, out var responseElement)
+                    || !TryGetProperty(responseElement, "hits", JsonValueKind.Array, out var hitsElement))
+                {
+                    _logger?.LogWarning("Genius. Search response has no hits.");
+                    return false;
+                }
+
+                foreach (var hitElement in hitsElement.EnumerateArray())
+                {
+                    if (!TryGetProperty(hitElement, "result", JsonValueKind.Object, out var resultElement)
+                        || !TryGetProperty(resultElement, "primary_artist", JsonValueKind.Object, out var artistElement)
+                        || !IsSameText(GetString(artistElement, "name"), artist)
+                        || !IsSameText(GetString(resultElement, "title"), song))
+                        continue;
+
+                    var url = GetString(resultElement, "url");
+                    if (Uri.TryCreate(url, UriKind.Absolute, out var uri))
+                        lyricUri = uri;
+                    else
+                        _logger?.LogWarning("Genius. Invalid lyric url {Url} for artist {Artist} and song {Song}.", url, artist, song);
+
+                    return true;
+                }
+
+                _logger?.LogInformation("Genius. Can't find artist {Artist} and song {Song} in the search response.", artist, song);
+                return true;
+            }
+        }
+
+        private SearchResult GetSearchResultFromHtmlPageBody(Uri uri, string htmlPageBody)
+        {
             var htmlDocument = new HtmlDocument();
-            htmlDocument.LoadHtml(htmlPageBody.Replace("https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js", ""));
-
-            var referentFragmentNodes = htmlDocument.DocumentNode.SelectNodes(_referentFragmentNodesXPath);
-            if (referentFragmentNodes != null)
-                foreach (HtmlNode fragmentNode in referentFragmentNodes)
-                    fragmentNode.ParentNode?.ReplaceChild(htmlDocument.CreateTextNode(fragmentNode.ChildNodes[0].InnerHtml), fragmentNode);
-            var spanNodes = htmlDocument.DocumentNode.SelectNodes("//span");
-            if (spanNodes != null)
-                foreach (HtmlNode spanNode in spanNodes)
-                    spanNode.Remove();
+            htmlDocument.LoadHtml(htmlPageBody);
+            var rootNode = htmlDocument.DocumentNode;
 
             // Lyric's header node with additional information should be skipped.
-            var lyricsHeaderNodes = htmlDocument.DocumentNode.SelectNodes(_lyricsHeaderNodesXPath);
-            if (lyricsHeaderNodes != null)
-                foreach (HtmlNode headerNode in lyricsHeaderNodes)
-                    headerNode.Remove();
+            foreach (var headerNode in SelectNodes(rootNode, LyricsHeaderNodesXPath))
+                headerNode.Remove();
 
-            var lyricNodes = htmlDocument.DocumentNode.SelectNodes(_lyricsContainerNodesXPath);
-            if (lyricNodes == null)
+            var lyricNodes = SelectNodes(rootNode, LyricsContainerNodesXPath).ToList();
+            if (lyricNodes.Count == 0)
             {
-                // lyricNodes could be null in case of instrumental.
-                var instrumentalNodes = htmlDocument.DocumentNode.SelectNodes(_lyricsPlaceholderNodesXPath);
-                if (instrumentalNodes != null
-                    && instrumentalNodes.Any(node => node.InnerHtml.Contains(_instrumentalLyricText)))
-                {
-                    instrumental = true;
-                    return string.Empty;
-                }
-                _logger?.LogWarning($"Genius. Can't parse lyric from the page.");
+                // No lyric containers in case of instrumental.
+                if (SelectNodes(rootNode, LyricsPlaceholderNodesXPath).Any(node => node.InnerText.Contains(InstrumentalLyricText)))
+                    return new SearchResult(ExternalProviderType.Genius).AddInstrumental(true);
+
+                _logger?.LogWarning("Genius. Can't find lyrics for Uri: [{Uri}]", uri);
+                return new SearchResult(ExternalProviderType.Genius);
             }
 
-            return Parser.Parse(string.Join("", lyricNodes!.Select(node => node.InnerHtml)));
+            var lyric = Parser.Parse(string.Concat(lyricNodes.Select(node => node.InnerHtml)));
+            if (string.IsNullOrWhiteSpace(lyric))
+            {
+                _logger?.LogWarning("Genius. Lyrics are empty for Uri: [{Uri}]", uri);
+                return new SearchResult(ExternalProviderType.Genius);
+            }
+
+            return new SearchResult(lyric, ExternalProviderType.Genius);
         }
 
-        private string GetLyricUrlFromSearchResponse(SearchResponse searchResponse, string artist, string song)
+        private static IEnumerable<HtmlNode> SelectNodes(HtmlNode node, string xPath)
+            => node.SelectNodes(xPath) ?? Enumerable.Empty<HtmlNode>();
+
+        private static bool TryGetProperty(JsonElement element, string propertyName, JsonValueKind valueKind, out JsonElement value)
         {
-            if (searchResponse.Meta.Status != 200)
-            {
-                _logger?.LogWarning($"Genius. Can't find any information about artist {artist} and song {song}. Code: {searchResponse.Meta.Status}. Message: {searchResponse.Meta.Message}");
-                return string.Empty;
-            }
-            var artistAndSongHit = searchResponse.Response.Hits.FirstOrDefault(
-                x => string.Equals(x.Result.PrimaryArtist.Name, artist, StringComparison.OrdinalIgnoreCase));
-
-            if (artistAndSongHit == null || artistAndSongHit.Result == null)
-            {
-                _logger?.LogWarning($"Genius. Can't find artist {artist} and song {song} hit.");
-                return string.Empty;
-            }
-
-            _logger?.LogDebug($"Genius. Artist and song url: {artistAndSongHit.Result.Url}");
-
-            // Example: https://genius.com/Parkway-drive-wishing-wells-lyrics
-            return artistAndSongHit.Result.Url;
+            value = default;
+            return element.ValueKind == JsonValueKind.Object
+                && element.TryGetProperty(propertyName, out value)
+                && value.ValueKind == valueKind;
         }
 
-        private static string GetApiSearchQuery(string artist, string song)
-            => string.Format(GeniusSearchQueryFormat, artist, song);
+        private static string? GetString(JsonElement element, string propertyName)
+            => TryGetProperty(element, propertyName, JsonValueKind.String, out var value) ? value.GetString() : null;
+
+        /// <summary>
+        /// Compares letters and digits only, ignoring case and diacritics. Examples from Genius:
+        /// "Beyonce" = "Beyoncé", "Jay-Z" = "JAŸ-Z", "Guns N Roses" = "Guns N’ Roses",
+        /// "Harder, Better, Faster, Stronger" = "Harder Better Faster Stronger", "Rock &amp; Roll" = "Rock and Roll",
+        /// "What Happens If I Cant Check My MySpace" = "What Happens If I Can’t Check My MySpace?".
+        /// Texts without letters and digits (for example the artist "!!!") are compared as they are.
+        /// </summary>
+        private static bool IsSameText(string? actual, string expected)
+        {
+            if (actual == null)
+                return false;
+
+            var normalizedActual = NormalizeText(actual);
+            var normalizedExpected = NormalizeText(expected);
+            if (normalizedActual.Length == 0 || normalizedExpected.Length == 0)
+                return string.Equals(actual.Trim(), expected.Trim(), StringComparison.OrdinalIgnoreCase);
+
+            return string.Equals(normalizedActual, normalizedExpected, StringComparison.Ordinal);
+        }
+
+        private static string NormalizeText(string text)
+        {
+            var builder = new StringBuilder(text.Length);
+            foreach (var c in text.Replace("&", " and ").Normalize(NormalizationForm.FormD))
+            {
+                if (char.IsLetterOrDigit(c))
+                    builder.Append(char.ToLowerInvariant(c));
+                // Apostrophes join the word parts: "Don’t" = "Dont". Diacritics are dropped: "é" = "e".
+                else if (Apostrophes.Contains(c)
+                    || CharUnicodeInfo.GetUnicodeCategory(c) == UnicodeCategory.NonSpacingMark)
+                    continue;
+                else
+                    builder.Append(' ');
+            }
+
+            // Genius writes parts as "Pt.": "Dr. Shavargo, Pt. 3" = "Dr. Shavargo Part 3".
+            return string.Join(" ", builder.ToString()
+                .Split(' ', StringSplitOptions.RemoveEmptyEntries)
+                .Select(word => word == "pt" ? "part" : word));
+        }
     }
 }

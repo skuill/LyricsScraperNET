@@ -36,17 +36,9 @@ The library currently supports the following providers:
 - [vagalume](https://www.vagalume.com.br/) (**Coming soon** 🚧. [Issue #42](https://github.com/skuill/LyricsScraperNET/issues/42))
 - [Lyrics](https://www.lyrics.com/) (**Coming soon** 🚧. [Issue #25](https://github.com/skuill/LyricsScraperNET/issues/25))
 
-### 🗑️ Removed Providers
+Provider details (how each one searches, Genius matching rules) and the removed providers (Musixmatch, LyricFind) are described in [docs/providers.md](docs/providers.md).
 
-| Provider | Removed in | Reason | Issue |
-|---|---|---|---|
-| [MusixMatch](https://www.musixmatch.com/) | 3.0.0 | The site serves decoy lyrics to non-authorized clients, so the provider returned wrong text for any query. | [#54](https://github.com/skuill/LyricsScraperNET/issues/54) |
-| [LyricFind](https://www.lyricfind.com/) | 3.0.0 | Lyrics pages are behind a JavaScript bot challenge and cannot be loaded with plain HTTP requests. | [#29](https://github.com/skuill/LyricsScraperNET/issues/29) |
-
-Upgrading from 2.x:
-- Configuration sections of removed providers (`MusixmatchOptions`, `LyricFindOptions`) are ignored. If logging is configured, the library writes a warning once; remove these sections from your configuration.
-- `WithMusixmatch()` and `WithLyricFind()` are marked `[Obsolete]` and do nothing.
-- `ExternalProviderType.Musixmatch` and `ExternalProviderType.LyricFind` are marked `[Obsolete]` and kept only so the numeric values of the other providers do not change. A search request with one of them returns `BadRequest`.
+Upgrading from 2.x: see [docs/migration-2.x-to-3.0.md](docs/migration-2.x-to-3.0.md).
 
 ---
 
@@ -71,7 +63,7 @@ class Program
             song: "Nothing Else Matters"
         );
 
-        var searchResult = lyricsScraperClient.SearchLyric(searchRequest);
+        var searchResult = await lyricsScraperClient.SearchLyricAsync(searchRequest);
 
         if (!searchResult.IsEmpty())
         {
@@ -81,37 +73,20 @@ class Program
 }
 ```
 
-For more advanced usage, you can set up the `LyricScraperClient` via dependency injection (`IServiceCollection`) with configurations stored in `IConfiguration`.
+More examples are in the [LyricsScraperNET.Client](LyricsScraperNET.Client/Program.cs) project.
 
-Explore additional examples in the [LyricsScraperNET.Client](LyricsScraperNET.Client/Program.cs) project.
+---
 
-### HTTP configuration
+## 📚 Documentation
 
-By default all providers share one long-lived `HttpClient` that recycles its connections (`PooledConnectionLifetime`), as recommended in the [HttpClient guidelines](https://learn.microsoft.com/dotnet/fundamentals/networking/http/httpclient-guidelines). Requests are sent with a `LyricsScraperNET/...` User-Agent unless your client sets its own one.
-
-With dependency injection, the providers use the named client `ServiceCollectionExtensions.HttpClientName` from `IHttpClientFactory`. Configure it like any named client, for example to add a proxy, resilience handlers or your own User-Agent:
-
-```csharp
-services.AddLyricScraperClientService(configuration);
-services.AddHttpClient(ServiceCollectionExtensions.HttpClientName)
-    .ConfigureHttpClient(client => client.DefaultRequestHeaders.UserAgent.ParseAdd("MyApp/1.0"))
-    .AddStandardResilienceHandler(); // Microsoft.Extensions.Http.Resilience
-```
-
-Without dependency injection, pass your own client to the `LyricsScraperClient` (applies to all providers, also to the ones added later) or to a single provider. The library does not dispose it, so reuse one instance instead of creating a client per provider or request:
-
-```csharp
-ILyricsScraperClient lyricsScraperClient = new LyricsScraperClient()
-    .WithHttpClient(sharedHttpClient)
-    .WithAllProviders();
-
-// Or only for one provider:
-var geniusProvider = new GeniusProvider();
-geniusProvider.WithHttpClient(geniusHttpClient);
-lyricsScraperClient.AddProvider(geniusProvider);
-```
-
-Note: the Genius search with an API key still goes through the Genius.NET package and its own `HttpClient` ([#61](https://github.com/skuill/LyricsScraperNET/issues/61)).
+| Topic | Document |
+|---|---|
+| Client and provider settings, search order, `appsettings.json` | [docs/configuration.md](docs/configuration.md) |
+| Dependency injection (`IServiceCollection`, `IConfiguration`) | [docs/dependency-injection.md](docs/dependency-injection.md) |
+| HTTP: own `HttpClient`, User-Agent, proxy, Genius API key | [docs/http.md](docs/http.md) |
+| Providers: how they search, known limits, removed providers | [docs/providers.md](docs/providers.md) |
+| Architecture, search flow, adding a provider | [docs/architecture.md](docs/architecture.md) |
+| Upgrading from 2.x to 3.0 | [docs/migration-2.x-to-3.0.md](docs/migration-2.x-to-3.0.md) |
 
 ---
 
@@ -129,7 +104,7 @@ dotnet add package LyricsScraperNET
 
 - LyricsScraperNET does not host, store or redistribute lyrics. It requests them from the providers on behalf of the application that uses it.
 - Lyrics are protected by copyright of their authors and publishers. You are responsible for following the terms of use of each provider and the copyright law that applies to you, especially if you show lyrics publicly or use them commercially.
-- The library does not bypass bot protection, captchas or other access restrictions. A provider whose site blocks automated access is removed (see "Removed Providers" above).
+- The library does not bypass bot protection, captchas or other access restrictions. A provider whose site blocks automated access is removed (see [removed providers](docs/providers.md#removed-providers)).
 
 ### Provider removal requests
 
