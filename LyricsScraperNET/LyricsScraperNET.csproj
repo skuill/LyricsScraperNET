@@ -30,10 +30,14 @@
 	</PropertyGroup>
 
 	<!-- Package Validation: compares the public API with the last release on nuget.org on every pack.
-	     Intended breaking changes of a major version are listed in CompatibilitySuppressions.xml. -->
+	     Intended breaking changes of a major version are listed in CompatibilitySuppressions.xml (see CLAUDE.md). -->
 	<PropertyGroup>
 		<EnablePackageValidation>true</EnablePackageValidation>
-		<PackageValidationBaselineVersion>2.2.2</PackageValidationBaselineVersion>
+		<PackageValidationBaselineVersion>3.0.0</PackageValidationBaselineVersion>
+		<!-- Builds without a tag: the last release with "-dev", so the assembly version is not lower than the baseline.
+		     A release build sets Version from the tag (publish.sh), which overrides both. -->
+		<VersionPrefix>$(PackageValidationBaselineVersion)</VersionPrefix>
+		<VersionSuffix>dev</VersionSuffix>
 	</PropertyGroup>
 
 	<ItemGroup>

@@ -140,4 +140,4 @@ New members, breaking only for your own implementations (mocks are not affected)
 
 Own providers derived from `ExternalProviderBase`: `Options` is now `abstract` (it threw `NotImplementedException` when not overridden), so a provider without `Options` fails at compile time instead of at the first search.
 
-The complete list of API changes against 2.2.2 is checked on every build of the package (Package Validation) and recorded in [`LyricsScraperNET/CompatibilitySuppressions.xml`](../LyricsScraperNET/CompatibilitySuppressions.xml).
+The complete list of API changes against 2.2.2 was checked by Package Validation and is recorded in [`LyricsScraperNET/CompatibilitySuppressions.xml` of 3.0.0](https://github.com/skuill/LyricsScraperNET/blob/3.0.0/LyricsScraperNET/CompatibilitySuppressions.xml).
