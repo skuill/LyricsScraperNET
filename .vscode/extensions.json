@@ -1,0 +1,7 @@
+{
+    // VS Code suggests these when the folder is opened.
+    "recommendations": [
+        "ms-dotnettools.csharp",
+        "ms-dotnettools.csdevkit"
+    ]
+}

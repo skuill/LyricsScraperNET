@@ -1,22 +1,21 @@
 {
-    // Use IntelliSense to learn about possible attributes.
-    // Hover to view descriptions of existing attributes.
-    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    // F5 runs the selected configuration. Requires the C# extension (ms-dotnettools.csharp).
     "version": "0.2.0",
     "configurations": [
         {
-            "name": ".NET Core Launch (console)",
+            "name": "Client (net10.0)",
             "type": "coreclr",
             "request": "launch",
-            "preLaunchTask": "build",
-            "program": "${workspaceFolder}/LyricsScraperNET.Client/bin/Debug/net7.0/LyricsScraperNET.Client.dll",
+            "preLaunchTask": "build client",
+            "program": "${workspaceFolder}/LyricsScraperNET.Client/bin/Debug/net10.0/LyricsScraperNET.Client.dll",
             "args": [],
             "cwd": "${workspaceFolder}/LyricsScraperNET.Client",
-            "console": "internalConsole",
+            // The client waits for a key at the end: the integrated terminal accepts input, the debug console does not.
+            "console": "integratedTerminal",
             "stopAtEntry": false
         },
         {
-            "name": ".NET Core Attach",
+            "name": "Attach to process",
             "type": "coreclr",
             "request": "attach"
         }

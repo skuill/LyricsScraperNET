@@ -1,0 +1,5 @@
+{
+    // The tests run on Microsoft Testing Platform (global.json); C# Dev Kit's Test Explorer needs this to find them.
+    "dotnet.testWindow.useTestingPlatformProtocol": true,
+    "dotnet.defaultSolution": "LyricsScraperNET.sln"
+}
