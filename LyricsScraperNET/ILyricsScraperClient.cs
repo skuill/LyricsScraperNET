@@ -4,6 +4,7 @@ using LyricsScraperNET.Providers.Abstract;
 using LyricsScraperNET.Providers.Models;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -88,5 +89,16 @@ namespace LyricsScraperNET
         /// Can be useful for error analysis if the lyric text is not found.
         /// </summary>
         void WithLogger(ILoggerFactory loggerFactory);
+
+        /// <summary>
+        /// Sends the requests of all providers through <paramref name="httpClient"/>: the providers already added and the ones added later,
+        /// for example <c>new LyricsScraperClient().WithHttpClient(httpClient).WithAllProviders()</c>.
+        /// Use it to set a proxy, message handlers, resilience policies or an own User-Agent.
+        /// Applies to providers based on <see cref="ExternalProviderBase"/>; see <see cref="ExternalProviderBase.WithHttpClient(HttpClient)"/>.
+        /// The caller owns the client: it is not disposed by the library and must stay alive while the client is used.
+        /// With dependency injection configure the <c>ServiceCollectionExtensions.HttpClientName</c> client instead.
+        /// </summary>
+        /// <exception cref="ArgumentNullException"><paramref name="httpClient"/> is null.</exception>
+        ILyricsScraperClient WithHttpClient(HttpClient httpClient);
     }
 }

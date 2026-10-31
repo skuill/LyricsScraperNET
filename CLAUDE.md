@@ -18,6 +18,14 @@ Notes for AI coding agents working in this repository. Personal or machine-speci
 - Unit tests with coverage (same as CI): `dotnet test Tests/LyricsScraperNET.UnitTest --configuration Release -- --coverage --coverage-output-format cobertura`
 - Integration tests hit real sites and can fail because of site changes or rate limits. One class at a time: build, then run the test exe from `Tests/LyricsScraperNET.IntegrationTest/bin/Release/net10.0` with native xunit options, e.g. `LyricsScraperNET.IntegrationTest.exe -class "LyricsScraperNET.IntegrationTest.Providers.Genius.GeniusProviderTest"`.
 - Mutation check for every fix or new behavior: temporarily break the change (revert the fix, remove a guard, replace a condition), run the tests and make sure at least one test fails, then restore it. If no test fails, either the test is missing or weak, or the code is dead and should be removed. Prefer deterministic tests (gates such as `TaskCompletionSource`, `ManualResetEventSlim`) over wall-clock thresholds; use a safety timeout so a broken implementation fails the test instead of hanging it.
+- Mutation check pitfall: a file restored from a backup keeps its old timestamp and MSBuild skips the rebuild, so the binaries keep the mutation. `touch` restored files before the final build. Failed tests in the native runner output are lines `<Name> [FAIL]`; check `Failed:` in the summary.
+- HTTP tests: no real network in unit tests. Use a real `HttpClient` over a fake `HttpMessageHandler` (`Tests/LyricsScraperNET.UnitTest/Network/HttpTestHelper.cs`). Gotchas:
+  - `SendAsync` is protected, so it is matched by name (`HttpTestHelper.CallToSendAsync`); `MustHaveHappened...` needs `using FakeItEasy;`.
+  - `HttpClient` does not check a canceled token before calling the handler, so a fake handler does not throw for it; the clients check the token themselves.
+  - The client disposes the request after sending: copy what you assert (`SentRequest`) inside the handler.
+  - Castle cannot fake `ILogger<T>` for an internal `T`: use `new Logger<T>(fakeLoggerFactory)` over a fake `ILogger`.
+  - `new NetHttpClient(null)` binds to the `ILogger` constructor; cast the argument (`(HttpClient)null`).
+  - Inserting lines with `sed` into CRLF files makes `dotnet format` fail with WHITESPACE; fix with `dotnet format whitespace --include <file>`.
 - New functionality must be covered by tests. Mocks: FakeItEasy. Assert whole objects / all stored data, verify calls to external clients (`A.CallTo(...).MustHaveHappened...`). Keep the existing test style (Arrange / Act / Assert comments, test data in `lyric_test_data.json` + `Resources/`).
 
 ## Public API rules

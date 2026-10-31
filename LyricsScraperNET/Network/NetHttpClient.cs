@@ -1,4 +1,5 @@
-﻿using LyricsScraperNET.Network.Abstract;
+﻿using LyricsScraperNET.Helpers;
+using LyricsScraperNET.Network.Abstract;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Net.Http;
@@ -8,87 +9,82 @@ using System.Threading.Tasks;
 namespace LyricsScraperNET.Network
 {
     /// <summary>
-    /// Provides an implementation of the <see cref="IWebClient"/> interface using <see cref="HttpClient"/> 
-    /// to perform HTTP requests for loading web resources.
-    /// This class is designed to handle network operations with proper cancellation support and logging.
+    /// Provides an implementation of the <see cref="IWebClient"/> interface using <see cref="System.Net.Http.HttpClient"/>.
+    /// Uses <see cref="SharedHttpClient.Instance"/> unless another client is passed.
     /// </summary>
     internal sealed class NetHttpClient : IWebClient
     {
         private readonly ILogger<NetHttpClient>? _logger;
 
-        // HttpClient is declared as static to prevent frequent creation and disposal of instances, 
-        // which can lead to socket exhaustion due to delays in releasing resources.
-        // Using a single instance ensures efficient connection management 
-        // and minimizes overhead for establishing new HTTP connections.
-        // More details: https://learn.microsoft.com/en-us/dotnet/fundamentals/networking/http/httpclient-guidelines#static-or-instance
-        private static HttpClient _httpClient = new HttpClient();
-
         public NetHttpClient()
+            : this(SharedHttpClient.Instance)
         {
         }
 
-        public NetHttpClient(ILogger<NetHttpClient> logger) : this()
+        public NetHttpClient(ILogger<NetHttpClient> logger)
+            : this(SharedHttpClient.Instance, logger)
         {
+        }
+
+        /// <param name="httpClient">Not disposed by this class: the owner of the client keeps it alive while it is used.</param>
+        /// <param name="logger">Optional logger for failed requests.</param>
+        public NetHttpClient(HttpClient httpClient, ILogger<NetHttpClient>? logger = null)
+        {
+            Ensure.ArgumentNotNull(httpClient, nameof(httpClient));
+            HttpClient = httpClient;
             _logger = logger;
         }
+
+        internal HttpClient HttpClient { get; }
 
         /// <inheritdoc />
         public string Load(Uri uri, CancellationToken cancellationToken = default)
         {
-            try
-            {
-                return LoadAsync(uri, cancellationToken).GetAwaiter().GetResult();
-            }
-            catch (HttpRequestException ex)
-            {
-                _logger?.LogWarning($"HttpClient GetStringAsync throw exception for uri: {uri}. Exception: {ex}");
-                return string.Empty;
-            }
+            return LoadAsync(uri, cancellationToken).GetAwaiter().GetResult();
         }
 
         /// <inheritdoc />
         public async Task<string> LoadAsync(Uri uri, CancellationToken cancellationToken = default)
         {
-            var request = new HttpRequestMessage(HttpMethod.Get, uri);
-            HttpResponseMessage response;
+            // HttpClient does not check the token before passing the request to the handler.
+            cancellationToken.ThrowIfCancellationRequested();
 
             try
             {
-                response = await _httpClient.SendAsync(request, cancellationToken);
-                response.EnsureSuccessStatusCode();
-                //#if NETSTANDARD
-                //                htmlPageBody = await _httpClient.GetStringAsync(uri);
-                //#else
-                //                htmlPageBody = await _httpClient.GetStringAsync(uri, cancellationToken);
-                //#endif
+                using var request = SharedHttpClient.CreateGetRequest(HttpClient, uri);
+                using var response = await HttpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    _logger?.LogWarning("Request to {Uri} returned status code {StatusCode}.", uri, (int)response.StatusCode);
+                    return string.Empty;
+                }
+
+                var content = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+                if (string.IsNullOrWhiteSpace(content))
+                    _logger?.LogDebug("Request to {Uri} returned an empty body.", uri);
+
+                return content;
             }
-            catch (HttpRequestException ex)
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
-                _logger?.LogWarning($"HttpClient GetStringAsync threw exception for URI: {uri}. Exception: {ex}");
-                return string.Empty;
+                throw;
             }
             catch (OperationCanceledException ex)
             {
-                _logger?.LogInformation($"Load request for URI: {uri} was canceled. Exception: {ex}");
-                throw;
+                // Not canceled by the caller: HttpClient.Timeout elapsed.
+                _logger?.LogWarning(ex, "Request to {Uri} timed out.", uri);
+                return string.Empty;
+            }
+            catch (HttpRequestException ex)
+            {
+                _logger?.LogWarning(ex, "Request to {Uri} failed.", uri);
+                return string.Empty;
             }
             catch (Exception ex)
             {
-                _logger?.LogError($"An unexpected error occurred while loading URI: {uri}. Exception: {ex}");
+                _logger?.LogError(ex, "Unexpected error while loading {Uri}.", uri);
                 return string.Empty;
-            }
-
-            var htmlContent = await response.Content.ReadAsStringAsync();
-            CheckResult(htmlContent, uri);
-
-            return htmlContent;
-        }
-
-        private void CheckResult(string? result, Uri uri)
-        {
-            if (string.IsNullOrWhiteSpace(result))
-            {
-                _logger?.LogDebug($"HttpClient GetString return null for uri: {uri}");
             }
         }
     }

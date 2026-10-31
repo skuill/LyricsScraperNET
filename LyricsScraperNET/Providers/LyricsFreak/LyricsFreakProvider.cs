@@ -30,7 +30,7 @@ namespace LyricsScraperNET.Providers.LyricsFreak
         public LyricsFreakProvider()
         {
             Parser = new LyricsFreakParser();
-            WebClient = new HtmlAgilityWebClient();
+            WebClient = new NetHttpClient();
             Options = new LyricsFreakOptions() { Enabled = true };
             _uriConverter = new LyricsFreakUriConverter();
         }

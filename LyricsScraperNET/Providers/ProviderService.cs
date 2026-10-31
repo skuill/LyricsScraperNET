@@ -5,6 +5,7 @@ using LyricsScraperNET.Providers.Models;
 using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 
 namespace LyricsScraperNET.Providers
 {
@@ -70,6 +71,15 @@ namespace LyricsScraperNET.Providers
         {
             foreach (var provider in _providers)
                 provider.WithLogger(loggerFactory);
+        }
+
+        /// <summary>
+        /// Internal: adding it to <see cref="IProviderService"/> would break its implementations.
+        /// </summary>
+        internal void WithHttpClient(HttpClient httpClient)
+        {
+            foreach (var provider in _providers.OfType<ExternalProviderBase>())
+                provider.WithHttpClient(httpClient);
         }
 
         public bool IsProviderAvailable(ExternalProviderType providerType)
