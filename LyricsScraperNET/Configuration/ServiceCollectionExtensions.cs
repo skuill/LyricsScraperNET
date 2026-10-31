@@ -1,4 +1,5 @@
-﻿using LyricsScraperNET.Providers.Abstract;
+﻿using LyricsScraperNET.Network;
+using LyricsScraperNET.Providers.Abstract;
 using LyricsScraperNET.Providers.AZLyrics;
 using LyricsScraperNET.Providers.Genius;
 using LyricsScraperNET.Providers.KPopLyrics;
@@ -11,6 +12,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
 using System.Linq;
+using System.Net.Http;
 
 namespace LyricsScraperNET.Configuration
 {
@@ -20,7 +22,15 @@ namespace LyricsScraperNET.Configuration
     public static class ServiceCollectionExtensions
     {
         /// <summary>
+        /// Name of the <see cref="HttpClient"/> that the providers get from <see cref="IHttpClientFactory"/>.
+        /// Configure it with <c>services.AddHttpClient(ServiceCollectionExtensions.HttpClientName)</c>,
+        /// for example to add a proxy, resilience handlers or an own User-Agent.
+        /// </summary>
+        public const string HttpClientName = "LyricsScraperNET";
+
+        /// <summary>
         /// Adds the LyricsScraperNET services to the service collection with automatic provider discovery.
+        /// The providers send their requests through the <see cref="HttpClientName"/> client of <see cref="IHttpClientFactory"/>.
         /// </summary>
         public static IServiceCollection AddLyricScraperClientService(
             this IServiceCollection services,
@@ -29,6 +39,11 @@ namespace LyricsScraperNET.Configuration
             var lyricScraperClientConfig = configuration.GetSection(LyricScraperClientConfig.ConfigurationSectionName);
             if (lyricScraperClientConfig.Exists())
             {
+                // SocketsHttpHandler with PooledConnectionLifetime keeps DNS fresh even if a consumer holds a client for long:
+                // https://learn.microsoft.com/dotnet/core/extensions/httpclient-factory#using-ihttpclientfactory-together-with-socketshttphandler
+                services.AddHttpClient(HttpClientName)
+                    .UseSocketsHttpHandler((handler, _) => SharedHttpClient.ConfigureHandler(handler));
+
                 services.AddProvider<LyricsFreakOptions, LyricsFreakProvider>(lyricScraperClientConfig);
                 services.AddProvider<AZLyricsOptions, AZLyricsProvider>(lyricScraperClientConfig);
                 services.AddProvider<GeniusOptions, GeniusProvider>(lyricScraperClientConfig);
@@ -51,13 +66,20 @@ namespace LyricsScraperNET.Configuration
             this IServiceCollection services,
             IConfiguration configuration)
             where TOptions : class, IExternalProviderOptions
-            where TProvider : class, IExternalProvider
+            where TProvider : ExternalProviderBase
         {
             var configurationSection = configuration.GetSection(Activator.CreateInstance<TOptions>().ConfigurationSectionName);
             if (configurationSection.Exists())
             {
                 services.Configure<TOptions>(configurationSection);
-                services.AddScoped<IExternalProvider, TProvider>();
+                services.AddScoped<TProvider>();
+                // Clients from IHttpClientFactory are meant to be short-lived, so each scoped provider gets a new one.
+                services.AddScoped<IExternalProvider>(serviceProvider =>
+                {
+                    var provider = serviceProvider.GetRequiredService<TProvider>();
+                    provider.WithHttpClient(serviceProvider.GetRequiredService<IHttpClientFactory>().CreateClient(HttpClientName));
+                    return provider;
+                });
             }
 
             return services;

@@ -1,8 +1,10 @@
 ﻿using LyricsScraperNET.Models.Requests;
 using LyricsScraperNET.Models.Responses;
+using LyricsScraperNET.Network;
 using LyricsScraperNET.Network.Abstract;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -81,6 +83,25 @@ namespace LyricsScraperNET.Providers.Abstract
             if (webClient != null)
                 WebClient = webClient;
         }
+
+        /// <summary>
+        /// Sends the requests of this provider through <paramref name="httpClient"/>, for example to set a proxy,
+        /// message handlers, resilience policies or an own User-Agent. Replaces the current web client.
+        /// The caller owns the client: it is not disposed by the provider and must stay alive while the provider is used.
+        /// Reuse one client (or <c>IHttpClientFactory</c>) instead of creating one per provider or request, see
+        /// https://learn.microsoft.com/dotnet/fundamentals/networking/http/httpclient-guidelines.
+        /// </summary>
+        public void WithHttpClient(HttpClient httpClient)
+        {
+            WebClient = CreateWebClient(httpClient);
+        }
+
+        /// <summary>
+        /// The web client used by <see cref="WithHttpClient(HttpClient)"/>. Providers with their own HTTP handling override it.
+        /// The web client throws <see cref="ArgumentNullException"/> for a null <paramref name="httpClient"/>.
+        /// </summary>
+        private protected virtual IWebClient CreateWebClient(HttpClient httpClient)
+            => new NetHttpClient(httpClient);
 
         public void Enable()
         {

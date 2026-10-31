@@ -85,6 +85,34 @@ For more advanced usage, you can set up the `LyricScraperClient` via dependency 
 
 Explore additional examples in the [LyricsScraperNET.Client](LyricsScraperNET.Client/Program.cs) project.
 
+### HTTP configuration
+
+By default all providers share one long-lived `HttpClient` that recycles its connections (`PooledConnectionLifetime`), as recommended in the [HttpClient guidelines](https://learn.microsoft.com/dotnet/fundamentals/networking/http/httpclient-guidelines). Requests are sent with a `LyricsScraperNET/...` User-Agent unless your client sets its own one.
+
+With dependency injection, the providers use the named client `ServiceCollectionExtensions.HttpClientName` from `IHttpClientFactory`. Configure it like any named client, for example to add a proxy, resilience handlers or your own User-Agent:
+
+```csharp
+services.AddLyricScraperClientService(configuration);
+services.AddHttpClient(ServiceCollectionExtensions.HttpClientName)
+    .ConfigureHttpClient(client => client.DefaultRequestHeaders.UserAgent.ParseAdd("MyApp/1.0"))
+    .AddStandardResilienceHandler(); // Microsoft.Extensions.Http.Resilience
+```
+
+Without dependency injection, pass your own client to the `LyricsScraperClient` (applies to all providers, also to the ones added later) or to a single provider. The library does not dispose it, so reuse one instance instead of creating a client per provider or request:
+
+```csharp
+ILyricsScraperClient lyricsScraperClient = new LyricsScraperClient()
+    .WithHttpClient(sharedHttpClient)
+    .WithAllProviders();
+
+// Or only for one provider:
+var geniusProvider = new GeniusProvider();
+geniusProvider.WithHttpClient(geniusHttpClient);
+lyricsScraperClient.AddProvider(geniusProvider);
+```
+
+Note: the Genius search with an API key still goes through the Genius.NET package and its own `HttpClient` ([#61](https://github.com/skuill/LyricsScraperNET/issues/61)).
+
 ---
 
 ## 🛠️ Installation

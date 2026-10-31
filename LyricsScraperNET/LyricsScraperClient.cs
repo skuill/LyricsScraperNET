@@ -12,6 +12,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -22,7 +23,8 @@ namespace LyricsScraperNET
         private ILoggerFactory? _loggerFactory;
         private ILogger<LyricsScraperClient>? _logger;
 
-        private IProviderService _providerService;
+        private ProviderService _providerService;
+        private HttpClient? _httpClient;
         private IRequestValidator _requestValidator;
         private readonly ILyricScraperClientConfig? _lyricScraperClientConfig;
 
@@ -340,6 +342,8 @@ namespace LyricsScraperNET
             }
             if (_loggerFactory != null)
                 provider.WithLogger(_loggerFactory);
+            if (_httpClient != null && provider is ExternalProviderBase externalProviderBase)
+                externalProviderBase.WithHttpClient(_httpClient);
             _providerService.AddProvider(provider);
         }
 
@@ -363,6 +367,15 @@ namespace LyricsScraperNET
         {
             _loggerFactory = loggerFactory;
             _providerService.WithLogger(loggerFactory);
+        }
+
+        /// <inheritdoc />
+        public ILyricsScraperClient WithHttpClient(HttpClient httpClient)
+        {
+            Ensure.ArgumentNotNull(httpClient, nameof(httpClient));
+            _httpClient = httpClient;
+            _providerService.WithHttpClient(httpClient);
+            return this;
         }
     }
 }

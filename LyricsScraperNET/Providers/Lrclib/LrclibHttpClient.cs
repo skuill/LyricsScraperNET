@@ -1,4 +1,6 @@
 using LyricsScraperNET.Common;
+using LyricsScraperNET.Helpers;
+using LyricsScraperNET.Network;
 using LyricsScraperNET.Network.Abstract;
 using Microsoft.Extensions.Logging;
 using System;
@@ -11,92 +13,101 @@ namespace LyricsScraperNET.Providers.Lrclib
 {
     /// <summary>
     /// HTTP client for LRCLIB. Identifies the library via User-Agent and honors Retry-After on 429.
+    /// Unlike <see cref="NetHttpClient"/>, returns the body of a 404 response: it is JSON with TrackNotFound and is handled by the provider.
     /// </summary>
     internal sealed class LrclibHttpClient : IWebClient
     {
         private readonly ILogger<LrclibHttpClient>? _logger;
-        private static readonly HttpClient _httpClient = new();
         private const int MaxAttempts = 2;
         private static readonly TimeSpan MaxRetryAfter = TimeSpan.FromSeconds(30);
 
         public LrclibHttpClient()
+            : this(SharedHttpClient.Instance)
         {
         }
 
-        public LrclibHttpClient(ILogger<LrclibHttpClient> logger) : this()
+        public LrclibHttpClient(ILogger<LrclibHttpClient> logger)
+            : this(SharedHttpClient.Instance, logger)
         {
+        }
+
+        /// <param name="httpClient">Not disposed by this class: the owner of the client keeps it alive while it is used.</param>
+        /// <param name="logger">Optional logger for failed requests.</param>
+        public LrclibHttpClient(HttpClient httpClient, ILogger<LrclibHttpClient>? logger = null)
+        {
+            Ensure.ArgumentNotNull(httpClient, nameof(httpClient));
+            HttpClient = httpClient;
             _logger = logger;
         }
 
+        internal HttpClient HttpClient { get; }
+
         public string Load(Uri uri, CancellationToken cancellationToken = default)
         {
-            try
-            {
-                return LoadAsync(uri, cancellationToken).GetAwaiter().GetResult();
-            }
-            catch (HttpRequestException ex)
-            {
-                _logger?.LogWarning($"Lrclib HTTP request failed for uri: {uri}. Exception: {ex}");
-                return string.Empty;
-            }
+            return LoadAsync(uri, cancellationToken).GetAwaiter().GetResult();
         }
 
         public async Task<string> LoadAsync(Uri uri, CancellationToken cancellationToken = default)
         {
+            // HttpClient does not check the token before passing the request to the handler.
+            cancellationToken.ThrowIfCancellationRequested();
+
             try
             {
                 for (int attempt = 1; attempt <= MaxAttempts; attempt++)
                 {
                     using var request = CreateRequest(uri);
-                    var response = await _httpClient.SendAsync(request, cancellationToken);
+                    using var response = await HttpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
 
                     if (response.StatusCode == HttpStatusCode.TooManyRequests && attempt < MaxAttempts)
                     {
                         var delay = GetRetryAfterDelay(response);
-                        _logger?.LogInformation($"Lrclib rate limited for uri: {uri}. Waiting {delay.TotalSeconds}s before retry.");
-                        await Task.Delay(delay, cancellationToken);
+                        _logger?.LogInformation("Lrclib rate limited for {Uri}. Waiting {Delay} before retry.", uri, delay);
+                        await Task.Delay(delay, cancellationToken).ConfigureAwait(false);
                         continue;
                     }
 
-                    // 404 body is JSON with TrackNotFound and is handled by the provider.
-                    if (response.StatusCode == HttpStatusCode.NotFound)
+                    if (response.StatusCode != HttpStatusCode.NotFound && !response.IsSuccessStatusCode)
                     {
-                        return await response.Content.ReadAsStringAsync(cancellationToken);
+                        _logger?.LogWarning("Lrclib request to {Uri} returned status code {StatusCode}.", uri, (int)response.StatusCode);
+                        return string.Empty;
                     }
 
-                    response.EnsureSuccessStatusCode();
-                    var content = await response.Content.ReadAsStringAsync(cancellationToken);
+                    var content = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
                     if (string.IsNullOrWhiteSpace(content))
-                    {
-                        _logger?.LogDebug($"Lrclib returned empty content for uri: {uri}");
-                    }
+                        _logger?.LogDebug("Lrclib returned an empty body for {Uri}.", uri);
 
                     return content;
                 }
             }
-            catch (HttpRequestException ex)
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
-                _logger?.LogWarning($"Lrclib HTTP request failed for URI: {uri}. Exception: {ex}");
-                return string.Empty;
+                throw;
             }
             catch (OperationCanceledException ex)
             {
-                _logger?.LogInformation($"Lrclib request for URI: {uri} was canceled. Exception: {ex}");
-                throw;
+                // Not canceled by the caller: HttpClient.Timeout elapsed.
+                _logger?.LogWarning(ex, "Lrclib request to {Uri} timed out.", uri);
+                return string.Empty;
+            }
+            catch (HttpRequestException ex)
+            {
+                _logger?.LogWarning(ex, "Lrclib request to {Uri} failed.", uri);
+                return string.Empty;
             }
             catch (Exception ex)
             {
-                _logger?.LogError($"An unexpected error occurred while loading Lrclib URI: {uri}. Exception: {ex}");
+                _logger?.LogError(ex, "Unexpected error while loading Lrclib {Uri}.", uri);
                 return string.Empty;
             }
 
             return string.Empty;
         }
 
-        private static HttpRequestMessage CreateRequest(Uri uri)
+        private HttpRequestMessage CreateRequest(Uri uri)
         {
-            var request = new HttpRequestMessage(HttpMethod.Get, uri);
-            request.Headers.TryAddWithoutValidation("User-Agent", Constants.LibraryUserAgent);
+            var request = SharedHttpClient.CreateGetRequest(HttpClient, uri);
+            // LRCLIB asks clients to identify themselves; X-User-Agent stays even if the consumer replaces User-Agent.
             request.Headers.TryAddWithoutValidation("X-User-Agent", Constants.LibraryUserAgent);
             return request;
         }

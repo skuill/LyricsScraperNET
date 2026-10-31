@@ -27,7 +27,7 @@ namespace LyricsScraperNET.Providers.KPopLyrics
         public KPopLyricsProvider()
         {
             Parser = new KPopLyricsParser();
-            WebClient = new HtmlAgilityWebClient();
+            WebClient = new NetHttpClient();
             Options = new KPopLyricsOptions() { Enabled = true };
             _uriConverter = new KPopLyricsUriConverter();
         }

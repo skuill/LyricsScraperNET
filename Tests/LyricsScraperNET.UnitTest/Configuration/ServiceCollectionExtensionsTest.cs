@@ -1,16 +1,25 @@
 ﻿using FakeItEasy;
 using LyricsScraperNET.Configuration;
 using LyricsScraperNET.Models.Requests;
+using LyricsScraperNET.Network;
+using LyricsScraperNET.Providers.Abstract;
+using LyricsScraperNET.Providers.AZLyrics;
+using LyricsScraperNET.Providers.Lrclib;
 using LyricsScraperNET.Providers.Models;
 using LyricsScraperNET.TestShared.Helpers;
+using LyricsScraperNET.UnitTest.Network;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Threading;
+using System.Threading.Tasks;
 using Xunit;
+using static LyricsScraperNET.UnitTest.Network.HttpTestHelper;
 
 namespace LyricsScraperNET.UnitTest.Configuration
 {
@@ -224,6 +233,64 @@ namespace LyricsScraperNET.UnitTest.Configuration
             A.CallTo(logger)
                 .Where(call => call.Method.Name == nameof(ILogger.Log))
                 .MustNotHaveHappened();
+        }
+
+        [Fact]
+        public async Task IocContainer_ConsumerConfiguresNamedHttpClient_ProvidersSendRequestsThroughIt()
+        {
+            // Arrange
+            var sentRequests = new List<SentRequest>();
+            var (_, handler) = CreateHttpClient(sentRequests, HttpStatusCode.NotFound, "<html>not found</html>");
+
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddLyricScraperClientService(BuildConfigurationFromFile("Resources\\full_test_settings.json"));
+            // What a consumer does to add a proxy, resilience handlers or an own User-Agent.
+            serviceCollection.AddHttpClient(ServiceCollectionExtensions.HttpClientName)
+                .ConfigureHttpClient(httpClient => httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("ConsumerApp/2.0"))
+                .ConfigurePrimaryHttpMessageHandler(() => handler);
+
+            var service = serviceCollection.BuildServiceProvider(
+                new ServiceProviderOptions
+                {
+                    ValidateOnBuild = true,
+                    ValidateScopes = true
+                }).CreateScope().ServiceProvider.GetRequiredService<ILyricsScraperClient>();
+            var expectedUri = new AZLyricsUriConverter().GetLyricUri("Artist", "Song");
+
+            // Act
+            var searchResult = await service[ExternalProviderType.AZLyrics].SearchLyricAsync(
+                new ArtistAndSongSearchRequest("Artist", "Song"), TestContext.Current.CancellationToken);
+
+            // Assert
+            Assert.True(searchResult.IsEmpty());
+            foreach (var providerType in ExternalProviderTypeHelper.SupportedProviderTypes)
+            {
+                var webClient = ((ExternalProviderBase)service[providerType]).WebClient;
+                Assert.NotSame(SharedHttpClient.Instance, SharedHttpClientTests.GetHttpClient(webClient));
+            }
+            Assert.IsType<LrclibHttpClient>(((ExternalProviderBase)service[ExternalProviderType.Lrclib]).WebClient);
+            Assert.Equal(new[] { new SentRequest(HttpMethod.Get, expectedUri, "ConsumerApp/2.0", null) }, Snapshot(sentRequests));
+            CallToSendAsync(handler).MustHaveHappenedOnceExactly();
+        }
+
+        [Fact]
+        public void IocContainer_NamedHttpClient_UsesSocketsHttpHandlerWithPooledConnectionLifetime()
+        {
+            // Arrange
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddLyricScraperClientService(BuildConfigurationFromFile("Resources\\full_test_settings.json"));
+            var serviceProvider = serviceCollection.BuildServiceProvider();
+
+            // Act
+            HttpMessageHandler handler = serviceProvider.GetRequiredService<IHttpMessageHandlerFactory>()
+                .CreateHandler(ServiceCollectionExtensions.HttpClientName);
+            while (handler is DelegatingHandler delegatingHandler)
+                handler = delegatingHandler.InnerHandler!;
+
+            // Assert
+            var socketsHandler = Assert.IsType<SocketsHttpHandler>(handler);
+            Assert.Equal(TimeSpan.FromMinutes(2), socketsHandler.PooledConnectionLifetime);
+            Assert.Equal(DecompressionMethods.All, socketsHandler.AutomaticDecompression);
         }
 
         private static (ILoggerFactory LoggerFactory, ILogger Logger) CreateFakeLoggerFactory()

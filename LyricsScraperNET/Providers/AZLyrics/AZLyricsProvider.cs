@@ -25,7 +25,7 @@ namespace LyricsScraperNET.Providers.AZLyrics
         public AZLyricsProvider()
         {
             Parser = new AZLyricsParser();
-            WebClient = new HtmlAgilityWebClient();
+            WebClient = new NetHttpClient();
             Options = new AZLyricsOptions() { Enabled = true };
             _uriConverter = new AZLyricsUriConverter();
         }

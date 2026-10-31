@@ -1,12 +1,14 @@
 using LyricsScraperNET.Extensions;
 using LyricsScraperNET.Helpers;
 using LyricsScraperNET.Models.Responses;
+using LyricsScraperNET.Network.Abstract;
 using LyricsScraperNET.Providers.Abstract;
 using LyricsScraperNET.Providers.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using System;
+using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -107,6 +109,9 @@ namespace LyricsScraperNET.Providers.Lrclib
         {
             _logger = loggerFactory.CreateLogger<LrclibProvider>();
         }
+
+        private protected override IWebClient CreateWebClient(HttpClient httpClient)
+            => new LrclibHttpClient(httpClient);
 
         private SearchResult PostProcessLyric(Uri uri, string text)
         {
