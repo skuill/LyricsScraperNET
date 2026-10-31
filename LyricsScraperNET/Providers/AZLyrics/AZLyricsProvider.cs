@@ -78,7 +78,7 @@ namespace LyricsScraperNET.Providers.AZLyrics
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            var text = await WebClient.LoadAsync(uri, cancellationToken).ConfigureAwait(false);
+            var text = await LoadPageAsync(uri, cancellationToken).ConfigureAwait(false);
 
             cancellationToken.ThrowIfCancellationRequested();
 

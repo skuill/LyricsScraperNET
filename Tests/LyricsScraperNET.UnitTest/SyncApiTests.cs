@@ -9,6 +9,7 @@ using LyricsScraperNET.Providers.KPopLyrics;
 using LyricsScraperNET.Providers.Lrclib;
 using LyricsScraperNET.Providers.LyricsFreak;
 using LyricsScraperNET.Providers.SongLyrics;
+using LyricsScraperNET.UnitTest.Threading;
 using System;
 using System.Linq;
 using System.Reflection;
@@ -24,8 +25,8 @@ namespace LyricsScraperNET.UnitTest
     /// </summary>
     public class SyncApiTests
     {
-        private const string DiagnosticId = "LSNET001";
-        private const string IssueUrl = "https://github.com/skuill/LyricsScraperNET/issues/79";
+        private const string DiagnosticId = "LSNET0001";
+        private const string IssueUrl = "https://github.com/skuill/LyricsScraperNET/blob/main/docs/obsoletions/{0}.md";
 
         [Fact]
         public void SyncMembers_AllMarkedObsoleteWithDiagnosticIdAndIssueLink()
@@ -185,35 +186,5 @@ namespace LyricsScraperNET.UnitTest
 
         private static string Describe(MethodInfo method)
             => $"{method.DeclaringType!.Name}.{method.Name}({string.Join(", ", method.GetParameters().Select(p => p.ParameterType.Name))})";
-
-        /// <summary>
-        /// Like a UI thread blocked in a sync call: posted continuations never run.
-        /// </summary>
-        private sealed class BlockedSynchronizationContext : SynchronizationContext
-        {
-            private int _postCount;
-
-            public int PostCount => Volatile.Read(ref _postCount);
-
-            public override void Post(SendOrPostCallback d, object state) => Interlocked.Increment(ref _postCount);
-
-            public override void Send(SendOrPostCallback d, object state) => Interlocked.Increment(ref _postCount);
-        }
-
-        /// <summary>
-        /// Runs posted continuations on the thread pool and counts them.
-        /// </summary>
-        private sealed class CountingSynchronizationContext : SynchronizationContext
-        {
-            private int _postCount;
-
-            public int PostCount => Volatile.Read(ref _postCount);
-
-            public override void Post(SendOrPostCallback d, object state)
-            {
-                Interlocked.Increment(ref _postCount);
-                base.Post(d, state);
-            }
-        }
     }
 }

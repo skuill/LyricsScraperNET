@@ -81,12 +81,13 @@ More examples are in the [LyricsScraperNET.Client](LyricsScraperNET.Client/Progr
 
 | Topic | Document |
 |---|---|
-| Client and provider settings, search order, `appsettings.json` | [docs/configuration.md](docs/configuration.md) |
+| Client and provider settings, search order, `appsettings.json` (with or without dependency injection), result codes | [docs/configuration.md](docs/configuration.md) |
 | Dependency injection (`IServiceCollection`, `IConfiguration`) | [docs/dependency-injection.md](docs/dependency-injection.md) |
 | HTTP: own `HttpClient`, User-Agent, proxy, Genius API key | [docs/http.md](docs/http.md) |
 | Providers: how they search, known limits, removed providers | [docs/providers.md](docs/providers.md) |
 | Architecture, search flow, adding a provider | [docs/architecture.md](docs/architecture.md) |
 | Upgrading from 2.x to 3.0 | [docs/migration-2.x-to-3.0.md](docs/migration-2.x-to-3.0.md) |
+| Obsolete members and their diagnostic ids (`LSNET0001`, ...) | [docs/obsoletions/README.md](docs/obsoletions/README.md) |
 
 ---
 

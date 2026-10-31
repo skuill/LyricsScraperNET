@@ -76,7 +76,7 @@ namespace LyricsScraperNET.Providers.LyricsFreak
             // 1. Open the artist's page.
             var artistUri = _uriConverter.GetArtistUri(artist);
 
-            var htmlResponse = await WebClient.LoadAsync(artistUri, cancellationToken).ConfigureAwait(false);
+            var htmlResponse = await LoadPageAsync(artistUri, cancellationToken).ConfigureAwait(false);
 
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -100,7 +100,7 @@ namespace LyricsScraperNET.Providers.LyricsFreak
 
         protected async override Task<SearchResult> SearchLyricAsync(Uri uri, CancellationToken cancellationToken = default)
         {
-            var htmlBodyContent = await WebClient.LoadAsync(uri, cancellationToken).ConfigureAwait(false);
+            var htmlBodyContent = await LoadPageAsync(uri, cancellationToken).ConfigureAwait(false);
 
             cancellationToken.ThrowIfCancellationRequested();
 

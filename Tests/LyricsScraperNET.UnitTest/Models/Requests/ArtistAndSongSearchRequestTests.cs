@@ -1,5 +1,6 @@
 ﻿using LyricsScraperNET.Common;
 using LyricsScraperNET.Models.Requests;
+using LyricsScraperNET.Models.Responses;
 using Xunit;
 
 namespace LyricsScraperNET.UnitTest.Models.Requests
@@ -19,10 +20,11 @@ namespace LyricsScraperNET.UnitTest.Models.Requests
             var searchRequest = new ArtistAndSongSearchRequest(artist, song);
 
             // Act
-            var validationResult = searchRequest.IsValid(out var errorMessage);
+            var validationResult = searchRequest.IsValid(out var errorCode, out var errorMessage);
 
             // Assert
             Assert.False(validationResult);
+            Assert.Equal(SearchResultCode.EmptyArtistOrSong, errorCode);
             Assert.Equal(Constants.ResponseMessages.ArtistAndSongSearchRequestFieldsAreEmpty, errorMessage);
         }
 
@@ -33,10 +35,11 @@ namespace LyricsScraperNET.UnitTest.Models.Requests
             var searchRequest = new ArtistAndSongSearchRequest("SomeArtist", "SomeSong");
 
             // Act
-            var validationResult = searchRequest.IsValid(out var errorMessage);
+            var validationResult = searchRequest.IsValid(out var errorCode, out var errorMessage);
 
             // Assert
             Assert.True(validationResult);
+            Assert.Equal(SearchResultCode.None, errorCode);
             Assert.True(string.IsNullOrEmpty(errorMessage));
         }
     }

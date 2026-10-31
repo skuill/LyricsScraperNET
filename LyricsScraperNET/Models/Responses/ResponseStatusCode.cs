@@ -1,8 +1,13 @@
-﻿namespace LyricsScraperNET.Models.Responses
+﻿using LyricsScraperNET.Common;
+using System;
+
+namespace LyricsScraperNET.Models.Responses
 {
     /// <summary>
     /// Search response status code list.
+    /// Obsolete: use <see cref="SearchResultCode"/> (<see cref="SearchResult.Code"/>). Removed in 4.0.0.
     /// </summary>
+    [Obsolete(Obsoletions.ResponseStatusCode.Message, DiagnosticId = Obsoletions.ResponseStatusCode.DiagnosticId, UrlFormat = Obsoletions.SharedUrlFormat)]
     public enum ResponseStatusCode
     {
         /// <summary>
@@ -31,7 +36,7 @@
         BadRequest = 4,
 
         /// <summary>
-        /// Lyrics are unavailable due to regional restrictions.
+        /// Lyrics are unavailable due to regional restrictions. Never returned since the LyricFind provider was removed in 3.0.0.
         /// </summary>
         RegionRestricted = 5
     }

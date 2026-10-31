@@ -1,4 +1,5 @@
-﻿using System;
+﻿using LyricsScraperNET.Common;
+using System;
 
 namespace LyricsScraperNET.Providers.Models
 {
@@ -11,10 +12,10 @@ namespace LyricsScraperNET.Providers.Models
         None = 0,
         AZLyrics = 1,
         Genius = 2,
-        [Obsolete("The Musixmatch provider was removed in LyricsScraperNET 3.0.0. Searching with this provider type returns a BadRequest result.")]
+        [Obsolete(Obsoletions.MusixmatchRemoved.ProviderTypeMessage, DiagnosticId = Obsoletions.MusixmatchRemoved.DiagnosticId, UrlFormat = Obsoletions.SharedUrlFormat)]
         Musixmatch = 3,
         SongLyrics = 4,
-        [Obsolete("The LyricFind provider was removed in LyricsScraperNET 3.0.0. Searching with this provider type returns a BadRequest result.")]
+        [Obsolete(Obsoletions.LyricFindRemoved.ProviderTypeMessage, DiagnosticId = Obsoletions.LyricFindRemoved.DiagnosticId, UrlFormat = Obsoletions.SharedUrlFormat)]
         LyricFind = 5,
         KPopLyrics = 6,
         LyricsFreak = 7,

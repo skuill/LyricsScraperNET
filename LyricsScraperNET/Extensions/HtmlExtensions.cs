@@ -2,7 +2,7 @@
 
 namespace LyricsScraperNET.Extensions
 {
-    public static class HtmlExtensions
+    internal static class HtmlExtensions
     {
         public static HtmlNode? SelectSingleNodeByXPath(this string htmlBody, string xPath)
         {

@@ -3,10 +3,11 @@ using LyricsScraperNET.Providers.Abstract;
 using LyricsScraperNET.Providers.Models;
 using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
+using System.Net.Http;
 
 namespace LyricsScraperNET.Providers
 {
-    public interface IProviderService
+    internal interface IProviderService
     {
         IEnumerable<IExternalProvider> GetAvailableProviders(SearchRequest searchRequest);
         IExternalProvider? this[ExternalProviderType providerType] { get; }
@@ -19,5 +20,7 @@ namespace LyricsScraperNET.Providers
         void EnableAllProviders();
         void DisableAllProviders();
         void WithLogger(ILoggerFactory loggerFactory);
+
+        void WithHttpClient(HttpClient httpClient);
     }
 }

@@ -11,6 +11,7 @@ using LyricsScraperNET.Validations;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
@@ -99,7 +100,7 @@ namespace LyricsScraperNET
         }
 
         /// <inheritdoc />
-        [Obsolete(Constants.ObsoleteSyncApi.SearchLyricMessage, DiagnosticId = Constants.ObsoleteSyncApi.DiagnosticId, UrlFormat = Constants.ObsoleteSyncApi.UrlFormat)]
+        [Obsolete(Obsoletions.SyncApi.SearchLyricMessage, DiagnosticId = Obsoletions.SyncApi.DiagnosticId, UrlFormat = Obsoletions.SharedUrlFormat)]
         public SearchResult SearchLyric(SearchRequest searchRequest, CancellationToken cancellationToken = default)
         {
             // Settings are read once, so a concurrent change cannot mix modes within one search.
@@ -111,9 +112,9 @@ namespace LyricsScraperNET
             var settings = new SearchSettings(useParallelSearch, ProviderTimeout, RunProviderOnCallerThread: !useParallelSearch);
             Func<IExternalProvider, CancellationToken, Task<SearchResult>> searchAction = useParallelSearch
                 ? (provider, ct) => provider.SearchLyricAsync(searchRequest, ct)
-#pragma warning disable LSNET001 // The obsolete sync client API keeps using the sync provider API until both are removed in 4.0.0 (#79).
+#pragma warning disable LSNET0001 // The obsolete sync client API keeps using the sync provider API until both are removed in 4.0.0 (#79).
                 : (provider, ct) => Task.FromResult(provider.SearchLyric(searchRequest, ct));
-#pragma warning restore LSNET001
+#pragma warning restore LSNET0001
 
             return SearchLyricInternal(searchRequest, searchAction, settings, cancellationToken).GetAwaiter().GetResult();
         }
@@ -140,15 +141,22 @@ namespace LyricsScraperNET
             if (!ValidSearchRequestAndConfig(searchRequest, out var searchResult))
                 return searchResult;
 
+            // Filled only by this method's search loop, never by provider tasks.
+            var attempts = new List<ProviderAttempt>();
             var foundResult = settings.UseParallelSearch
-                ? await SearchInParallel(searchRequest, searchAction, settings, cancellationToken).ConfigureAwait(false)
-                : await SearchSequentially(searchRequest, searchAction, settings, cancellationToken).ConfigureAwait(false);
+                ? await SearchInParallel(searchRequest, searchAction, settings, attempts, cancellationToken).ConfigureAwait(false)
+                : await SearchSequentially(searchRequest, searchAction, settings, attempts, cancellationToken).ConfigureAwait(false);
 
+            var providerAttempts = attempts.ToArray();
             if (foundResult != null)
-                return foundResult;
+                return foundResult.WithProviderAttempts(providerAttempts);
 
-            // No providers found valid results, log the failure and add a message
-            searchResult.AddNoDataFoundMessage(Constants.ResponseMessages.NotFoundLyric);
+            // NotFound as soon as one provider answered; AllProvidersFailed if none could check (the lyrics may exist).
+            var anyAnswer = providerAttempts.Length == 0 || providerAttempts.Any(attempt => attempt.Outcome.IsAnswer);
+            searchResult.WithCode(
+                anyAnswer ? SearchResultCode.NotFound : SearchResultCode.AllProvidersFailed,
+                anyAnswer ? Constants.ResponseMessages.NotFoundLyric : Constants.ResponseMessages.AllProvidersFailed);
+            searchResult.ProviderAttempts = providerAttempts;
             return searchResult;
         }
 
@@ -156,6 +164,7 @@ namespace LyricsScraperNET
             SearchRequest searchRequest,
             Func<IExternalProvider, CancellationToken, Task<SearchResult>> searchAction,
             SearchSettings settings,
+            List<ProviderAttempt> attempts,
             CancellationToken cancellationToken)
         {
             foreach (var provider in _providerService.GetAvailableProviders(searchRequest))
@@ -163,17 +172,18 @@ namespace LyricsScraperNET
                 // Check for cancellation before each external provider call
                 cancellationToken.ThrowIfCancellationRequested();
 
-                var result = await SearchWithProvider(provider, searchAction, settings, cancellationToken).ConfigureAwait(false);
+                var outcome = await SearchWithProvider(provider, searchAction, settings, cancellationToken).ConfigureAwait(false);
+                attempts.Add(outcome.Attempt);
 
-                // A provider canceled by the caller returns null, so the cancellation has to be rethrown here.
+                // A provider canceled by the caller returns no result, so the cancellation has to be rethrown here.
                 if (cancellationToken.IsCancellationRequested)
                 {
                     _logger?.LogInformation("Search operation was canceled.");
                     cancellationToken.ThrowIfCancellationRequested();
                 }
 
-                if (result != null)
-                    return result;
+                if (outcome.FoundResult != null)
+                    return outcome.FoundResult;
             }
 
             return null;
@@ -182,12 +192,14 @@ namespace LyricsScraperNET
         /// <summary>
         /// Starts all providers at once. A result is returned as soon as no provider with a higher <see cref="IExternalProvider.SearchPriority"/>
         /// is still running, so the result does not depend on which site answers first. Among providers with the same priority the fastest one wins.
-        /// The remaining providers are canceled. Caller cancellation is rethrown as <see cref="OperationCanceledException"/>.
+        /// The remaining providers are canceled and recorded as <see cref="ProviderAttemptOutcome.Canceled"/>.
+        /// Caller cancellation is rethrown as <see cref="OperationCanceledException"/>.
         /// </summary>
         private async Task<SearchResult?> SearchInParallel(
             SearchRequest searchRequest,
             Func<IExternalProvider, CancellationToken, Task<SearchResult>> searchAction,
             SearchSettings settings,
+            List<ProviderAttempt> attempts,
             CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -197,7 +209,11 @@ namespace LyricsScraperNET
             // SearchWithProvider starts the provider on the thread pool, so starting all providers here does not block.
             // Priorities are captured once: a concurrent options change cannot change the decision during the search.
             var running = _providerService.GetAvailableProviders(searchRequest)
-                .Select(provider => (Priority: provider.SearchPriority, Task: SearchWithProvider(provider, searchAction, settings, linkedCts.Token)))
+                .Select(provider => (
+                    Priority: provider.SearchPriority,
+                    ProviderType: GetProviderType(provider),
+                    StartedAt: Stopwatch.GetTimestamp(),
+                    Task: SearchWithProvider(provider, searchAction, settings, linkedCts.Token)))
                 .ToList();
 
             // Found results in completion order.
@@ -214,17 +230,26 @@ namespace LyricsScraperNET
                     var completed = running.First(x => x.Task == completedTask);
                     running.Remove(completed);
 
-                    var result = await completed.Task.ConfigureAwait(false);
-                    if (result != null)
-                        found.Add((completed.Priority, result));
+                    var outcome = await completed.Task.ConfigureAwait(false);
+                    attempts.Add(outcome.Attempt);
+                    if (outcome.FoundResult != null)
+                        found.Add((completed.Priority, outcome.FoundResult));
 
                     if (found.Count == 0)
                         continue;
 
                     // OrderByDescending is stable: among equal priorities the earliest completed result is taken.
                     var best = found.OrderByDescending(x => x.Priority).First();
-                    if (!running.Any(x => x.Priority > best.Priority))
-                        return best.Result;
+                    if (running.Any(x => x.Priority > best.Priority))
+                        continue;
+
+                    foreach (var stopped in running)
+                    {
+                        attempts.Add(new ProviderAttempt(stopped.ProviderType, ProviderAttemptOutcome.Canceled,
+                            Stopwatch.GetElapsedTime(stopped.StartedAt), Constants.ResponseMessages.ProviderStoppedResultFound));
+                    }
+
+                    return best.Result;
                 }
 
                 return null;
@@ -236,20 +261,29 @@ namespace LyricsScraperNET
             }
         }
 
+        /// <param name="FoundResult">The provider result if it has lyrics or is instrumental, otherwise null.</param>
+        /// <param name="Attempt">What the provider did, for <see cref="SearchResult.ProviderAttempts"/>.</param>
+        private readonly record struct ProviderSearchOutcome(SearchResult? FoundResult, ProviderAttempt Attempt);
+
         /// <summary>
-        /// Returns the found result or null. The provider gets <see cref="ProviderTimeout"/> to answer;
-        /// provider errors and timeouts are logged and not rethrown.
+        /// Runs one provider. The provider gets <see cref="ProviderTimeout"/> to answer;
+        /// provider errors and timeouts are logged, recorded in the attempt and not rethrown.
         /// </summary>
-        private async Task<SearchResult?> SearchWithProvider(
+        private async Task<ProviderSearchOutcome> SearchWithProvider(
             IExternalProvider provider,
             Func<IExternalProvider, CancellationToken, Task<SearchResult>> searchAction,
             SearchSettings settings,
             CancellationToken cancellationToken)
         {
+            var providerType = GetProviderType(provider);
+            var startedAt = Stopwatch.GetTimestamp();
             var timeout = settings.ProviderTimeout;
             using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             if (timeout != Timeout.InfiniteTimeSpan)
                 timeoutCts.CancelAfter(timeout);
+
+            ProviderSearchOutcome Outcome(ProviderAttemptOutcome outcome, string? message = null, SearchResult? foundResult = null)
+                => new(foundResult, new ProviderAttempt(providerType, outcome, Stopwatch.GetElapsedTime(startedAt), message));
 
             Task<SearchResult>? searchTask = null;
             try
@@ -264,24 +298,29 @@ namespace LyricsScraperNET
                     ? await searchTask.WaitAsync(cancellationToken).ConfigureAwait(false)
                     : await searchTask.WaitAsync(timeout, cancellationToken).ConfigureAwait(false);
 
-                return IsFound(result) ? result : null;
+                if (IsFound(result))
+                    return Outcome(result!.Instrumental ? ProviderAttemptOutcome.Instrumental : ProviderAttemptOutcome.Found, foundResult: result);
+
+                return result?.LoadFailure is { } loadFailure
+                    ? Outcome(ProviderAttemptOutcome.Failed, loadFailure.FailureMessage)
+                    : Outcome(ProviderAttemptOutcome.NotFound);
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
                 // Canceled by the caller or because the search already has a result.
                 ObserveAbandonedTask(searchTask);
-                return null;
+                return Outcome(ProviderAttemptOutcome.Canceled);
             }
             catch (Exception ex) when (ex is TimeoutException || (ex is OperationCanceledException && timeoutCts.IsCancellationRequested))
             {
                 ObserveAbandonedTask(searchTask);
                 _logger?.LogWarning("Provider {Provider} did not answer within {Timeout}.", provider.GetType().Name, timeout);
-                return null;
+                return Outcome(ProviderAttemptOutcome.Timeout, $"No answer within {timeout}");
             }
             catch (Exception ex)
             {
                 _logger?.LogError(ex, "Error in provider {Provider}.", provider.GetType().Name);
-                return null;
+                return Outcome(ProviderAttemptOutcome.Error, $"{ex.GetType().Name}: {ex.Message}");
             }
             finally
             {
@@ -290,6 +329,9 @@ namespace LyricsScraperNET
                 timeoutCts.Cancel();
             }
         }
+
+        private static ExternalProviderType GetProviderType(IExternalProvider provider)
+            => provider.Options?.ExternalProviderType ?? ExternalProviderType.None;
 
         /// <summary>
         /// The search stopped waiting for this provider task. If the task fails later, its exception is observed here,
@@ -316,20 +358,12 @@ namespace LyricsScraperNET
         private bool ValidSearchRequestAndConfig(SearchRequest searchRequest, out SearchResult searchResult)
         {
             searchResult = new SearchResult();
-            LogLevel logLevel;
-            string errorMessage;
 
-            if (!_requestValidator.IsValidSearchRequest(_providerService, searchRequest, out errorMessage, out logLevel))
+            if (!_requestValidator.IsValidSearchRequest(_providerService, searchRequest, out var errorCode, out var errorMessage, out var logLevel)
+                || !_requestValidator.IsValidClientConfiguration(_providerService, out errorCode, out errorMessage, out logLevel))
             {
                 _logger?.Log(logLevel, errorMessage);
-                searchResult.AddBadRequestMessage(errorMessage);
-                return false;
-            }
-
-            if (!_requestValidator.IsValidClientConfiguration(_providerService, out errorMessage, out logLevel))
-            {
-                _logger?.Log(logLevel, errorMessage);
-                searchResult.AddNoDataFoundMessage(errorMessage);
+                searchResult.WithCode(errorCode, errorMessage);
                 return false;
             }
 

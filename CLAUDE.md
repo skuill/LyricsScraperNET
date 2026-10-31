@@ -28,10 +28,18 @@ Notes for AI coding agents working in this repository. Personal or machine-speci
   - Inserting lines with `sed` into CRLF files makes `dotnet format` fail with WHITESPACE; fix with `dotnet format whitespace --include <file>`.
 - New functionality must be covered by tests. Mocks: FakeItEasy. Assert whole objects / all stored data, verify calls to external clients (`A.CallTo(...).MustHaveHappened...`). Keep the existing test style (Arrange / Act / Assert comments, test data in `lyric_test_data.json` + `Resources/`).
 
+## Code organization
+- One top-level type per file, file name = type name, folder = namespace (details: "Code organization" in the knowledge base linked from `CLAUDE.local.md`).
+- Interfaces and base classes in `Abstract/` of their feature (`Network/Abstract`, `Providers/Abstract`, `Models/Abstract`), enums and data types in `Models/` of their feature (`Network/Models`, `Providers/Models`), public result and request models in `Models/Responses` and `Models/Requests`.
+- Obsoletions: one nested class per obsoletion in `Common/Obsoletions.cs`, a page per diagnostic id in `docs/obsoletions/`.
+
 ## Public API rules
 - This is a published NuGet package: public API changes are breaking changes for consumers. Follow SemVer.
 - `ExternalProviderType` numeric values are part of the contract (consumers map the enum by number). Never renumber; give new members explicit values.
-- Removing a provider: delete its code and tests, keep the enum member with `[Obsolete]`, keep `With<Name>()` as an `[Obsolete]` no-op, add its section name to `Configuration/RemovedProvidersWarning.cs`, and add a row to "Removed Providers" in `README.md` (version and issue).
+- Removing a provider: delete its code and tests, keep the enum member with `[Obsolete]` (forever, the number is the contract), keep `With<Name>()` as an `[Obsolete]` no-op until the next major version (one new diagnostic id per removed provider, see below), add its section name to `Configuration/RemovedProvidersWarning.cs`, and add a row to "Removed providers" in `docs/providers.md` (version and issue).
+- Configuration is supported in two ways and both must keep working: dependency injection (`AddLyricScraperClientService` with `IConfiguration`), and manual setup without DI (`LyricScraperClientConfig` bound from `IConfiguration` with its per-provider option properties, or provider options objects, passed to the providers and `new LyricsScraperClient(config, providers)`). Each provider can be enabled, disabled and prioritized from configuration. The per-provider properties of `LyricScraperClientConfig` are public API even though the client itself does not read them.
+- Before deprecating, making internal or removing anything, check all its uses first: tests, `LyricsScraperNET.Client` (also commented-out examples), docs, README and the consumers (LyricsScraperApi, ConcertBuddy). "The library does not call it" does not mean "unused".
+- Obsolete members: every `[Obsolete]` uses a diagnostic id and message from `Common/Obsoletions.cs` (one nested class per id) and `Obsoletions.SharedUrlFormat`; ids `LSNET0001`-`LSNET0999`, next free number, never reused; every id has a page `docs/obsoletions/<id>.md` and a row in `docs/obsoletions/README.md`. `ObsoletionsTests` enforces this. Track the removal in an issue of the next major milestone.
 
 ## Conventions
 - English only in code, comments, docs and commit messages.

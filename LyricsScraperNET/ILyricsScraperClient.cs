@@ -52,7 +52,7 @@ namespace LyricsScraperNET
         /// Obsolete: blocks the calling thread until the search completes, can deadlock with a <see cref="SynchronizationContext"/>
         /// and can starve the thread pool. Use <see cref="SearchLyricAsync"/>. Removed in 4.0.0.
         /// </summary>
-        [Obsolete(Constants.ObsoleteSyncApi.SearchLyricMessage, DiagnosticId = Constants.ObsoleteSyncApi.DiagnosticId, UrlFormat = Constants.ObsoleteSyncApi.UrlFormat)]
+        [Obsolete(Obsoletions.SyncApi.SearchLyricMessage, DiagnosticId = Obsoletions.SyncApi.DiagnosticId, UrlFormat = Obsoletions.SharedUrlFormat)]
         SearchResult SearchLyric(SearchRequest searchRequest, CancellationToken cancellationToken = default);
 
         /// <summary>

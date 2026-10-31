@@ -20,7 +20,7 @@ namespace LyricsScraperNET.Network.Abstract
         /// Synchronously loads the content of the specified URI as a string.
         /// Obsolete: blocking wrapper over <see cref="LoadAsync"/>. Removed in 4.0.0.
         /// </summary>
-        [Obsolete(Constants.ObsoleteSyncApi.LoadMessage, DiagnosticId = Constants.ObsoleteSyncApi.DiagnosticId, UrlFormat = Constants.ObsoleteSyncApi.UrlFormat)]
+        [Obsolete(Obsoletions.SyncApi.LoadMessage, DiagnosticId = Obsoletions.SyncApi.DiagnosticId, UrlFormat = Obsoletions.SharedUrlFormat)]
         string Load(Uri uri, CancellationToken cancellationToken = default);
 
         /// <summary>

@@ -11,8 +11,12 @@
 5. If you implement `ILyricsScraperClient` or `ILyricScraperClientConfig` yourself (not a mock), add the new members.
 6. If you implement `IWebClient` yourself, follow the [new contract](#web-client-contract).
 7. Check the Genius searches that relied on a "close enough" result, see [Genius](#genius).
-8. Replace the sync `SearchLyric` and `IWebClient.Load` calls with `SearchLyricAsync` and `LoadAsync`: they are obsolete (warning `LSNET001`) and will be removed in 4.0.0, see [Sync API](#sync-api).
-9. Optional: set `ProviderTimeout`, your own `HttpClient` or User-Agent ([configuration.md](configuration.md), [http.md](http.md)).
+8. Replace the sync `SearchLyric` and `IWebClient.Load` calls with `SearchLyricAsync` and `LoadAsync`: they are obsolete ([LSNET0001](obsoletions/LSNET0001.md)) and will be removed in 4.0.0, see [Sync API](#sync-api).
+9. Replace `ResponseStatusCode` with `SearchResult.Code` ([LSNET0002](obsoletions/LSNET0002.md)), see [Search result](#search-result). Note that a search where no provider could answer now returns `AllProvidersFailed` (`ResponseStatusCode.Error`) instead of `NoDataFound`.
+10. If your code used `HtmlExtensions`, `ProviderService`, `IProviderService`, `RequestValidator`, `IRequestValidator` or `SearchRequest.IsValid`, see [Internal types](#internal-types).
+11. Optional: set `ProviderTimeout`, your own `HttpClient` or User-Agent ([configuration.md](configuration.md), [http.md](http.md)).
+
+All obsolete members, their diagnostic ids and replacements: [obsoletions](obsoletions/README.md).
 
 ## Target frameworks
 
@@ -79,7 +83,7 @@ What stays for compatibility:
 
 ## Sync API
 
-The synchronous API is a blocking wrapper over the async one. In 3.0 it is marked `[Obsolete]` with the diagnostic id `LSNET001` and will be removed in 4.0.0 ([#79](https://github.com/skuill/LyricsScraperNET/issues/79)). ([#59](https://github.com/skuill/LyricsScraperNET/issues/59))
+The synchronous API is a blocking wrapper over the async one. In 3.0 it is marked `[Obsolete]` with the diagnostic id [LSNET0001](obsoletions/LSNET0001.md) and will be removed in 4.0.0 ([#79](https://github.com/skuill/LyricsScraperNET/issues/79)). ([#59](https://github.com/skuill/LyricsScraperNET/issues/59))
 
 | Obsolete member | Use instead |
 |---|---|
@@ -89,7 +93,31 @@ The synchronous API is a blocking wrapper over the async one. In 3.0 it is marke
 
 - The library no longer captures the caller's `SynchronizationContext` (`ConfigureAwait(false)` on every `await`), so the sync API does not deadlock in WinForms, WPF, MAUI or classic ASP.NET. It still blocks the calling thread.
 - Own providers: override only the async overloads `SearchLyricAsync(Uri, CancellationToken)` and `SearchLyricAsync(string, string, CancellationToken)`. The sync overloads of `ExternalProviderBase` call them. Providers that still override the sync overloads keep working until 4.0.0 (compiler warning `CS0672`).
-- To silence the warning until you migrate: `<NoWarn>$(NoWarn);LSNET001</NoWarn>` in the project file.
+- To silence the warning until you migrate: `<NoWarn>$(NoWarn);LSNET0001</NoWarn>` in the project file.
+
+## Search result
+
+`SearchResult` tells why a search ended and what each provider did ([#74](https://github.com/skuill/LyricsScraperNET/issues/74)). Details: [configuration.md](configuration.md#search-requests-and-results).
+
+- New `SearchResult.Code` (`SearchResultCode`): `Found`, `Instrumental`, `NotFound`, `AllProvidersFailed`, `EmptyRequest`, `EmptyArtistOrSong`, `EmptyUri`, `ProviderNotAvailable`, `NoProviders`, `AllProvidersDisabled`.
+- New `SearchResult.ProviderAttempts`: provider, outcome (`Found`, `Instrumental`, `NotFound`, `Failed`, `Timeout`, `Error`, `Canceled`), duration and message.
+- `ResponseStatusCode` and `SearchResult.ResponseStatusCode` are obsolete ([LSNET0002](obsoletions/LSNET0002.md)) and derived from `Code`.
+- **Behavior change:** if every provider failed (site unavailable, timeout or error), the result is `AllProvidersFailed` with `ResponseStatusCode.Error`. In 2.x it was `NoDataFound`, so "the sites could not be checked" looked like "the song does not exist".
+- **Behavior change:** a site that answers with an error status (for example `403`, `429`, `503`) is reported as `Failed`, not as "not found". A `404` page still counts as "not found".
+- `SearchResult.Empty` returns a new instance on every call (it was one shared instance).
+- The client returns a copy of the provider result with `ProviderAttempts` filled; the object returned by the provider is not changed.
+- For tests: `LyricsScraperModelFactory` creates `SearchResult` and `ProviderAttempt` instances (their constructors are internal).
+
+## Internal types
+
+These types and members were public by accident: the client creates them itself and they cannot be replaced. In 3.0 they are `internal`.
+
+| Type or member | Replacement |
+|---|---|
+| `HtmlExtensions` (`SelectSingleNodeByXPath`, `RemoveAllHtmlTags`, `UnescapeString`) | HtmlAgilityPack directly |
+| `ProviderService`, `IProviderService` | `ILyricsScraperClient` (`AddProvider`, `RemoveProvider`, indexer) |
+| `RequestValidator`, `IRequestValidator` | `SearchResult.Code` of the search |
+| `SearchRequest.IsValid(out string)` | `SearchResult.Code` of the search. `SearchRequest` can no longer be derived from outside the library: use `ArtistAndSongSearchRequest` or `UriSearchRequest`. |
 
 ## Interfaces
 

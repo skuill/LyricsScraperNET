@@ -1,11 +1,13 @@
 ﻿using LyricsScraperNET.Common;
 using LyricsScraperNET.Helpers;
 using LyricsScraperNET.Network.Abstract;
+using LyricsScraperNET.Network.Models;
 using Microsoft.Extensions.Logging;
-using System;
 using System.Net.Http;
-using System.Threading;
+using System.Net;
 using System.Threading.Tasks;
+using System.Threading;
+using System;
 
 namespace LyricsScraperNET.Network
 {
@@ -13,7 +15,7 @@ namespace LyricsScraperNET.Network
     /// Provides an implementation of the <see cref="IWebClient"/> interface using <see cref="System.Net.Http.HttpClient"/>.
     /// Uses <see cref="SharedHttpClient.Instance"/> unless another client is passed.
     /// </summary>
-    internal sealed class NetHttpClient : IWebClient
+    internal sealed class NetHttpClient : IWebClientWithStatus
     {
         private readonly ILogger<NetHttpClient>? _logger;
 
@@ -43,7 +45,7 @@ namespace LyricsScraperNET.Network
         internal Action<HttpRequestMessage>? ConfigureRequest { get; }
 
         /// <inheritdoc />
-        [Obsolete(Constants.ObsoleteSyncApi.LoadMessage, DiagnosticId = Constants.ObsoleteSyncApi.DiagnosticId, UrlFormat = Constants.ObsoleteSyncApi.UrlFormat)]
+        [Obsolete(Obsoletions.SyncApi.LoadMessage, DiagnosticId = Obsoletions.SyncApi.DiagnosticId, UrlFormat = Obsoletions.SharedUrlFormat)]
         public string Load(Uri uri, CancellationToken cancellationToken = default)
         {
             return LoadAsync(uri, cancellationToken).GetAwaiter().GetResult();
@@ -51,6 +53,10 @@ namespace LyricsScraperNET.Network
 
         /// <inheritdoc />
         public async Task<string> LoadAsync(Uri uri, CancellationToken cancellationToken = default)
+            => (await LoadWithStatusAsync(uri, cancellationToken).ConfigureAwait(false)).Body;
+
+        /// <inheritdoc />
+        public async Task<WebLoadResult> LoadWithStatusAsync(Uri uri, CancellationToken cancellationToken = default)
         {
             // HttpClient does not check the token before passing the request to the handler.
             cancellationToken.ThrowIfCancellationRequested();
@@ -61,17 +67,18 @@ namespace LyricsScraperNET.Network
                 ConfigureRequest?.Invoke(request);
                 using var response = await HttpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
 
+                var statusCode = (int)response.StatusCode;
                 if (!response.IsSuccessStatusCode)
                 {
-                    _logger?.LogWarning("Request to {Uri} returned status code {StatusCode}.", uri, (int)response.StatusCode);
-                    return string.Empty;
+                    _logger?.LogWarning("Request to {Uri} returned status code {StatusCode}.", uri, statusCode);
+                    return new WebLoadResult(string.Empty, response.StatusCode == HttpStatusCode.NotFound ? WebLoadStatus.NotFound : WebLoadStatus.Failed, statusCode);
                 }
 
                 var content = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
                 if (string.IsNullOrWhiteSpace(content))
                     _logger?.LogDebug("Request to {Uri} returned an empty body.", uri);
 
-                return content;
+                return new WebLoadResult(content, WebLoadStatus.Success, statusCode);
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
@@ -81,17 +88,17 @@ namespace LyricsScraperNET.Network
             {
                 // Not canceled by the caller: HttpClient.Timeout elapsed.
                 _logger?.LogWarning(ex, "Request to {Uri} timed out.", uri);
-                return string.Empty;
+                return new WebLoadResult(string.Empty, WebLoadStatus.Failed, null);
             }
             catch (HttpRequestException ex)
             {
                 _logger?.LogWarning(ex, "Request to {Uri} failed.", uri);
-                return string.Empty;
+                return new WebLoadResult(string.Empty, WebLoadStatus.Failed, null);
             }
             catch (Exception ex)
             {
                 _logger?.LogError(ex, "Unexpected error while loading {Uri}.", uri);
-                return string.Empty;
+                return new WebLoadResult(string.Empty, WebLoadStatus.Failed, null);
             }
         }
     }

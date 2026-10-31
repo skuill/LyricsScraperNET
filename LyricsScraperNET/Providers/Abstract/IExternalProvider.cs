@@ -23,7 +23,7 @@ namespace LyricsScraperNET.Providers.Abstract
         /// <summary>
         /// Obsolete: blocking wrapper over <see cref="SearchLyricAsync"/>. Removed in 4.0.0.
         /// </summary>
-        [Obsolete(Constants.ObsoleteSyncApi.SearchLyricMessage, DiagnosticId = Constants.ObsoleteSyncApi.DiagnosticId, UrlFormat = Constants.ObsoleteSyncApi.UrlFormat)]
+        [Obsolete(Obsoletions.SyncApi.SearchLyricMessage, DiagnosticId = Obsoletions.SyncApi.DiagnosticId, UrlFormat = Obsoletions.SharedUrlFormat)]
         SearchResult SearchLyric(SearchRequest searchRequest, CancellationToken cancellationToken = default);
 
         Task<SearchResult> SearchLyricAsync(SearchRequest searchRequest, CancellationToken cancellationToken = default);

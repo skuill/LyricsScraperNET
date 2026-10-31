@@ -1,13 +1,14 @@
 using LyricsScraperNET.Common;
 using LyricsScraperNET.Helpers;
-using LyricsScraperNET.Network;
 using LyricsScraperNET.Network.Abstract;
+using LyricsScraperNET.Network.Models;
+using LyricsScraperNET.Network;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Net;
 using System.Net.Http;
-using System.Threading;
+using System.Net;
 using System.Threading.Tasks;
+using System.Threading;
+using System;
 
 namespace LyricsScraperNET.Providers.Lrclib
 {
@@ -15,7 +16,7 @@ namespace LyricsScraperNET.Providers.Lrclib
     /// HTTP client for LRCLIB. Identifies the library via User-Agent and honors Retry-After on 429.
     /// Unlike <see cref="NetHttpClient"/>, returns the body of a 404 response: it is JSON with TrackNotFound and is handled by the provider.
     /// </summary>
-    internal sealed class LrclibHttpClient : IWebClient
+    internal sealed class LrclibHttpClient : IWebClientWithStatus
     {
         private readonly ILogger<LrclibHttpClient>? _logger;
         private const int MaxAttempts = 2;
@@ -42,13 +43,16 @@ namespace LyricsScraperNET.Providers.Lrclib
 
         internal HttpClient HttpClient { get; }
 
-        [Obsolete(Constants.ObsoleteSyncApi.LoadMessage, DiagnosticId = Constants.ObsoleteSyncApi.DiagnosticId, UrlFormat = Constants.ObsoleteSyncApi.UrlFormat)]
+        [Obsolete(Obsoletions.SyncApi.LoadMessage, DiagnosticId = Obsoletions.SyncApi.DiagnosticId, UrlFormat = Obsoletions.SharedUrlFormat)]
         public string Load(Uri uri, CancellationToken cancellationToken = default)
         {
             return LoadAsync(uri, cancellationToken).GetAwaiter().GetResult();
         }
 
         public async Task<string> LoadAsync(Uri uri, CancellationToken cancellationToken = default)
+            => (await LoadWithStatusAsync(uri, cancellationToken).ConfigureAwait(false)).Body;
+
+        public async Task<WebLoadResult> LoadWithStatusAsync(Uri uri, CancellationToken cancellationToken = default)
         {
             // HttpClient does not check the token before passing the request to the handler.
             cancellationToken.ThrowIfCancellationRequested();
@@ -71,14 +75,15 @@ namespace LyricsScraperNET.Providers.Lrclib
                     if (response.StatusCode != HttpStatusCode.NotFound && !response.IsSuccessStatusCode)
                     {
                         _logger?.LogWarning("Lrclib request to {Uri} returned status code {StatusCode}.", uri, (int)response.StatusCode);
-                        return string.Empty;
+                        return new WebLoadResult(string.Empty, WebLoadStatus.Failed, (int)response.StatusCode);
                     }
 
                     var content = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
                     if (string.IsNullOrWhiteSpace(content))
                         _logger?.LogDebug("Lrclib returned an empty body for {Uri}.", uri);
 
-                    return content;
+                    var status = response.StatusCode == HttpStatusCode.NotFound ? WebLoadStatus.NotFound : WebLoadStatus.Success;
+                    return new WebLoadResult(content, status, (int)response.StatusCode);
                 }
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
@@ -89,20 +94,20 @@ namespace LyricsScraperNET.Providers.Lrclib
             {
                 // Not canceled by the caller: HttpClient.Timeout elapsed.
                 _logger?.LogWarning(ex, "Lrclib request to {Uri} timed out.", uri);
-                return string.Empty;
+                return new WebLoadResult(string.Empty, WebLoadStatus.Failed, null);
             }
             catch (HttpRequestException ex)
             {
                 _logger?.LogWarning(ex, "Lrclib request to {Uri} failed.", uri);
-                return string.Empty;
+                return new WebLoadResult(string.Empty, WebLoadStatus.Failed, null);
             }
             catch (Exception ex)
             {
                 _logger?.LogError(ex, "Unexpected error while loading Lrclib {Uri}.", uri);
-                return string.Empty;
+                return new WebLoadResult(string.Empty, WebLoadStatus.Failed, null);
             }
 
-            return string.Empty;
+            return new WebLoadResult(string.Empty, WebLoadStatus.Failed, null);
         }
 
         private HttpRequestMessage CreateRequest(Uri uri)

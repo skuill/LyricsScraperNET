@@ -83,7 +83,7 @@ namespace LyricsScraperNET.Providers.Genius
 
         protected override async Task<SearchResult> SearchLyricAsync(Uri uri, CancellationToken cancellationToken = default)
         {
-            var htmlPageBody = await WebClient.LoadAsync(uri, cancellationToken).ConfigureAwait(false);
+            var htmlPageBody = await LoadPageAsync(uri, cancellationToken).ConfigureAwait(false);
 
             return GetSearchResultFromHtmlPageBody(uri, htmlPageBody);
         }
@@ -122,7 +122,7 @@ namespace LyricsScraperNET.Providers.Genius
         {
             if (Options.TryGetApiKeyFromOptions(out _))
             {
-                var apiSearchResponse = await WebClient.LoadAsync(_uriConverter.GetApiSearchUri(artist, song), cancellationToken).ConfigureAwait(false);
+                var apiSearchResponse = await LoadPageAsync(_uriConverter.GetApiSearchUri(artist, song), cancellationToken).ConfigureAwait(false);
 
                 // Only a failed API request falls back to the public search: a valid answer without a match is final.
                 if (TryGetLyricUriFromSearchResponse(apiSearchResponse, artist, song, out var apiLyricUri))
@@ -131,7 +131,7 @@ namespace LyricsScraperNET.Providers.Genius
                 _logger?.LogWarning("Genius. API search failed for artist {Artist} and song {Song}. Using the public search.", artist, song);
             }
 
-            var searchResponse = await WebClient.LoadAsync(_uriConverter.GetLyricUri(artist, song), cancellationToken).ConfigureAwait(false);
+            var searchResponse = await LoadPageAsync(_uriConverter.GetLyricUri(artist, song), cancellationToken).ConfigureAwait(false);
             TryGetLyricUriFromSearchResponse(searchResponse, artist, song, out var lyricUri);
             return lyricUri;
         }
@@ -204,7 +204,7 @@ namespace LyricsScraperNET.Providers.Genius
             {
                 // No lyric containers in case of instrumental.
                 if (SelectNodes(rootNode, LyricsPlaceholderNodesXPath).Any(node => node.InnerText.Contains(InstrumentalLyricText)))
-                    return new SearchResult(ExternalProviderType.Genius).AddInstrumental(true);
+                    return new SearchResult(ExternalProviderType.Genius).AsInstrumental();
 
                 _logger?.LogWarning("Genius. Can't find lyrics for Uri: [{Uri}]", uri);
                 return new SearchResult(ExternalProviderType.Genius);
