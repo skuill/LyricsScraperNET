@@ -1,3 +1,5 @@
+<img src="docs/assets/icon/icon-512.png" alt="LyricsScraperNET icon" width="128" align="right" />
+
 # LyricsScraperNET
 
 [![CodeFactor](https://www.codefactor.io/repository/github/skuill/lyricsscrapernet/badge)](https://www.codefactor.io/repository/github/skuill/lyricsscrapernet)

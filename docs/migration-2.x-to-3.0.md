@@ -6,7 +6,7 @@
 
 1. Make sure the application runs on .NET 8, 9 or 10.
 2. Remove `MusixmatchOptions` and `LyricFindOptions` from the configuration.
-3. Remove calls to `WithMusixmatch()` and `WithLyricFind()` and uses of `ExternalProviderType.Musixmatch` / `ExternalProviderType.LyricFind`.
+3. Remove calls to `WithMusixmatch()` and `WithLyricFind()`, uses of `ExternalProviderType.Musixmatch` / `ExternalProviderType.LyricFind`, and of the removed types and properties listed in [Providers](#providers) (`MusixmatchProvider`, `LyricScraperClientConfig.MusixmatchOptions`, ...).
 4. If your code used `Genius.NET`, `Jil`, `Sigil`, `MusixmatchClientLib` or `Microsoft.Extensions.Caching.*` through LyricsScraperNET, reference these packages directly.
 5. If you implement `ILyricsScraperClient` or `ILyricScraperClientConfig` yourself (not a mock), add the new members.
 6. If you implement `IWebClient` yourself, follow the [new contract](#web-client-contract).
@@ -47,6 +47,14 @@ Applications on .NET Framework or .NET 5 to 7 stay on 2.x.
 | LRCLIB | New provider, searched first by default (`SearchPriority` 7). | [#52](https://github.com/skuill/LyricsScraperNET/issues/52) |
 | SongLyrics | Fixed after the site redesign. | [#55](https://github.com/skuill/LyricsScraperNET/issues/55) |
 | Genius | See [Genius](#genius). | [#61](https://github.com/skuill/LyricsScraperNET/issues/61) |
+
+Removed with them:
+
+| Removed | Notes |
+|---|---|
+| `MusixmatchProvider`, `MusixmatchOptions`, `MusixmatchClientWrapper`, `IMusixmatchClientWrapper`, `MusixmatchTokenCache`, `IMusixmatchTokenCache` | Namespace `LyricsScraperNET.Providers.Musixmatch` |
+| `LyricFindProvider`, `LyricFindOptions` | Namespace `LyricsScraperNET.Providers.LyricFind` |
+| `MusixmatchOptions` and `LyricFindOptions` properties of `ILyricScraperClientConfig` and `LyricScraperClientConfig` | The configuration sections are ignored, see below |
 
 What stays for compatibility:
 - `ExternalProviderType.Musixmatch` (3) and `ExternalProviderType.LyricFind` (5) are `[Obsolete]` members, so the numbers of the other providers do not change. A search request for them returns `BadRequest`.
@@ -128,3 +136,8 @@ New members, breaking only for your own implementations (mocks are not affected)
 | `ILyricsScraperClient` | `TimeSpan ProviderTimeout { get; set; }` |
 | `ILyricsScraperClient` | `ILyricsScraperClient WithHttpClient(HttpClient httpClient)` |
 | `ILyricScraperClientConfig` | `TimeSpan? ProviderTimeout { get; }` |
+| `ILyricScraperClientConfig` | `IExternalProviderOptions LrclibOptions { get; }` (LRCLIB provider) |
+
+Own providers derived from `ExternalProviderBase`: `Options` is now `abstract` (it threw `NotImplementedException` when not overridden), so a provider without `Options` fails at compile time instead of at the first search.
+
+The complete list of API changes against 2.2.2 is checked on every build of the package (Package Validation) and recorded in [`LyricsScraperNET/CompatibilitySuppressions.xml`](../LyricsScraperNET/CompatibilitySuppressions.xml).
