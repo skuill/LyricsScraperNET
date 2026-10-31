@@ -44,7 +44,7 @@ Notes for AI coding agents working in this repository. Personal or machine-speci
 
 ## Conventions
 - English only in code, comments, docs and commit messages.
-- Branches: `feature/<issue>_<desc>`, `bugfix/<issue>_<desc>`. A pushed tag publishes to NuGet (`publish.sh`, `.github/workflows/cicd.yaml`).
+- Branches: `feature/<issue>_<desc>`, `bugfix/<issue>_<desc>`. A release is published from the GitHub UI (new tag = plain version, e.g. `3.0.0`, target `main`): the tag push publishes to NuGet (`publish.sh`, `.github/workflows/cicd.yaml`) and uploads the zips to that release without touching its notes. A tag pushed with git gets a draft release with the notes `TODO` instead.
 - Pull requests always target `main`. PRs are squash-merged, so start every new branch from the latest `main` and do not keep committing to a branch after its PR is merged.
 - Commit messages and PR titles start with all issue numbers they cover, e.g. `#54 #29 Removed Musixmatch and LyricFind providers`.
 - Provider code must not bypass bot protection, captchas or other access restrictions of the sites (see "Responsible Use" in `README.md`).

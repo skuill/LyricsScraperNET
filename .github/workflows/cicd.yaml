@@ -58,16 +58,12 @@ jobs:
         env:
           NUGET_TOKEN: ${{ secrets.NUGET_TOKEN }}
 
-      - name: Publish to GH Release
-        uses: softprops/action-gh-release@v3
+      # A release published from the GitHub UI creates the tag and is kept as is (title and notes).
+      # A tag pushed with git gets a draft release with the notes TODO, to edit and publish by hand.
+      - name: Create GH Release draft
         if: startsWith( github.ref, 'refs/tags/')
-        with:
-          tag_name: ${{ github.ref }}
-          name: LyricsScraperNET ${{ github.ref_name }}
-          body: |
-            TODO
-          draft: true
-          prerelease: false
+        run: |
+          gh release view "$RELEASE_VERSION" > /dev/null 2>&1 || gh release create "$RELEASE_VERSION" --draft --title "$RELEASE_VERSION" --notes "TODO"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
