@@ -54,7 +54,7 @@ Real lyrics and saved site pages are not committed as test data ([#69](https://g
 
 ## Adding a provider
 
-1. Copy the folder of a similar provider (for example `Providers/SongLyrics/`) and rename the classes.
+1. Copy the folder of a similar provider (for example `Providers/SongLyrics/`) and rename the classes. Implement only the async overloads `SearchLyricAsync(Uri, ...)` and `SearchLyricAsync(string, string, ...)`, with `ConfigureAwait(false)` on every `await` (enforced by `CA2007` in `LyricsScraperNET/.editorconfig`).
 2. Add a member to `ExternalProviderType` with a new explicit value. Never change the existing values: consumers map the enum by number.
 3. Add the default priority to `Common/Constants.cs`, the options to `LyricScraperClientConfig`, the registration to `ServiceCollectionExtensions` and `With<Name>()` to `LyricsScraperClientExtensions` (also in `WithAllProviders()`).
 4. Add unit tests with synthetic pages and integration tests.

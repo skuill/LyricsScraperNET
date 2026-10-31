@@ -1,4 +1,5 @@
-﻿using LyricsScraperNET.Models.Requests;
+﻿using LyricsScraperNET.Common;
+using LyricsScraperNET.Models.Requests;
 using LyricsScraperNET.Models.Responses;
 using LyricsScraperNET.Providers.Abstract;
 using LyricsScraperNET.Providers.Models;
@@ -48,9 +49,10 @@ namespace LyricsScraperNET
         /// Supports cancellation via <see cref="CancellationToken"/>.
         /// Throws <see cref="OperationCanceledException"/> if the operation is canceled.
         ///
-        /// Blocks the calling thread until the search completes. Prefer <see cref="SearchLyricAsync"/> on thread pool threads
-        /// (ASP.NET, background services): many concurrent blocking calls can starve the thread pool.
+        /// Obsolete: blocks the calling thread until the search completes, can deadlock with a <see cref="SynchronizationContext"/>
+        /// and can starve the thread pool. Use <see cref="SearchLyricAsync"/>. Removed in 4.0.0.
         /// </summary>
+        [Obsolete(Constants.ObsoleteSyncApi.SearchLyricMessage, DiagnosticId = Constants.ObsoleteSyncApi.DiagnosticId, UrlFormat = Constants.ObsoleteSyncApi.UrlFormat)]
         SearchResult SearchLyric(SearchRequest searchRequest, CancellationToken cancellationToken = default);
 
         /// <summary>

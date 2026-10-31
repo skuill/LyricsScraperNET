@@ -11,7 +11,8 @@
 5. If you implement `ILyricsScraperClient` or `ILyricScraperClientConfig` yourself (not a mock), add the new members.
 6. If you implement `IWebClient` yourself, follow the [new contract](#web-client-contract).
 7. Check the Genius searches that relied on a "close enough" result, see [Genius](#genius).
-8. Optional: set `ProviderTimeout`, your own `HttpClient` or User-Agent ([configuration.md](configuration.md), [http.md](http.md)).
+8. Replace the sync `SearchLyric` and `IWebClient.Load` calls with `SearchLyricAsync` and `LoadAsync`: they are obsolete (warning `LSNET001`) and will be removed in 4.0.0, see [Sync API](#sync-api).
+9. Optional: set `ProviderTimeout`, your own `HttpClient` or User-Agent ([configuration.md](configuration.md), [http.md](http.md)).
 
 ## Target frameworks
 
@@ -75,6 +76,20 @@ What stays for compatibility:
 - **Special characters:** `&`, `#`, `?` and `/` in artist or song names no longer break the search query.
 - **API key:** the search with `GeniusOptions.ApiKey` goes through the library `HttpClient`; the key is sent only to `api.genius.com`. If the API request fails, the provider falls back to the public search; if the API answers without a matching hit, the result is `NoDataFound` without a second request.
 - **Errors:** a page without lyrics returns `NoDataFound` instead of throwing `NullReferenceException`.
+
+## Sync API
+
+The synchronous API is a blocking wrapper over the async one. In 3.0 it is marked `[Obsolete]` with the diagnostic id `LSNET001` and will be removed in 4.0.0 ([#79](https://github.com/skuill/LyricsScraperNET/issues/79)). ([#59](https://github.com/skuill/LyricsScraperNET/issues/59))
+
+| Obsolete member | Use instead |
+|---|---|
+| `ILyricsScraperClient.SearchLyric` | `SearchLyricAsync` |
+| `IExternalProvider.SearchLyric`, `ExternalProviderBase.SearchLyric` (public and the protected overloads) | `SearchLyricAsync` |
+| `IWebClient.Load` | `LoadAsync` |
+
+- The library no longer captures the caller's `SynchronizationContext` (`ConfigureAwait(false)` on every `await`), so the sync API does not deadlock in WinForms, WPF, MAUI or classic ASP.NET. It still blocks the calling thread.
+- Own providers: override only the async overloads `SearchLyricAsync(Uri, CancellationToken)` and `SearchLyricAsync(string, string, CancellationToken)`. The sync overloads of `ExternalProviderBase` call them. Providers that still override the sync overloads keep working until 4.0.0 (compiler warning `CS0672`).
+- To silence the warning until you migrate: `<NoWarn>$(NoWarn);LSNET001</NoWarn>` in the project file.
 
 ## Interfaces
 

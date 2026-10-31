@@ -126,7 +126,7 @@ SearchResult result = await client.SearchLyricAsync(byArtistAndSong, cancellatio
 
 Canceling `cancellationToken` throws `OperationCanceledException` right away.
 
-The sync `SearchLyric` blocks the calling thread until the search ends. Prefer `SearchLyricAsync`, especially in UI apps and in services with many concurrent searches.
+The sync `SearchLyric` is obsolete (warning `LSNET001`) and will be removed in 4.0.0 ([#79](https://github.com/skuill/LyricsScraperNET/issues/79)): it blocks the calling thread until the search ends and can starve the thread pool. Use `SearchLyricAsync`.
 
 ## Logging
 

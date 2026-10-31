@@ -1,4 +1,5 @@
-﻿using LyricsScraperNET.Helpers;
+﻿using LyricsScraperNET.Common;
+using LyricsScraperNET.Helpers;
 using LyricsScraperNET.Network.Abstract;
 using Microsoft.Extensions.Logging;
 using System;
@@ -42,6 +43,7 @@ namespace LyricsScraperNET.Network
         internal Action<HttpRequestMessage>? ConfigureRequest { get; }
 
         /// <inheritdoc />
+        [Obsolete(Constants.ObsoleteSyncApi.LoadMessage, DiagnosticId = Constants.ObsoleteSyncApi.DiagnosticId, UrlFormat = Constants.ObsoleteSyncApi.UrlFormat)]
         public string Load(Uri uri, CancellationToken cancellationToken = default)
         {
             return LoadAsync(uri, cancellationToken).GetAwaiter().GetResult();

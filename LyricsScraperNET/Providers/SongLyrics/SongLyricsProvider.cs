@@ -86,25 +86,11 @@ namespace LyricsScraperNET.Providers.SongLyrics
 
         public override IExternalProviderOptions Options { get; }
 
-        #region Sync
-
-        protected override SearchResult SearchLyric(string artist, string song, CancellationToken cancellationToken = default)
-        {
-            return SearchLyric(_uriConverter.GetLyricUri(artist, song), cancellationToken);
-        }
-
-        protected override SearchResult SearchLyric(Uri uri, CancellationToken cancellationToken = default)
-        {
-            return SearchLyricAsync(uri, cancellationToken).GetAwaiter().GetResult();
-        }
-
-        #endregion
-
         #region Async
 
         protected override async Task<SearchResult> SearchLyricAsync(string artist, string song, CancellationToken cancellationToken = default)
         {
-            return await SearchLyricAsync(_uriConverter.GetLyricUri(artist, song), cancellationToken);
+            return await SearchLyricAsync(_uriConverter.GetLyricUri(artist, song), cancellationToken).ConfigureAwait(false);
         }
 
         protected override async Task<SearchResult> SearchLyricAsync(Uri uri, CancellationToken cancellationToken = default)
@@ -114,7 +100,7 @@ namespace LyricsScraperNET.Providers.SongLyrics
                 _logger?.LogWarning($"SongLyrics. Please set up WebClient first");
                 return new SearchResult(Models.ExternalProviderType.SongLyrics);
             }
-            var htmlPageBody = await WebClient.LoadAsync(uri, cancellationToken);
+            var htmlPageBody = await WebClient.LoadAsync(uri, cancellationToken).ConfigureAwait(false);
             return GetParsedLyricFromHtmlPageBody(uri, htmlPageBody);
         }
 
