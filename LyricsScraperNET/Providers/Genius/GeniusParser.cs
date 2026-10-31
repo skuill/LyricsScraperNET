@@ -6,39 +6,17 @@ namespace LyricsScraperNET.Providers.Genius
 {
     internal sealed class GeniusParser : IExternalProviderLyricParser
     {
+        // HtmlAgilityPack writes "</br>" as "<br>".
+        private static readonly Regex LineBreakRegex = new Regex(@"<br\s*/?>", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private static readonly Regex TagRegex = new Regex("<[^>]*>", RegexOptions.Compiled);
+
         public string Parse(string lyric)
         {
-            lyric = StripNewLines(lyric);
-            lyric = StripTagsRegex(lyric);
-            lyric = CleanEnding(lyric);
+            lyric = LineBreakRegex.Replace(lyric, "\r\n");
+            lyric = TagRegex.Replace(lyric, string.Empty);
             lyric = WebUtility.HtmlDecode(lyric);
 
-            return lyric?.Trim() ?? string.Empty;
-        }
-
-        public static string StripTagsRegex(string source)
-        {
-            return Regex.Replace(source, "<[^>]*>", string.Empty);
-        }
-
-        public static string StripNewLines(string source)
-        {
-            return Regex.Replace(source, @"(<br>|<br />|<br/>|</ br>|</br>)", "\r\n");
-        }
-
-        public string Urlify(string source)
-        {
-            return Regex.Replace(source, " ", "%20");
-        }
-
-        public static string CleanEnding(string source)
-        {
-            char[] charsToTrim = { '<', 'b', 'r', '>', ' ', '/' };
-            for (int i = 0; i < 20; i++)
-            {
-                source = source.TrimEnd(charsToTrim);
-            }
-            return source;
+            return lyric.Trim();
         }
     }
 }

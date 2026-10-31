@@ -43,6 +43,15 @@
 		<None Update="Providers\Genius\Resources\Lyrics_Result_01.txt">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
+		<None Update="Providers\Genius\no_lyrics_test_data.json">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<None Update="Providers\Genius\Resources\NoLyrics_HtmlPage_01.txt">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<None Update="Providers\Genius\Resources\EmptyLyrics_HtmlPage_01.txt">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
 		<None Update="Providers\Genius\lyric_test_data.json">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>

@@ -1,0 +1,9 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>Test Artist - Test Song Lyrics | Genius Lyrics</title>
+</head>
+<body>
+	<div data-lyrics-container="true" class="Lyrics__Container-sc-1"><div class="LyricsHeader__Container-sc-1"><h2>Test Song Lyrics</h2></div><span tabindex="0"></span><br/></div>
+</body>
+</html>

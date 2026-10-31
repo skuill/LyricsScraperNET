@@ -1,0 +1,23 @@
+﻿[
+  {
+    "LyricPagePath": "Providers/Genius/Resources/NoLyrics_HtmlPage_01.txt",
+    "LyricResultPath": null,
+    "ArtistName": null,
+    "SongName": null,
+    "SongUri": "https://genius.com/Test-artist-test-song-lyrics"
+  },
+  {
+    "LyricPagePath": "Providers/Genius/Resources/EmptyLyrics_HtmlPage_01.txt",
+    "LyricResultPath": null,
+    "ArtistName": null,
+    "SongName": null,
+    "SongUri": "https://genius.com/Test-artist-test-song-lyrics"
+  },
+  {
+    "LyricPagePath": null,
+    "LyricResultPath": null,
+    "ArtistName": null,
+    "SongName": null,
+    "SongUri": "https://genius.com/Test-artist-not-existing-song-lyrics"
+  }
+]

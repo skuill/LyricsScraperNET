@@ -56,10 +56,10 @@ namespace LyricsScraperNET.UnitTest.Network
         internal static HttpResponseMessage CreateResponse(HttpStatusCode statusCode, string body)
             => new HttpResponseMessage(statusCode) { Content = new StringContent(body) };
 
-        internal sealed record SentRequest(HttpMethod Method, Uri Uri, string UserAgent, string XUserAgent)
+        internal sealed record SentRequest(HttpMethod Method, Uri Uri, string UserAgent, string XUserAgent, string Authorization = null)
         {
             internal static SentRequest From(HttpRequestMessage request)
-                => new SentRequest(request.Method, request.RequestUri, GetHeader(request, "User-Agent"), GetHeader(request, "X-User-Agent"));
+                => new SentRequest(request.Method, request.RequestUri, GetHeader(request, "User-Agent"), GetHeader(request, "X-User-Agent"), GetHeader(request, "Authorization"));
 
             private static string GetHeader(HttpRequestMessage request, string name)
                 => request.Headers.NonValidated.TryGetValues(name, out var values) ? string.Join(" ", values) : null;

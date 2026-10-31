@@ -1,5 +1,4 @@
-﻿using Genius.Models.Song;
-using LyricsScraperNET.Common;
+﻿using LyricsScraperNET.Common;
 using LyricsScraperNET.Providers.Models;
 using System;
 
