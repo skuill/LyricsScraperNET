@@ -2,13 +2,7 @@
 
 set -e
 
-# The tag is the version: plain SemVer without "v" (3.0.0, 3.1.0-beta.1).
-if [[ ! "$RELEASE_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
-  echo "Tag '$RELEASE_VERSION' is not a version like 3.0.0 or 3.1.0-beta.1" >&2
-  exit 1
-fi
-
-echo "Publishing $RELEASE_VERSION..."
+echo "Publishing..."
 
 cd ./LyricsScraperNET
 # Version sets the package version and the assembly and file versions.
