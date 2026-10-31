@@ -63,20 +63,6 @@ namespace LyricsScraperNET.Providers.LyricsFreak
 
         #endregion
 
-        #region Sync
-
-        protected override SearchResult SearchLyric(string artist, string song, CancellationToken cancellationToken = default)
-        {
-            return SearchLyricAsync(artist, song, cancellationToken).GetAwaiter().GetResult();
-        }
-
-        protected override SearchResult SearchLyric(Uri uri, CancellationToken cancellationToken = default)
-        {
-            return SearchLyricAsync(uri, cancellationToken).GetAwaiter().GetResult();
-        }
-
-        #endregion
-
         #region Async
 
         protected override async Task<SearchResult> SearchLyricAsync(string artist, string song, CancellationToken cancellationToken = default)
@@ -90,7 +76,7 @@ namespace LyricsScraperNET.Providers.LyricsFreak
             // 1. Open the artist's page.
             var artistUri = _uriConverter.GetArtistUri(artist);
 
-            var htmlResponse = await WebClient.LoadAsync(artistUri, cancellationToken);
+            var htmlResponse = await WebClient.LoadAsync(artistUri, cancellationToken).ConfigureAwait(false);
 
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -109,12 +95,12 @@ namespace LyricsScraperNET.Providers.LyricsFreak
             }
             var songUri = new Uri(LyricsFreakUriConverter.BaseUrl + songHref);
 
-            return await SearchLyricAsync(songUri, cancellationToken);
+            return await SearchLyricAsync(songUri, cancellationToken).ConfigureAwait(false);
         }
 
         protected async override Task<SearchResult> SearchLyricAsync(Uri uri, CancellationToken cancellationToken = default)
         {
-            var htmlBodyContent = await WebClient.LoadAsync(uri, cancellationToken);
+            var htmlBodyContent = await WebClient.LoadAsync(uri, cancellationToken).ConfigureAwait(false);
 
             cancellationToken.ThrowIfCancellationRequested();
 

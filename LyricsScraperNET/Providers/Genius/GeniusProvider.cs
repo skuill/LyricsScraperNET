@@ -79,35 +79,21 @@ namespace LyricsScraperNET.Providers.Genius
 
         public override IExternalProviderOptions Options { get; }
 
-        #region Sync
-
-        protected override SearchResult SearchLyric(Uri uri, CancellationToken cancellationToken = default)
-        {
-            return SearchLyricAsync(uri, cancellationToken).GetAwaiter().GetResult();
-        }
-
-        protected override SearchResult SearchLyric(string artist, string song, CancellationToken cancellationToken = default)
-        {
-            return SearchLyricAsync(artist, song, cancellationToken).GetAwaiter().GetResult();
-        }
-
-        #endregion
-
         #region Async
 
         protected override async Task<SearchResult> SearchLyricAsync(Uri uri, CancellationToken cancellationToken = default)
         {
-            var htmlPageBody = await WebClient.LoadAsync(uri, cancellationToken);
+            var htmlPageBody = await WebClient.LoadAsync(uri, cancellationToken).ConfigureAwait(false);
 
             return GetSearchResultFromHtmlPageBody(uri, htmlPageBody);
         }
 
         protected override async Task<SearchResult> SearchLyricAsync(string artist, string song, CancellationToken cancellationToken = default)
         {
-            var lyricUri = await FindLyricUriAsync(artist, song, cancellationToken);
+            var lyricUri = await FindLyricUriAsync(artist, song, cancellationToken).ConfigureAwait(false);
 
             return lyricUri != null
-                ? await SearchLyricAsync(lyricUri, cancellationToken)
+                ? await SearchLyricAsync(lyricUri, cancellationToken).ConfigureAwait(false)
                 : new SearchResult(ExternalProviderType.Genius);
         }
 
@@ -136,7 +122,7 @@ namespace LyricsScraperNET.Providers.Genius
         {
             if (Options.TryGetApiKeyFromOptions(out _))
             {
-                var apiSearchResponse = await WebClient.LoadAsync(_uriConverter.GetApiSearchUri(artist, song), cancellationToken);
+                var apiSearchResponse = await WebClient.LoadAsync(_uriConverter.GetApiSearchUri(artist, song), cancellationToken).ConfigureAwait(false);
 
                 // Only a failed API request falls back to the public search: a valid answer without a match is final.
                 if (TryGetLyricUriFromSearchResponse(apiSearchResponse, artist, song, out var apiLyricUri))
@@ -145,7 +131,7 @@ namespace LyricsScraperNET.Providers.Genius
                 _logger?.LogWarning("Genius. API search failed for artist {Artist} and song {Song}. Using the public search.", artist, song);
             }
 
-            var searchResponse = await WebClient.LoadAsync(_uriConverter.GetLyricUri(artist, song), cancellationToken);
+            var searchResponse = await WebClient.LoadAsync(_uriConverter.GetLyricUri(artist, song), cancellationToken).ConfigureAwait(false);
             TryGetLyricUriFromSearchResponse(searchResponse, artist, song, out var lyricUri);
             return lyricUri;
         }

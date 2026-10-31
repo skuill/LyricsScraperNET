@@ -60,26 +60,12 @@ namespace LyricsScraperNET.Providers.AZLyrics
 
         public override IExternalProviderOptions Options { get; }
 
-        #region Sync
-
-        protected override SearchResult SearchLyric(string artist, string song, CancellationToken cancellationToken = default)
-        {
-            return SearchLyricAsync(artist, song, cancellationToken).GetAwaiter().GetResult();
-        }
-
-        protected override SearchResult SearchLyric(Uri uri, CancellationToken cancellationToken = default)
-        {
-            return SearchLyricAsync(uri, cancellationToken).GetAwaiter().GetResult();
-        }
-
-        #endregion
-
         #region Async
 
         protected override async Task<SearchResult> SearchLyricAsync(string artist, string song, CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested(); // Ensure cancellation is handled early
-            return await SearchLyricAsync(_uriConverter.GetLyricUri(artist, song), cancellationToken);
+            return await SearchLyricAsync(_uriConverter.GetLyricUri(artist, song), cancellationToken).ConfigureAwait(false);
         }
 
         protected override async Task<SearchResult> SearchLyricAsync(Uri uri, CancellationToken cancellationToken = default)
@@ -92,7 +78,7 @@ namespace LyricsScraperNET.Providers.AZLyrics
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            var text = await WebClient.LoadAsync(uri, cancellationToken);
+            var text = await WebClient.LoadAsync(uri, cancellationToken).ConfigureAwait(false);
 
             cancellationToken.ThrowIfCancellationRequested();
 

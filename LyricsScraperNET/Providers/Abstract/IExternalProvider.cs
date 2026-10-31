@@ -1,7 +1,9 @@
 ﻿using LyricsScraperNET.Models.Requests;
 using LyricsScraperNET.Models.Responses;
 using LyricsScraperNET.Network.Abstract;
+using LyricsScraperNET.Common;
 using Microsoft.Extensions.Logging;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -18,6 +20,10 @@ namespace LyricsScraperNET.Providers.Abstract
         /// </summary>
         int SearchPriority { get; }
 
+        /// <summary>
+        /// Obsolete: blocking wrapper over <see cref="SearchLyricAsync"/>. Removed in 4.0.0.
+        /// </summary>
+        [Obsolete(Constants.ObsoleteSyncApi.SearchLyricMessage, DiagnosticId = Constants.ObsoleteSyncApi.DiagnosticId, UrlFormat = Constants.ObsoleteSyncApi.UrlFormat)]
         SearchResult SearchLyric(SearchRequest searchRequest, CancellationToken cancellationToken = default);
 
         Task<SearchResult> SearchLyricAsync(SearchRequest searchRequest, CancellationToken cancellationToken = default);

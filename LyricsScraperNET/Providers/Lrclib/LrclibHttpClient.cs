@@ -42,6 +42,7 @@ namespace LyricsScraperNET.Providers.Lrclib
 
         internal HttpClient HttpClient { get; }
 
+        [Obsolete(Constants.ObsoleteSyncApi.LoadMessage, DiagnosticId = Constants.ObsoleteSyncApi.DiagnosticId, UrlFormat = Constants.ObsoleteSyncApi.UrlFormat)]
         public string Load(Uri uri, CancellationToken cancellationToken = default)
         {
             return LoadAsync(uri, cancellationToken).GetAwaiter().GetResult();

@@ -99,6 +99,7 @@ namespace LyricsScraperNET
         }
 
         /// <inheritdoc />
+        [Obsolete(Constants.ObsoleteSyncApi.SearchLyricMessage, DiagnosticId = Constants.ObsoleteSyncApi.DiagnosticId, UrlFormat = Constants.ObsoleteSyncApi.UrlFormat)]
         public SearchResult SearchLyric(SearchRequest searchRequest, CancellationToken cancellationToken = default)
         {
             // Settings are read once, so a concurrent change cannot mix modes within one search.
@@ -110,7 +111,9 @@ namespace LyricsScraperNET
             var settings = new SearchSettings(useParallelSearch, ProviderTimeout, RunProviderOnCallerThread: !useParallelSearch);
             Func<IExternalProvider, CancellationToken, Task<SearchResult>> searchAction = useParallelSearch
                 ? (provider, ct) => provider.SearchLyricAsync(searchRequest, ct)
+#pragma warning disable LSNET001 // The obsolete sync client API keeps using the sync provider API until both are removed in 4.0.0 (#79).
                 : (provider, ct) => Task.FromResult(provider.SearchLyric(searchRequest, ct));
+#pragma warning restore LSNET001
 
             return SearchLyricInternal(searchRequest, searchAction, settings, cancellationToken).GetAwaiter().GetResult();
         }

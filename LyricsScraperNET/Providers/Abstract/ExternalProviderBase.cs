@@ -1,4 +1,5 @@
-﻿using LyricsScraperNET.Models.Requests;
+﻿using LyricsScraperNET.Common;
+using LyricsScraperNET.Models.Requests;
 using LyricsScraperNET.Models.Responses;
 using LyricsScraperNET.Network;
 using LyricsScraperNET.Network.Abstract;
@@ -22,13 +23,16 @@ namespace LyricsScraperNET.Providers.Abstract
         /// <inheritdoc />
         public int SearchPriority => Options != null ? Options.SearchPriority : 0;
 
-        #region Sync
+        #region Sync (obsolete, removed in 4.0.0)
 
+        /// <inheritdoc />
+        [Obsolete(Constants.ObsoleteSyncApi.SearchLyricMessage, DiagnosticId = Constants.ObsoleteSyncApi.DiagnosticId, UrlFormat = Constants.ObsoleteSyncApi.UrlFormat)]
         public virtual SearchResult SearchLyric(SearchRequest searchRequest, CancellationToken cancellationToken = default)
         {
             if (!IsEnabled)
                 return new SearchResult();
 
+#pragma warning disable LSNET001 // Calls the obsolete overloads below, so providers that still override them keep working.
             return searchRequest switch
             {
                 ArtistAndSongSearchRequest artistAndSongSearchRequest
@@ -37,13 +41,22 @@ namespace LyricsScraperNET.Providers.Abstract
                     => SearchLyric(uriSearchRequest.Uri, cancellationToken),
                 _ => new SearchResult(),
             };
+#pragma warning restore LSNET001
         }
 
+        /// <summary>
+        /// Blocks on <see cref="SearchLyricAsync(Uri, CancellationToken)"/>. Providers implement only the async overloads.
+        /// </summary>
+        [Obsolete(Constants.ObsoleteSyncApi.SearchLyricMessage, DiagnosticId = Constants.ObsoleteSyncApi.DiagnosticId, UrlFormat = Constants.ObsoleteSyncApi.UrlFormat)]
         protected virtual SearchResult SearchLyric(Uri uri, CancellationToken cancellationToken = default)
-            => throw new NotImplementedException();
+            => SearchLyricAsync(uri, cancellationToken).GetAwaiter().GetResult();
 
+        /// <summary>
+        /// Blocks on <see cref="SearchLyricAsync(string, string, CancellationToken)"/>. Providers implement only the async overloads.
+        /// </summary>
+        [Obsolete(Constants.ObsoleteSyncApi.SearchLyricMessage, DiagnosticId = Constants.ObsoleteSyncApi.DiagnosticId, UrlFormat = Constants.ObsoleteSyncApi.UrlFormat)]
         protected virtual SearchResult SearchLyric(string artist, string song, CancellationToken cancellationToken = default)
-            => throw new NotImplementedException();
+            => SearchLyricAsync(artist, song, cancellationToken).GetAwaiter().GetResult();
 
         #endregion
 
@@ -57,9 +70,9 @@ namespace LyricsScraperNET.Providers.Abstract
             return searchRequest switch
             {
                 ArtistAndSongSearchRequest artistAndSongSearchRequest
-                    => await SearchLyricAsync(artistAndSongSearchRequest.Artist, artistAndSongSearchRequest.Song, cancellationToken),
+                    => await SearchLyricAsync(artistAndSongSearchRequest.Artist, artistAndSongSearchRequest.Song, cancellationToken).ConfigureAwait(false),
                 UriSearchRequest uriSearchRequest
-                    => await SearchLyricAsync(uriSearchRequest.Uri, cancellationToken),
+                    => await SearchLyricAsync(uriSearchRequest.Uri, cancellationToken).ConfigureAwait(false),
                 _ => new SearchResult(),
             };
         }

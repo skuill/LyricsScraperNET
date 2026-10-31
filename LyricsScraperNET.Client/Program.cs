@@ -9,7 +9,6 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
 
 namespace LyricsScraperNET.Client
 {
@@ -26,10 +25,10 @@ namespace LyricsScraperNET.Client
             //string songToSearch = "YYZ";
 
             //// How to configure for ASP.NET applications:
-            var result = ExampleWithHostConfiguration(artistToSearch, songToSearch);
+            var result = await ExampleWithHostConfiguration(artistToSearch, songToSearch);
 
             //// How to configure for a certain external provider using explicit instantiation:
-            //var result = ExampleWithExplicitInstantiation(artistToSearch, songToSearch);
+            //var result = await ExampleWithExplicitInstantiation(artistToSearch, songToSearch);
 
             //// Checking that something was found. The response can be empty in two cases:
             //// 1) A search error occurred. Detailed information can be found in the logs or in response fields like 'ResponseStatusCode' and 'ResponseMessage'.
@@ -78,7 +77,7 @@ namespace LyricsScraperNET.Client
         /// <param name="artistToSearch">artist name to search</param>
         /// <param name="songToSearch">song name to search</param>
         /// <returns>lyrics text</returns>
-        private static SearchResult ExampleWithHostConfiguration(string artistToSearch, string songToSearch)
+        private static async Task<SearchResult> ExampleWithHostConfiguration(string artistToSearch, string songToSearch)
         {
             //// Application Configuration section. 
             //// LyricScraperClient configuration could be found in appsettings.json file in section with related name.
@@ -103,7 +102,7 @@ namespace LyricsScraperNET.Client
             //// Create request and search 
             var searchRequest = new ArtistAndSongSearchRequest(artistToSearch, songToSearch);
             CancellationToken cancellationToken = new CancellationToken();
-            var result = lyricsScraperClient.SearchLyric(searchRequest, cancellationToken);
+            var result = await lyricsScraperClient.SearchLyricAsync(searchRequest, cancellationToken);
 
             return result;
         }
@@ -114,7 +113,7 @@ namespace LyricsScraperNET.Client
         /// <param name="artistToSearch">artist name to search</param>
         /// <param name="songToSearch">song name to search</param>
         /// <returns>lyrics text</returns>
-        private static SearchResult ExampleWithExplicitInstantiation(string artistToSearch, string songToSearch)
+        private static async Task<SearchResult> ExampleWithExplicitInstantiation(string artistToSearch, string songToSearch)
         {
             //// Create instance of LyricScraperClient with all available lyrics providers
             ILyricsScraperClient lyricsScraperClient
@@ -163,11 +162,10 @@ namespace LyricsScraperNET.Client
             //// Create request and search 
             var searchRequest = new ArtistAndSongSearchRequest(artistToSearch, songToSearch);
             CancellationToken cancellationToken = new CancellationToken();
-            var result = lyricsScraperClient.SearchLyric(searchRequest, cancellationToken);
+            var result = await lyricsScraperClient.SearchLyricAsync(searchRequest, cancellationToken);
 
             return result;
         }
     }
 }
 
-#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously

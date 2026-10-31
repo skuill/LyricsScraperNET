@@ -1,0 +1,6 @@
+root = false
+
+# Library code must not capture the caller's SynchronizationContext (#59). Not applied to tests:
+# xUnit recommends awaiting without ConfigureAwait(false) there.
+[*.cs]
+dotnet_diagnostic.CA2007.severity = warning
