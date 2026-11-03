@@ -13,10 +13,10 @@ namespace LyricsScraperNET.UnitTest.Extensions
         [InlineData(" Of Mice & Men ", "of-mice-men")]
         [InlineData("", "")]
         [InlineData(null, null)]
-        public void СonvertToDashedFormat_MultipleInputs_ShouldBeParse(string input, string expected)
+        public void ConvertToDashedFormat_MultipleInputs_ShouldBeParse(string input, string expected)
         {
             // Act
-            var actual = StringExtensions.СonvertToDashedFormat(input);
+            var actual = StringExtensions.ConvertToDashedFormat(input);
 
             // Assert
             Assert.Equal(expected, actual);
@@ -33,6 +33,29 @@ namespace LyricsScraperNET.UnitTest.Extensions
         {
             // Act
             var actual = StringExtensions.StripRedundantChars(input, removeArticles);
+
+            // Assert
+            Assert.Equal(expected, actual);
+        }
+
+        [Theory]
+        [InlineData("Beyoncé", "Beyonce")]
+        [InlineData("Motörhead", "Motorhead")]
+        [InlineData("Zé Ramalho / Avôhai", "Ze Ramalho / Avohai")]
+        [InlineData("Ólafur Arnalds", "Olafur Arnalds")]
+        [InlineData("JAŸ-Z", "JAY-Z")]
+        // Composed and decomposed forms give the same result.
+        [InlineData("Béyoncé", "Beyonce")]
+        // Letters without a decomposition and other scripts stay as they are.
+        [InlineData("Sigur Rós, Mø, Straße", "Sigur Ros, Mø, Straße")]
+        [InlineData("Группа крови", "Группа крови")]
+        [InlineData("Attack Attack!", "Attack Attack!")]
+        [InlineData("", "")]
+        [InlineData(null, null)]
+        public void RemoveDiacritics_MultipleInputs_ShouldBeParse(string input, string expected)
+        {
+            // Act
+            var actual = StringExtensions.RemoveDiacritics(input);
 
             // Assert
             Assert.Equal(expected, actual);
@@ -81,10 +104,10 @@ namespace LyricsScraperNET.UnitTest.Extensions
         [InlineData(" Of Mice & Men ", "of+mice+men")]
         [InlineData("", "")]
         [InlineData(null, null)]
-        public void СonvertToPlusFormat_MultipleInputs_ShouldBeParse(string input, string expected)
+        public void ConvertToPlusFormat_MultipleInputs_ShouldBeParse(string input, string expected)
         {
             // Act
-            var actual = StringExtensions.СonvertToPlusFormat(input, true);
+            var actual = StringExtensions.ConvertToPlusFormat(input, true);
 
             // Assert
             Assert.Equal(expected, actual);

@@ -16,8 +16,9 @@ namespace LyricsScraperNET.Providers.AZLyrics
         public Uri GetLyricUri(string artist, string song)
         {
             // remove articles from artist on start. For example for band [The Devil Wears Prada]: https://www.azlyrics.com/d/devilwearsprada.html
-            var artistStripped = artist.ToLowerInvariant().StripRedundantChars(true);
-            var titleStripped = song.ToLowerInvariant().StripRedundantChars();
+            // The site uses base letters: "Motörhead" is https://www.azlyrics.com/m/motorhead.html. "&" is dropped like on the site.
+            var artistStripped = artist.RemoveDiacritics().ToLowerInvariant().StripRedundantChars(true);
+            var titleStripped = song.RemoveDiacritics().ToLowerInvariant().StripRedundantChars();
 
             return new Uri(_baseUri, $"{artistStripped}/{titleStripped}.html");
         }

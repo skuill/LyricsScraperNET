@@ -1,6 +1,7 @@
 using FakeItEasy;
 using LyricsScraperNET.Common;
 using LyricsScraperNET.Network;
+using LyricsScraperNET.Network.Models;
 using LyricsScraperNET.Providers.Lrclib;
 using System;
 using System.Collections.Generic;
@@ -86,15 +87,17 @@ namespace LyricsScraperNET.UnitTest.Network
             CallToSendAsync(handler).MustHaveHappenedOnceExactly();
         }
 
-        [Fact]
-        public async Task LoadAsync_TooManyRequestsThenSuccess_RetriesOnceAndDisposesBothResponses()
+        [Theory]
+        [InlineData(HttpStatusCode.TooManyRequests)]
+        [InlineData(HttpStatusCode.ServiceUnavailable)]
+        public async Task LoadAsync_RetryableStatusThenSuccess_RetriesOnceAndDisposesBothResponses(HttpStatusCode statusCode)
         {
             // Arrange
             var rateLimitedContent = new TrackingContent("rate limited");
             var successContent = new TrackingContent("{\"id\":1}");
             var responses = new Queue<HttpResponseMessage>(new[]
             {
-                CreateRateLimitedResponse(rateLimitedContent),
+                CreateRateLimitedResponse(rateLimitedContent, statusCode: statusCode),
                 new HttpResponseMessage(HttpStatusCode.OK) { Content = successContent },
             });
             var sentRequests = new List<SentRequest>();
@@ -108,6 +111,26 @@ namespace LyricsScraperNET.UnitTest.Network
             Assert.Equal("{\"id\":1}", result);
             Assert.True(rateLimitedContent.IsDisposed);
             Assert.True(successContent.IsDisposed);
+            Assert.Equal(2, Snapshot(sentRequests).Count);
+            CallToSendAsync(handler).MustHaveHappenedTwiceExactly();
+        }
+
+        [Theory]
+        [InlineData(HttpStatusCode.TooManyRequests)]
+        [InlineData(HttpStatusCode.ServiceUnavailable)]
+        public async Task LoadAsync_RetryableStatusTwice_RetriesOnlyOnceAndReturnsEmpty(HttpStatusCode statusCode)
+        {
+            // Arrange
+            var sentRequests = new List<SentRequest>();
+            var (httpClient, handler) = CreateHttpClient(sentRequests,
+                (_, _) => Task.FromResult(CreateRateLimitedResponse(new TrackingContent("busy"), statusCode: statusCode)));
+            var webClient = new LrclibHttpClient(httpClient);
+
+            // Act
+            var result = await webClient.LoadWithStatusAsync(TestUri, TestContext.Current.CancellationToken).WaitAsync(SafetyTimeout, TestContext.Current.CancellationToken);
+
+            // Assert
+            Assert.Equal(new WebLoadResult(string.Empty, WebLoadStatus.Failed, (int)statusCode), result);
             Assert.Equal(2, Snapshot(sentRequests).Count);
             CallToSendAsync(handler).MustHaveHappenedTwiceExactly();
         }
@@ -178,9 +201,9 @@ namespace LyricsScraperNET.UnitTest.Network
             Assert.Same(SharedHttpClient.Instance, webClient.HttpClient);
         }
 
-        private static HttpResponseMessage CreateRateLimitedResponse(HttpContent content, TimeSpan? retryAfter = null)
+        private static HttpResponseMessage CreateRateLimitedResponse(HttpContent content, TimeSpan? retryAfter = null, HttpStatusCode statusCode = HttpStatusCode.TooManyRequests)
         {
-            var response = new HttpResponseMessage(HttpStatusCode.TooManyRequests) { Content = content };
+            var response = new HttpResponseMessage(statusCode) { Content = content };
             // The shortest delay the client accepts: Retry-After 0 is replaced with 1 s.
             response.Headers.RetryAfter = new System.Net.Http.Headers.RetryConditionHeaderValue(retryAfter ?? TimeSpan.FromSeconds(1));
             return response;

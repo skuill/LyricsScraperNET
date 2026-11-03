@@ -15,7 +15,7 @@ The numeric values of `ExternalProviderType` are stable: new providers get new v
 
 - **Search:** without an API key the provider uses the public search of the site, with `GeniusOptions.ApiKey` the official API (details in [http.md](http.md#genius-api-key)).
 - **Choosing a hit:** lyrics are returned only for a hit whose primary artist and title match the request. The first hit is often another song (a live version, a remix, a translation page or another song of the artist), so it is never taken blindly. If no hit matches, the result is `NoDataFound`.
-- **Matching rules:** case, diacritics and punctuation are ignored, apostrophes are removed, `&` equals `and`, `Pt.` equals `Part`. Examples:
+- **Matching rules** (also used by LyricsFreak for song links): case, diacritics and punctuation are ignored, apostrophes are removed, `&` equals `and`, `Pt.` equals `Part`. Examples:
 
   | Request | Genius |
   |---|---|
@@ -32,19 +32,30 @@ The numeric values of `ExternalProviderType` are stable: new providers get new v
 
 ## LRCLIB
 
-- Searches the exact artist and track name through the official API; matching is done by LRCLIB.
+- Searches the exact artist and track name through the official API; matching is done by LRCLIB (case, diacritics, punctuation and apostrophes are ignored by the server).
+- `&` and `and`: the server turns `&` into a space, so `Rock & Roll` does not find `Rock And Roll`, and the database keeps either spelling. If the track is not found and the request has `&` (or the word `and`), the provider tries the other spelling once.
+- `503` (server busy) and `429` (rate limit) are retried once after `Retry-After`.
 - Returns plain lyrics (`plainLyrics`), not synced ones.
 - Some recordings are marked as instrumental by LRCLIB even if other providers have lyrics for the song. With the default priorities LRCLIB is asked first, so such a result ends the search.
 
 ## AZLyrics, SongLyrics, KPopLyrics
 
-These providers build the page URL from the artist and the song (lowercase, without most punctuation), so the request must be written close to how the site names the song. Diacritics are not handled yet: `Beyoncé` finds nothing on AZLyrics, `Beyonce` does.
+These providers build the page URL from the artist and the song (lowercase, without most punctuation), so the request must be written close to how the site names the song.
+
+- AZLyrics and SongLyrics replace letters with diacritics by their base letters like the sites do: `Motörhead` is `motorhead`, `Zé Ramalho` is `ze-ramalho` on SongLyrics. Letters without a base letter (`ø`, `ß`) and other scripts are not converted.
+- AZLyrics drops `&` like the site (`Simon & Garfunkel` is `simongarfunkel`), so `Simon and Garfunkel` finds nothing there.
+- Aliases and other title spellings are not handled: AZLyrics names Beyoncé `beyonceknowles`.
 
 KPopLyrics: the site answers a missing page with a redirect to the closest post it can guess, which can be another version of the song. Details in [#56](https://github.com/skuill/LyricsScraperNET/issues/56).
 
 ## LyricsFreak
 
-Loads the artist page first and looks for the song link on it (two requests per search). Artist names without Latin letters or digits are not supported yet ([#62](https://github.com/skuill/LyricsScraperNET/issues/62)).
+Loads the artist page first and looks for the song link on it (two requests per search).
+
+- **Artist page:** the site mostly uses base letters (`Beyoncé` is `/b/beyonce/`), but some artists keep the name with these letters dropped (`Zé Ramalho` is `/z/z+ramalho/`). The provider tries the base-letter page first and the other one if the first is missing (one more request).
+- **Song link:** compared with the same rules as Genius (case, diacritics, punctuation and apostrophes ignored, `&` equals `and`), so `Sweet Child O Mine` finds `Sweet Child O' Mine`. Only the whole title matches: `Halo` does not find `Halo (Live)`.
+- Artist names without Latin letters or digits (for example Cyrillic or Korean) return `NoDataFound` without requests: the site has no pages for them.
+- Some songs are listed on the artist page without a lyrics page; they return `NoDataFound`.
 
 ## Removed providers
 
