@@ -16,8 +16,9 @@ namespace LyricsScraperNET.Providers.SongLyrics
 
         public Uri GetLyricUri(string artist, string song)
         {
-            var artistFormatted = artist.ToLowerInvariant().СonvertToDashedFormat();
-            var songFormatted = song.ToLowerInvariant().СonvertToDashedFormat();
+            // The site uses base letters: "Beyoncé" is https://www.songlyrics.com/beyonce/.
+            var artistFormatted = artist.RemoveDiacritics().ToLowerInvariant().ConvertToDashedFormat();
+            var songFormatted = song.RemoveDiacritics().ToLowerInvariant().ConvertToDashedFormat();
 
             return new Uri(string.Format(uriPathFormat, artistFormatted, songFormatted));
         }

@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Globalization;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace LyricsScraperNET.Extensions
@@ -52,7 +54,7 @@ namespace LyricsScraperNET.Extensions
             return result;
         }
 
-        public static string СonvertToDashedFormat(this string input, bool useExceptionSymbols = true, bool removeProhibitedSymbols = false)
+        public static string ConvertToDashedFormat(this string input, bool useExceptionSymbols = true, bool removeProhibitedSymbols = false)
         {
             if (string.IsNullOrWhiteSpace(input))
                 return input;
@@ -104,7 +106,7 @@ namespace LyricsScraperNET.Extensions
             return slug.ToLower();
         }
 
-        public static string СonvertToPlusFormat(this string input, bool removeProhibitedSymbols = false)
+        public static string ConvertToPlusFormat(this string input, bool removeProhibitedSymbols = false)
         {
             if (string.IsNullOrWhiteSpace(input))
                 return input;
@@ -122,6 +124,25 @@ namespace LyricsScraperNET.Extensions
             }).ToArray()), "\\++", "+");
 
             return result;
+        }
+
+        /// <summary>
+        /// Replaces letters with diacritics by their base letters: "Beyoncé" = "Beyonce", "Motörhead" = "Motorhead".
+        /// Letters without a decomposition (for example "ø", "ß") stay as they are.
+        /// </summary>
+        public static string RemoveDiacritics(this string input)
+        {
+            if (string.IsNullOrEmpty(input))
+                return input;
+
+            var builder = new StringBuilder(input.Length);
+            foreach (var c in input.Normalize(NormalizationForm.FormD))
+            {
+                if (CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.NonSpacingMark)
+                    builder.Append(c);
+            }
+
+            return builder.ToString().Normalize(NormalizationForm.FormC);
         }
 
         private static bool IsLatinAlphabetOrDigit(char letter) =>

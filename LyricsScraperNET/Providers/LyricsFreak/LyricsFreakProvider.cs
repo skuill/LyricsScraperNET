@@ -1,4 +1,5 @@
-﻿using LyricsScraperNET.Extensions;
+﻿using HtmlAgilityPack;
+using LyricsScraperNET.Extensions;
 using LyricsScraperNET.Helpers;
 using LyricsScraperNET.Models.Responses;
 using LyricsScraperNET.Network;
@@ -16,9 +17,10 @@ namespace LyricsScraperNET.Providers.LyricsFreak
     public sealed class LyricsFreakProvider : ExternalProviderBase
     {
         private ILogger<LyricsFreakProvider>? _logger;
-        private readonly IExternalUriConverter _uriConverter;
+        private readonly LyricsFreakUriConverter _uriConverter;
 
-        private const string LyricsHrefXPath = "//a[contains(translate(@title, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), '{0} lyrics')]";
+        private const string SongLinksXPath = "//a[@href and @title]";
+        private const string SongLinkTitleSuffix = " Lyrics";
         private const string LyricsDivXPath = "//div[@data-container-id='lyrics']";
 
         private const string PageNotFoundText = "#404 - Page Not Found";
@@ -74,13 +76,19 @@ namespace LyricsScraperNET.Providers.LyricsFreak
             }
 
             // 1. Open the artist's page.
-            var artistUri = _uriConverter.GetArtistUri(artist);
+            var htmlResponse = string.Empty;
+            foreach (var artistUri in _uriConverter.GetArtistUris(artist))
+            {
+                htmlResponse = await LoadPageAsync(artistUri, cancellationToken).ConfigureAwait(false);
 
-            var htmlResponse = await LoadPageAsync(artistUri, cancellationToken).ConfigureAwait(false);
+                cancellationToken.ThrowIfCancellationRequested();
 
-            cancellationToken.ThrowIfCancellationRequested();
+                // A missing page is a 404 (empty body) or a page with the 404 text: try the next candidate.
+                if (!string.IsNullOrEmpty(htmlResponse) && !htmlResponse.Contains(PageNotFoundText))
+                    break;
+            }
 
-            if (htmlResponse.Contains(PageNotFoundText))
+            if (string.IsNullOrEmpty(htmlResponse) || htmlResponse.Contains(PageNotFoundText))
             {
                 _logger?.LogWarning($"LyricsFreak. Artist's page not found (404). [{artist}]. Song name: [{song}]");
                 return new SearchResult(ExternalProviderType.LyricsFreak);
@@ -125,25 +133,31 @@ namespace LyricsScraperNET.Providers.LyricsFreak
 
         #region Private methods
 
+        /// <summary>
+        /// Song links on the artist page have the title "{song} Lyrics", for example "Sweet Child O&amp;#039; Mine Lyrics".
+        /// The song name is compared with <see cref="TextMatchingExtensions.IsSameText"/>, so "Sweet Child O Mine" and "Avohai" find "Avôhai".
+        /// </summary>
         private static string GetSongHrefFromHtmlBody(string htmlBody, string song)
         {
-            // Encoded needed for songs like "Devil's Calling". Title in htmlBody will be: "Devil&#039;s Calling Lyrics"
-            string formattedXPath = string.Format(LyricsHrefXPath, GetEncodedSong(song));
+            var htmlDocument = new HtmlDocument();
+            htmlDocument.LoadHtml(htmlBody);
 
-            // In other cases tried lowercase search of the original song name. 
-            // Example. Artist: "Zé Ramalho". Song: "Batendo Na Porta Do Céu (Versão II)"
-            string originalXPath = string.Format(LyricsHrefXPath, song.ToLowerInvariant());
-
-            var linkNode = htmlBody.SelectSingleNodeByXPath(formattedXPath)
-                ?? (!song.Contains("'")
-                    ? htmlBody.SelectSingleNodeByXPath(originalXPath)
-                    : null);
-
-            if (linkNode == null)
+            var linkNodes = htmlDocument.DocumentNode.SelectNodes(SongLinksXPath);
+            if (linkNodes == null)
                 return string.Empty;
 
-            string hrefSong = linkNode.GetAttributeValue("href", string.Empty);
-            return hrefSong;
+            foreach (var linkNode in linkNodes)
+            {
+                var title = HtmlEntity.DeEntitize(linkNode.GetAttributeValue("title", string.Empty)).Trim();
+                if (!title.EndsWith(SongLinkTitleSuffix, StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                var songTitle = title.Substring(0, title.Length - SongLinkTitleSuffix.Length);
+                if (songTitle.IsSameText(song))
+                    return linkNode.GetAttributeValue("href", string.Empty);
+            }
+
+            return string.Empty;
         }
 
         private static string GetSongLyricsFromHtmlBody(string htmlBody)
@@ -155,13 +169,6 @@ namespace LyricsScraperNET.Providers.LyricsFreak
 
             string lyricsText = lyricsNode.InnerText.Trim();
             return lyricsText;
-        }
-
-        private static string GetEncodedSong(string song)
-        {
-            string encodedSong = System.Net.WebUtility.HtmlEncode(song).ToLowerInvariant();
-            encodedSong = encodedSong.Replace("&#39;", "&#039;");
-            return encodedSong;
         }
 
         #endregion

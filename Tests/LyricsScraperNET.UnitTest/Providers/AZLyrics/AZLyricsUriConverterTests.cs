@@ -18,6 +18,10 @@ namespace LyricsScraperNET.UnitTest.Providers.AZLyrics
         [InlineData("Mac DeMarco", "Me and Jon, Hanging On", "http://www.azlyrics.com/lyrics/macdemarco/meandjonhangingon.html")]
         [InlineData("Of Mice & Men", "You're Not Alone", "http://www.azlyrics.com/lyrics/ofmicemen/yourenotalone.html")]
         [InlineData("Of Mice & Men", "O.G. Loko", "http://www.azlyrics.com/lyrics/ofmicemen/ogloko.html")]
+        [InlineData("Motörhead", "Ace of Spades", "http://www.azlyrics.com/lyrics/motorhead/aceofspades.html")]
+        [InlineData("Zé Ramalho", "Avôhai", "http://www.azlyrics.com/lyrics/zeramalho/avohai.html")]
+        // "&" is dropped like on the site, not turned into "and".
+        [InlineData("Simon & Garfunkel", "The Sound of Silence", "http://www.azlyrics.com/lyrics/simongarfunkel/thesoundofsilence.html")]
         public void GetLyricUri_MultipleInputs_ShouldBeParse(string artistName, string songName, string expectedUri)
         {
             // Arrange

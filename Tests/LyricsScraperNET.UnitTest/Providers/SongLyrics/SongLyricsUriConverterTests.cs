@@ -18,6 +18,9 @@ namespace LyricsScraperNET.UnitTest.Providers.SongLyrics
         [InlineData("Of Mice & Men", "You're Not Alone", "https://www.songlyrics.com/of-mice-men/you-re-not-alone-lyrics/")]
         [InlineData("Mac DeMarco", "106.2 Breeze FM", "https://www.songlyrics.com/mac-demarco/106-2-breeze-fm-lyrics/")]
         [InlineData("Of Mice & Men", "O.G. Loko", "https://www.songlyrics.com/of-mice-men/o-g-loko-lyrics/")]
+        [InlineData("Beyoncé", "Halo", "https://www.songlyrics.com/beyonce/halo-lyrics/")]
+        [InlineData("Motörhead", "Ace of Spades", "https://www.songlyrics.com/motorhead/ace-of-spades-lyrics/")]
+        [InlineData("Zé Ramalho", "Avôhai", "https://www.songlyrics.com/ze-ramalho/avohai-lyrics/")]
         public void GetLyricUri_MultipleInputs_ShouldBeParse(string artistName, string songName, string expectedUri)
         {
             // Arrange

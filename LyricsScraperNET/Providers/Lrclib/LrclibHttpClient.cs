@@ -13,7 +13,7 @@ using System;
 namespace LyricsScraperNET.Providers.Lrclib
 {
     /// <summary>
-    /// HTTP client for LRCLIB. Identifies the library via User-Agent and honors Retry-After on 429.
+    /// HTTP client for LRCLIB. Identifies the library via User-Agent and honors Retry-After on 429 and 503.
     /// Unlike <see cref="NetHttpClient"/>, returns the body of a 404 response: it is JSON with TrackNotFound and is handled by the provider.
     /// </summary>
     internal sealed class LrclibHttpClient : IWebClientWithStatus
@@ -64,10 +64,12 @@ namespace LyricsScraperNET.Providers.Lrclib
                     using var request = CreateRequest(uri);
                     using var response = await HttpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
 
-                    if (response.StatusCode == HttpStatusCode.TooManyRequests && attempt < MaxAttempts)
+                    // 503 is ServerOverloaded ("retry in a moment", Retry-After: 1), not "not found".
+                    if ((response.StatusCode == HttpStatusCode.TooManyRequests || response.StatusCode == HttpStatusCode.ServiceUnavailable)
+                        && attempt < MaxAttempts)
                     {
                         var delay = GetRetryAfterDelay(response);
-                        _logger?.LogInformation("Lrclib rate limited for {Uri}. Waiting {Delay} before retry.", uri, delay);
+                        _logger?.LogInformation("Lrclib answered {StatusCode} for {Uri}. Waiting {Delay} before retry.", (int)response.StatusCode, uri, delay);
                         await Task.Delay(delay, cancellationToken).ConfigureAwait(false);
                         continue;
                     }
