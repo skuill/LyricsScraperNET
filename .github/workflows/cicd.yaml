@@ -60,7 +60,7 @@ jobs:
       # Trusted Publishing: exchanges the GitHub OIDC token for a nuget.org API key valid for 1 hour.
       # The policy on nuget.org trusts skuill/LyricsScraperNET with the workflow file cicd.yaml.
       - name: NuGet login (OIDC)
-        if: startsWith( github.ref, 'refs/tags/')
+        if: startsWith( github.ref, 'refs/tags/') || github.ref == 'refs/heads/feature/91_trusted_publishing'
         uses: NuGet/login@v1
         id: nuget_login
         with:
