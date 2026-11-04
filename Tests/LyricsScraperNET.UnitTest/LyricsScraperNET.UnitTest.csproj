@@ -113,6 +113,9 @@
 		<None Update="Providers\KPopLyrics\Resources\Lyrics_HtmlPage_01.txt">
 		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
+		<None Update="Providers\KPopLyrics\Resources\Search_Json_01.txt">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
 		<None Update="Providers\KPopLyrics\Resources\Lyrics_Result_01.txt">
 		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
