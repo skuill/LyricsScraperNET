@@ -1,4 +1,5 @@
 ﻿using HtmlAgilityPack;
+using LyricsScraperNET.Extensions;
 using LyricsScraperNET.Helpers;
 using LyricsScraperNET.Models.Responses;
 using LyricsScraperNET.Network;
@@ -10,6 +11,7 @@ using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -21,6 +23,10 @@ namespace LyricsScraperNET.Providers.KPopLyrics
         private readonly IExternalUriConverter _uriConverter;
 
         private const string LyricsContainerNodesXPath = "//*[contains(@class, 'entry-content') and contains(@class, 'mh-clearfix')]";
+
+        // Post titles look like "BTS – Dynamite Lyrics".
+        private const string PostTitleSeparator = " – ";
+        private const string PostTitleSuffix = " Lyrics";
 
         #region Constructors
 
@@ -67,7 +73,37 @@ namespace LyricsScraperNET.Providers.KPopLyrics
         protected override async Task<SearchResult> SearchLyricAsync(string artist, string song, CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested(); // Ensure cancellation is handled early
-            return await SearchLyricAsync(_uriConverter.GetLyricUri(artist, song), cancellationToken).ConfigureAwait(false);
+
+            if (WebClient == null || Parser == null)
+            {
+                _logger?.LogWarning($"KPopLyrics. Please set up WebClient and Parser first");
+                return new SearchResult(ExternalProviderType.KPopLyrics);
+            }
+
+            var titleArtist = KPopLyricsUriConverter.GetTitleName(artist);
+            var titleSong = KPopLyricsUriConverter.GetTitleName(song);
+            if (!KPopLyricsUriConverter.HasLatinLetterOrDigit(titleArtist) || !KPopLyricsUriConverter.HasLatinLetterOrDigit(titleSong))
+            {
+                _logger?.LogInformation($"KPopLyrics. Post titles are in Latin letters only, nothing to search for artist: [{artist}]. Song name: [{song}]");
+                return new SearchResult(ExternalProviderType.KPopLyrics);
+            }
+
+            // 1. Search the posts. Page URLs can't be built from the names: the site redirects a guessed URL
+            // to the closest post, which can be another song ("bts-dynamite" opened the Holiday Remix).
+            var searchUri = _uriConverter.GetLyricUri(artist, song);
+            var searchResponse = await LoadPageAsync(searchUri, cancellationToken).ConfigureAwait(false);
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            // 2. Take the post with the same artist and song.
+            var songUri = GetSongUri(searchUri, searchResponse, titleArtist, titleSong);
+            if (songUri == null)
+            {
+                _logger?.LogWarning($"KPopLyrics. Can't find song Uri for artist: [{artist}]. Song name: [{song}]");
+                return new SearchResult(ExternalProviderType.KPopLyrics);
+            }
+
+            return await SearchLyricAsync(songUri, cancellationToken).ConfigureAwait(false);
         }
 
         protected override async Task<SearchResult> SearchLyricAsync(Uri uri, CancellationToken cancellationToken = default)
@@ -92,6 +128,63 @@ namespace LyricsScraperNET.Providers.KPopLyrics
         public override void WithLogger(ILoggerFactory loggerFactory)
         {
             _logger = loggerFactory.CreateLogger<KPopLyricsProvider>();
+        }
+
+        /// <summary>
+        /// The link of the post titled "{artist} – {song} Lyrics", compared like Genius results:
+        /// "Dynamite" does not match "Dynamite (Holiday Remix)".
+        /// </summary>
+        private Uri? GetSongUri(Uri searchUri, string searchResponse, string artist, string song)
+        {
+            // An empty body is a failed load, already recorded by LoadPageAsync.
+            if (string.IsNullOrWhiteSpace(searchResponse))
+                return null;
+
+            List<KPopLyricsPost>? posts;
+            try
+            {
+                posts = JsonSerializer.Deserialize<List<KPopLyricsPost>>(searchResponse);
+            }
+            catch (JsonException ex)
+            {
+                _logger?.LogWarning($"KPopLyrics. Failed to parse the search response for Uri: [{searchUri}]. Exception: {ex}");
+                return null;
+            }
+
+            foreach (var post in posts ?? [])
+            {
+                if (!TryParsePostTitle(post.Title?.Rendered, out var postArtist, out var postSong)
+                    || !postArtist.IsSameText(artist)
+                    || !postSong.IsSameText(song))
+                    continue;
+
+                // Load only pages of the site.
+                if (Uri.TryCreate(post.Link, UriKind.Absolute, out var songUri)
+                    && songUri.Scheme == Uri.UriSchemeHttps
+                    && songUri.Host == KPopLyricsUriConverter.Host)
+                    return songUri;
+            }
+
+            return null;
+        }
+
+        private static bool TryParsePostTitle(string? renderedTitle, out string artist, out string song)
+        {
+            artist = song = string.Empty;
+            if (string.IsNullOrEmpty(renderedTitle))
+                return false;
+
+            var title = HtmlEntity.DeEntitize(renderedTitle).Trim();
+            if (!title.EndsWith(PostTitleSuffix, StringComparison.Ordinal))
+                return false;
+
+            var separatorIndex = title.IndexOf(PostTitleSeparator, StringComparison.Ordinal);
+            if (separatorIndex <= 0)
+                return false;
+
+            artist = title[..separatorIndex];
+            song = title[(separatorIndex + PostTitleSeparator.Length)..^PostTitleSuffix.Length];
+            return true;
         }
 
         private SearchResult PostProcessLyric(Uri uri, string text)

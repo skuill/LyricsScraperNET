@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using LyricsScraperNET.Models.Requests;
 using LyricsScraperNET.Models.Responses;
@@ -102,6 +103,24 @@ namespace LyricsScraperNET.IntegrationTest.Providers.KPopLyrics
             Assert.Equal(ExternalProviderType.KPopLyrics, searchResult.ExternalProviderType);
             Assert.True(string.IsNullOrEmpty(searchResult.ResponseMessage));
             Assert.False(searchResult.Instrumental);
+        }
+
+        [Fact]
+        public async Task SearchLyricAsync_SongWithRemixPost_ReturnsTheSongNotTheRemix()
+        {
+            // Arrange: a guessed URL used to be redirected to "BTS – Dynamite (Holiday Remix)" (#56).
+            var lyricsClient = new KPopLyricsProvider();
+            var songUri = new Uri("https://www.kpoplyrics.net/bts-dynamite-lyrics-english-romanized.html");
+            var cancellationToken = TestContext.Current.CancellationToken;
+
+            // Act
+            var searchResult = await lyricsClient.SearchLyricAsync(new ArtistAndSongSearchRequest("BTS", "Dynamite"), cancellationToken);
+            var songPageResult = await lyricsClient.SearchLyricAsync(new UriSearchRequest(songUri), cancellationToken);
+
+            // Assert
+            Assert.Equal(ResponseStatusCode.Success, searchResult.ResponseStatusCode);
+            Assert.Equal(ResponseStatusCode.Success, songPageResult.ResponseStatusCode);
+            Assert.Equal(songPageResult.LyricText, searchResult.LyricText);
         }
 
         #endregion

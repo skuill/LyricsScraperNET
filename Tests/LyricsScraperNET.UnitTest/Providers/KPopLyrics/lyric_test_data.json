@@ -1,5 +1,6 @@
 ﻿[
   {
+    "ArtistPagePath": "Providers/KPopLyrics/Resources/Search_Json_01.txt",
     "LyricPagePath": "Providers/KPopLyrics/Resources/Lyrics_HtmlPage_01.txt",
     "LyricResultPath": "Providers/KPopLyrics/Resources/Lyrics_Result_01.txt",
     "ArtistName": "ENHYPEN (엔하이픈)",
