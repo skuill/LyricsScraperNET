@@ -60,4 +60,10 @@ If the API request fails (for example an invalid key), the provider falls back t
 
 ## LRCLIB
 
-LRCLIB asks clients to identify themselves: besides `User-Agent`, its requests always carry the header `X-User-Agent` with the library name, also when your client sets its own User-Agent. A `429 Too Many Requests` answer is retried once after `Retry-After` (at most 30 seconds).
+LRCLIB asks clients to identify themselves: besides `User-Agent`, its requests always carry the header `X-User-Agent` with the library name, also when your client sets its own User-Agent. A `429 Too Many Requests` or `503 Service Unavailable` answer is retried once after `Retry-After` (at most 30 seconds).
+
+## LyricsFreak
+
+LyricsFreak answers a quick series of requests (about 7 within a second or two) with `429 Too Many Requests` and then allows about one request a second. The provider waits and retries such an answer once: `Retry-After` if the site sends it (at most 30 seconds), otherwise 2 seconds. Many searches in a row get slower instead of failing. If the retry is rate limited too, the load counts as failed, not as "no lyrics".
+
+The retry works with your own `HttpClient` too (`WithHttpClient` and dependency injection). Other providers do not retry: a `429` is a failed load.

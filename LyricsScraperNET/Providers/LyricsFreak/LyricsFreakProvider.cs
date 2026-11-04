@@ -3,12 +3,14 @@ using LyricsScraperNET.Extensions;
 using LyricsScraperNET.Helpers;
 using LyricsScraperNET.Models.Responses;
 using LyricsScraperNET.Network;
+using LyricsScraperNET.Network.Abstract;
 using LyricsScraperNET.Providers.Abstract;
 using LyricsScraperNET.Providers.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using System;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -25,6 +27,9 @@ namespace LyricsScraperNET.Providers.LyricsFreak
 
         private const string PageNotFoundText = "#404 - Page Not Found";
 
+        // The site answers 429 without Retry-After after a burst of about 7 requests and then allows about one request a second (#62).
+        internal static readonly TimeSpan TooManyRequestsRetryDelay = TimeSpan.FromSeconds(2);
+
         public override IExternalProviderOptions Options { get; }
 
         #region Constructors
@@ -32,7 +37,7 @@ namespace LyricsScraperNET.Providers.LyricsFreak
         public LyricsFreakProvider()
         {
             Parser = new LyricsFreakParser();
-            WebClient = new NetHttpClient();
+            WebClient = CreateWebClient(SharedHttpClient.Instance);
             Options = new LyricsFreakOptions() { Enabled = true };
             _uriConverter = new LyricsFreakUriConverter();
         }
@@ -130,6 +135,9 @@ namespace LyricsScraperNET.Providers.LyricsFreak
         {
             _logger = loggerFactory.CreateLogger<LyricsFreakProvider>();
         }
+
+        private protected override IWebClient CreateWebClient(HttpClient httpClient)
+            => new NetHttpClient(httpClient, tooManyRequestsRetryDelay: TooManyRequestsRetryDelay);
 
         #region Private methods
 
