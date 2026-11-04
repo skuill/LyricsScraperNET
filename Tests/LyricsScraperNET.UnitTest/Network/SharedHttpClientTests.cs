@@ -61,6 +61,70 @@ namespace LyricsScraperNET.UnitTest.Network
             { () => new LrclibProvider(), typeof(LrclibHttpClient) },
         };
 
+        /// <summary>
+        /// Only LyricsFreak waits and retries 429 (#62), with its own client and with the consumer's one.
+        /// LRCLIB has its own retrying client.
+        /// </summary>
+        [Theory]
+        [MemberData(nameof(TooManyRequestsRetryDelays))]
+        public void Provider_TooManyRequestsRetryDelay_SetOnlyForLyricsFreak(Func<ExternalProviderBase> createProvider, TimeSpan? expectedDelay)
+        {
+            // Arrange
+            var provider = createProvider();
+            using var httpClient = new HttpClient();
+
+            // Act
+            var defaultDelay = Assert.IsType<NetHttpClient>(provider.WebClient).TooManyRequestsRetryDelay;
+            provider.WithHttpClient(httpClient);
+            var webClient = Assert.IsType<NetHttpClient>(provider.WebClient);
+
+            // Assert
+            Assert.Equal(expectedDelay, defaultDelay);
+            Assert.Equal(expectedDelay, webClient.TooManyRequestsRetryDelay);
+            Assert.Same(httpClient, webClient.HttpClient);
+        }
+
+        public static TheoryData<Func<ExternalProviderBase>, TimeSpan?> TooManyRequestsRetryDelays() => new()
+        {
+            { () => new AZLyricsProvider(), null },
+            { () => new GeniusProvider(), null },
+            { () => new KPopLyricsProvider(), null },
+            { () => new LyricsFreakProvider(), TimeSpan.FromSeconds(2) },
+            { () => new SongLyricsProvider(), null },
+        };
+
+        [Theory]
+        // No Retry-After or zero: the fallback.
+        [InlineData(null, 2, 2)]
+        [InlineData(0, 2, 2)]
+        [InlineData(5, 2, 5)]
+        // At most 30 s.
+        [InlineData(120, 2, 30)]
+        public void GetRetryAfterDelay_MultipleInputs(int? retryAfterSeconds, int fallbackSeconds, int expectedSeconds)
+        {
+            // Arrange
+            using var response = new HttpResponseMessage(HttpStatusCode.TooManyRequests);
+            if (retryAfterSeconds != null)
+                response.Headers.RetryAfter = new System.Net.Http.Headers.RetryConditionHeaderValue(TimeSpan.FromSeconds(retryAfterSeconds.Value));
+
+            // Act
+            var actual = SharedHttpClient.GetRetryAfterDelay(response, TimeSpan.FromSeconds(fallbackSeconds));
+
+            // Assert
+            Assert.Equal(TimeSpan.FromSeconds(expectedSeconds), actual);
+        }
+
+        [Fact]
+        public void GetRetryAfterDelay_RetryAfterDate_ReturnsFallback()
+        {
+            // Arrange
+            using var response = new HttpResponseMessage(HttpStatusCode.TooManyRequests);
+            response.Headers.RetryAfter = new System.Net.Http.Headers.RetryConditionHeaderValue(DateTimeOffset.UtcNow.AddSeconds(10));
+
+            // Act & Assert
+            Assert.Equal(TimeSpan.FromSeconds(2), SharedHttpClient.GetRetryAfterDelay(response, TimeSpan.FromSeconds(2)));
+        }
+
         internal static HttpClient GetHttpClient(IWebClient webClient) => webClient switch
         {
             NetHttpClient netHttpClient => netHttpClient.HttpClient,

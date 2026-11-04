@@ -20,7 +20,7 @@ namespace LyricsScraperNET.Providers.Lrclib
     {
         private readonly ILogger<LrclibHttpClient>? _logger;
         private const int MaxAttempts = 2;
-        private static readonly TimeSpan MaxRetryAfter = TimeSpan.FromSeconds(30);
+        private static readonly TimeSpan DefaultRetryDelay = TimeSpan.FromSeconds(1);
 
         public LrclibHttpClient()
             : this(SharedHttpClient.Instance)
@@ -68,7 +68,7 @@ namespace LyricsScraperNET.Providers.Lrclib
                     if ((response.StatusCode == HttpStatusCode.TooManyRequests || response.StatusCode == HttpStatusCode.ServiceUnavailable)
                         && attempt < MaxAttempts)
                     {
-                        var delay = GetRetryAfterDelay(response);
+                        var delay = SharedHttpClient.GetRetryAfterDelay(response, DefaultRetryDelay);
                         _logger?.LogInformation("Lrclib answered {StatusCode} for {Uri}. Waiting {Delay} before retry.", (int)response.StatusCode, uri, delay);
                         await Task.Delay(delay, cancellationToken).ConfigureAwait(false);
                         continue;
@@ -118,15 +118,6 @@ namespace LyricsScraperNET.Providers.Lrclib
             // LRCLIB asks clients to identify themselves; X-User-Agent stays even if the consumer replaces User-Agent.
             request.Headers.TryAddWithoutValidation("X-User-Agent", Constants.LibraryUserAgent);
             return request;
-        }
-
-        private static TimeSpan GetRetryAfterDelay(HttpResponseMessage response)
-        {
-            var retryAfter = response.Headers.RetryAfter?.Delta;
-            if (retryAfter == null || retryAfter.Value <= TimeSpan.Zero)
-                return TimeSpan.FromSeconds(1);
-
-            return retryAfter.Value > MaxRetryAfter ? MaxRetryAfter : retryAfter.Value;
         }
     }
 }

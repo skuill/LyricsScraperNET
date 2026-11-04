@@ -62,6 +62,7 @@ Loads the artist page first and looks for the song link on it (two requests per 
 - **Song link:** compared with the same rules as Genius (case, diacritics, punctuation and apostrophes ignored, `&` equals `and`), so `Sweet Child O Mine` finds `Sweet Child O' Mine`. Only the whole title matches: `Halo` does not find `Halo (Live)`.
 - Artist names without Latin letters or digits (for example Cyrillic or Korean) return `NoDataFound` without requests: the site has no pages for them.
 - Some songs are listed on the artist page without a lyrics page; they return `NoDataFound`.
+- **Rate limit:** after a quick series of requests the site answers `429`; the provider waits 2 seconds and retries once (details in [http.md](http.md#lyricsfreak)).
 
 ## Removed providers
 

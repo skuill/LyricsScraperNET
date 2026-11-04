@@ -53,6 +53,21 @@ namespace LyricsScraperNET.Network
             return request;
         }
 
+        /// <summary>
+        /// The wait before a retry: the Retry-After delay if the server sends a positive one (at most <see cref="MaxRetryAfter"/>),
+        /// otherwise <paramref name="fallback"/>.
+        /// </summary>
+        internal static TimeSpan GetRetryAfterDelay(HttpResponseMessage response, TimeSpan fallback)
+        {
+            var retryAfter = response.Headers.RetryAfter?.Delta;
+            if (retryAfter == null || retryAfter.Value <= TimeSpan.Zero)
+                return fallback;
+
+            return retryAfter.Value > MaxRetryAfter ? MaxRetryAfter : retryAfter.Value;
+        }
+
+        internal static readonly TimeSpan MaxRetryAfter = TimeSpan.FromSeconds(30);
+
         private const string UserAgentHeaderName = "User-Agent";
     }
 }

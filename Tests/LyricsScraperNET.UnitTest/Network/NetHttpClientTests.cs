@@ -1,6 +1,7 @@
 using FakeItEasy;
 using LyricsScraperNET.Common;
 using LyricsScraperNET.Network;
+using LyricsScraperNET.Network.Models;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -255,6 +256,118 @@ namespace LyricsScraperNET.UnitTest.Network
             Assert.Equal(
                 new[] { (expectedLevel, expectedMessage) },
                 logCalls.Select(call => (call.GetArgument<LogLevel>(0), call.Arguments[2].ToString())));
+            CallToSendAsync(handler).MustHaveHappenedOnceExactly();
+        }
+
+        private static readonly TimeSpan ShortRetryDelay = TimeSpan.FromMilliseconds(10);
+
+        [Fact]
+        public async Task LoadAsync_TooManyRequestsThenSuccess_WithRetryDelay_RetriesOnceAndDisposesBothResponses()
+        {
+            // Arrange
+            var rateLimitedContent = new TrackingContent("rate limited");
+            var successContent = new TrackingContent("<html>lyric</html>");
+            var responses = new Queue<HttpResponseMessage>(new[]
+            {
+                new HttpResponseMessage(HttpStatusCode.TooManyRequests) { Content = rateLimitedContent },
+                new HttpResponseMessage(HttpStatusCode.OK) { Content = successContent },
+            });
+            var sentRequests = new List<SentRequest>();
+            var (httpClient, handler) = CreateHttpClient(sentRequests, (_, _) => Task.FromResult(responses.Dequeue()));
+            var webClient = new NetHttpClient(httpClient, tooManyRequestsRetryDelay: ShortRetryDelay);
+
+            // Act
+            var result = await webClient.LoadWithStatusAsync(TestUri, TestContext.Current.CancellationToken).WaitAsync(SafetyTimeout, TestContext.Current.CancellationToken);
+
+            // Assert
+            Assert.Equal(new WebLoadResult("<html>lyric</html>", WebLoadStatus.Success, 200), result);
+            Assert.True(rateLimitedContent.IsDisposed);
+            Assert.True(successContent.IsDisposed);
+            var expectedRequest = new SentRequest(HttpMethod.Get, TestUri, Constants.LibraryUserAgent, null);
+            Assert.Equal(new[] { expectedRequest, expectedRequest }, Snapshot(sentRequests));
+            CallToSendAsync(handler).MustHaveHappenedTwiceExactly();
+        }
+
+        [Fact]
+        public async Task LoadAsync_TooManyRequestsTwice_WithRetryDelay_RetriesOnlyOnceAndFails()
+        {
+            // Arrange
+            var sentRequests = new List<SentRequest>();
+            var (httpClient, handler) = CreateHttpClient(sentRequests, HttpStatusCode.TooManyRequests, "rate limited");
+            var webClient = new NetHttpClient(httpClient, tooManyRequestsRetryDelay: ShortRetryDelay);
+
+            // Act
+            var result = await webClient.LoadWithStatusAsync(TestUri, TestContext.Current.CancellationToken).WaitAsync(SafetyTimeout, TestContext.Current.CancellationToken);
+
+            // Assert
+            Assert.Equal(new WebLoadResult(string.Empty, WebLoadStatus.Failed, 429), result);
+            CallToSendAsync(handler).MustHaveHappenedTwiceExactly();
+        }
+
+        [Theory]
+        // Without a retry delay 429 is a failed load, like before.
+        [InlineData(HttpStatusCode.TooManyRequests, false)]
+        // Only 429 is retried.
+        [InlineData(HttpStatusCode.ServiceUnavailable, true)]
+        [InlineData(HttpStatusCode.NotFound, true)]
+        public async Task LoadAsync_NotRetriedStatus_SendsOneRequest(HttpStatusCode statusCode, bool withRetryDelay)
+        {
+            // Arrange
+            var sentRequests = new List<SentRequest>();
+            var (httpClient, handler) = CreateHttpClient(sentRequests, statusCode, "error");
+            var webClient = new NetHttpClient(httpClient, tooManyRequestsRetryDelay: withRetryDelay ? ShortRetryDelay : null);
+
+            // Act
+            var result = await webClient.LoadWithStatusAsync(TestUri, TestContext.Current.CancellationToken).WaitAsync(SafetyTimeout, TestContext.Current.CancellationToken);
+
+            // Assert
+            Assert.Equal((int)statusCode, result.StatusCode);
+            Assert.NotEqual(WebLoadStatus.Success, result.Status);
+            CallToSendAsync(handler).MustHaveHappenedOnceExactly();
+        }
+
+        [Fact]
+        public async Task LoadAsync_TooManyRequestsWithRetryAfter_WaitsRetryAfterInsteadOfRetryDelay()
+        {
+            // Arrange: the retry delay is far longer than the safety timeout, Retry-After is 1 s.
+            var responses = new Queue<HttpResponseMessage>(new[]
+            {
+                new HttpResponseMessage(HttpStatusCode.TooManyRequests)
+                {
+                    Content = new StringContent("rate limited"),
+                    Headers = { RetryAfter = new System.Net.Http.Headers.RetryConditionHeaderValue(TimeSpan.FromSeconds(1)) },
+                },
+                CreateResponse(HttpStatusCode.OK, "<html>lyric</html>"),
+            });
+            var sentRequests = new List<SentRequest>();
+            var (httpClient, handler) = CreateHttpClient(sentRequests, (_, _) => Task.FromResult(responses.Dequeue()));
+            var webClient = new NetHttpClient(httpClient, tooManyRequestsRetryDelay: TimeSpan.FromMinutes(1));
+
+            // Act
+            var result = await webClient.LoadAsync(TestUri, TestContext.Current.CancellationToken).WaitAsync(SafetyTimeout, TestContext.Current.CancellationToken);
+
+            // Assert
+            Assert.Equal("<html>lyric</html>", result);
+            CallToSendAsync(handler).MustHaveHappenedTwiceExactly();
+        }
+
+        [Fact]
+        public async Task LoadAsync_CallerCancelsDuringRetryDelay_ThrowsOperationCanceledException()
+        {
+            // Arrange
+            using var cts = new CancellationTokenSource();
+            var sentRequests = new List<SentRequest>();
+            var (httpClient, handler) = CreateHttpClient(sentRequests, (_, _) =>
+            {
+                // The retry delay is 1 minute: the test passes only if the delay is canceled.
+                cts.Cancel();
+                return Task.FromResult(CreateResponse(HttpStatusCode.TooManyRequests, "rate limited"));
+            });
+            var webClient = new NetHttpClient(httpClient, tooManyRequestsRetryDelay: TimeSpan.FromMinutes(1));
+
+            // Act & Assert
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(
+                () => webClient.LoadAsync(TestUri, cts.Token).WaitAsync(SafetyTimeout, TestContext.Current.CancellationToken));
             CallToSendAsync(handler).MustHaveHappenedOnceExactly();
         }
 

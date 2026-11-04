@@ -32,17 +32,22 @@ namespace LyricsScraperNET.Network
         /// <param name="httpClient">Not disposed by this class: the owner of the client keeps it alive while it is used.</param>
         /// <param name="logger">Optional logger for failed requests.</param>
         /// <param name="configureRequest">Optional hook called for every request before it is sent, for example to add headers.</param>
-        public NetHttpClient(HttpClient httpClient, ILogger<NetHttpClient>? logger = null, Action<HttpRequestMessage>? configureRequest = null)
+        /// <param name="tooManyRequestsRetryDelay">If set, a 429 Too Many Requests response is retried once after Retry-After,
+        /// or after this delay if the site does not send it. Not set: 429 is a failed load.</param>
+        public NetHttpClient(HttpClient httpClient, ILogger<NetHttpClient>? logger = null, Action<HttpRequestMessage>? configureRequest = null, TimeSpan? tooManyRequestsRetryDelay = null)
         {
             Ensure.ArgumentNotNull(httpClient, nameof(httpClient));
             HttpClient = httpClient;
             _logger = logger;
             ConfigureRequest = configureRequest;
+            TooManyRequestsRetryDelay = tooManyRequestsRetryDelay;
         }
 
         internal HttpClient HttpClient { get; }
 
         internal Action<HttpRequestMessage>? ConfigureRequest { get; }
+
+        internal TimeSpan? TooManyRequestsRetryDelay { get; }
 
         /// <inheritdoc />
         [Obsolete(Obsoletions.SyncApi.LoadMessage, DiagnosticId = Obsoletions.SyncApi.DiagnosticId, UrlFormat = Obsoletions.SharedUrlFormat)]
@@ -63,9 +68,7 @@ namespace LyricsScraperNET.Network
 
             try
             {
-                using var request = SharedHttpClient.CreateGetRequest(HttpClient, uri);
-                ConfigureRequest?.Invoke(request);
-                using var response = await HttpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+                using var response = await SendAsync(uri, cancellationToken).ConfigureAwait(false);
 
                 var statusCode = (int)response.StatusCode;
                 if (!response.IsSuccessStatusCode)
@@ -100,6 +103,27 @@ namespace LyricsScraperNET.Network
                 _logger?.LogError(ex, "Unexpected error while loading {Uri}.", uri);
                 return new WebLoadResult(string.Empty, WebLoadStatus.Failed, null);
             }
+        }
+
+        private async Task<HttpResponseMessage> SendAsync(Uri uri, CancellationToken cancellationToken)
+        {
+            var response = await SendOnceAsync(uri, cancellationToken).ConfigureAwait(false);
+            if (response.StatusCode != HttpStatusCode.TooManyRequests || TooManyRequestsRetryDelay is not { } fallbackDelay)
+                return response;
+
+            var delay = SharedHttpClient.GetRetryAfterDelay(response, fallbackDelay);
+            response.Dispose();
+            _logger?.LogInformation("Request to {Uri} returned status code 429. Waiting {Delay} before retry.", uri, delay);
+            await Task.Delay(delay, cancellationToken).ConfigureAwait(false);
+
+            return await SendOnceAsync(uri, cancellationToken).ConfigureAwait(false);
+        }
+
+        private async Task<HttpResponseMessage> SendOnceAsync(Uri uri, CancellationToken cancellationToken)
+        {
+            using var request = SharedHttpClient.CreateGetRequest(HttpClient, uri);
+            ConfigureRequest?.Invoke(request);
+            return await HttpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
         }
     }
 }
